@@ -195,7 +195,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     clearLeaderboardButton.addEventListener('click', (event) => {
-        event.stopPropagation();
+        event.stopPropagation(); // Prevents attack trigger
+        event.preventDefault();  // Prevents default button behavior
         if (confirm("Are you sure you want to clear the leaderboard? This action is irreversible.")) {
             clearLeaderboard(); // Clear leaderboard function for testing
         }
