@@ -31,3 +31,21 @@ body {
     margin-top: 20px;
     font-size: 18px;
 }
+
+#boost-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#boost-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+#boost-active {
+    margin-top: 10px;
+    font-size: 16px;
+    color: red;
+}
