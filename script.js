@@ -140,106 +140,102 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     attackButton.addEventListener('click', (event) => {
-        event.stopPropagation();
         handleAttack(1);
+        event.stopPropagation();
     });
 
     boostButton.addEventListener('click', (event) => {
-        event.stopPropagation();
-        if (points >= 50) {
+        if (points >= 50 && !boostActive) {
             points -= 50;
             boostActive = true;
             boostRemainingClicks = 10;
             updatePoints();
             updateBoostStatus();
         } else {
-            alert('Not enough points to buy a boost!');
+            alert('Not enough points or boost already active.');
         }
+        event.stopPropagation();
     });
 
     replenishWillButton.addEventListener('click', (event) => {
-        event.stopPropagation();
         if (points >= 100) {
             points -= 100;
-            will = Math.min(will + 50, 1000);
-            updateWill();
+            will = 1000;
             updatePoints();
+            updateWill();
         } else {
-            alert('Not enough points to replenish will!');
+            alert('Not enough points.');
         }
+        event.stopPropagation();
     });
 
     increaseDamageButton.addEventListener('click', (event) => {
-        event.stopPropagation();
         if (points >= 200) {
             points -= 200;
-            damageMultiplier++;
+            damageMultiplier *= 2;
             updatePoints();
         } else {
-            alert('Not enough points to increase damage!');
+            alert('Not enough points.');
         }
+        event.stopPropagation();
     });
 
     walletButton.addEventListener('click', (event) => {
-        event.stopPropagation();
         walletSection.style.display = walletSection.style.display === 'none' ? 'block' : 'none';
-    });
-
-    showLeaderboardButton.addEventListener('click', (event) => {
+        updateClaimAndBurnButtons();
         event.stopPropagation();
-        leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
-        nameChangeContainer.style.display = 'block';
     });
 
     saveNameButton.addEventListener('click', () => {
-        playerName = playerNameInput.value;
+        playerName = playerNameInput.value || playerName;
         localStorage.setItem('playerName', playerName);
-        alert('Name updated successfully!');
-        addOrUpdateScoreInLeaderboard(playerName, score);
+        if (playerKey) {
+            database.ref('leaderboard/' + playerKey).update({ name: playerName });
+        }
+        updateLeaderboard();
     });
 
     saveWalletButton.addEventListener('click', () => {
         walletAddress = walletAddressInput.value;
         localStorage.setItem('walletAddress', walletAddress);
         updateClaimAndBurnButtons();
-        alert('Wallet address saved successfully!');
     });
 
     claimRiggedButton.addEventListener('click', () => {
-        if (walletAddress && points > 0) {
-            points = 0; 
-            updatePoints();
-            alert('Your $RIGGED tokens have been claimed and sent to your wallet!');
-            claimRiggedButton.disabled = true; 
-        } else {
-            alert('Please enter a wallet address and earn points to claim tokens.');
-        }
+        alert(`Claiming $RIGGED to address ${walletAddress}.`);
+        points = 0;
+        updatePoints();
+        updateClaimAndBurnButtons();
     });
 
     clearLeaderboardButton.addEventListener('click', () => {
-        if (confirm('Are you sure you want to clear the leaderboard? This action cannot be undone.')) {
+        if (confirm('Are you sure you want to clear the leaderboard?')) {
             database.ref('leaderboard').remove();
             updateLeaderboard();
         }
     });
 
     burnRiggedButton.addEventListener('click', () => {
-        if (points > 0) {
-            points = 0;
-            updatePoints();
-            alert('$RIGGED tokens burned!');
-        } else {
-            alert('No points to burn!');
-        }
+        alert('Burning $RIGGED!');
+        points = 0;
+        updatePoints();
+        updateClaimAndBurnButtons();
     });
 
-    // Initialize game state
-    updateCharacter();
-    updateBoostStatus();
-    updateWill();
-    updatePoints();
+    showLeaderboardButton.addEventListener('click', (event) => {
+        leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
+        updateLeaderboard();
+        event.stopPropagation();
+    });
+
+    // Initialize values
     updateScore();
+    updatePoints();
+    updateWill();
+    updateBoostStatus();
     updateClaimAndBurnButtons();
-    setInterval(replenishWill, 2000);
     updateLeaderboard();
+
+    // Replenish will over time
+    setInterval(replenishWill, 2000);
 });
