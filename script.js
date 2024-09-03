@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const boostActiveStatus = document.getElementById('boost-active-status');
     const willValue = document.getElementById('will-value');
     const gameContainer = document.getElementById('game-container');
+    const attackButton = document.getElementById('attack-button');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
@@ -114,11 +115,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
 
                 currentHealth -= pointsToAdd;
-                score += pointsToAdd;
+                score += pointsToAdd; // Ensure score is updated
                 points += pointsToAdd;
                 updatePoints();
 
                 if (currentHealth <= 0) {
+                    addOrUpdateScoreInLeaderboard(playerName, score); // Update leaderboard when character is defeated
                     nextLevel();
                 }
             }
@@ -142,6 +144,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (event.target === gameContainer || event.target === characterElement) {
             handleAttack(1);
         }
+    });
+
+    attackButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        handleAttack(1); // Ensure the attack button triggers the attack
     });
 
     boostButton.addEventListener('click', (event) => {
@@ -222,6 +229,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         } else {
             alert('Please enter a valid wallet address.');
         }
+    });
+
+    burnRiggedButton.addEventListener('click', () => {
+        // Logic to handle burning $RIGGED tokens
+        points = 0;  // Reset points after burning tokens
+        updatePoints();
+        alert('You have burned your $RIGGED tokens!');
     });
 
     function updateClaimAndBurnButtons() {
