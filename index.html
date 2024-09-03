@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Clicker Game</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -18,10 +20,14 @@
             <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
             <div id="boost-active">Boost Active: <span id="boost-active-status">No</span></div>
         </div>
-        <!-- New Booster Buttons -->
         <div id="booster-buttons">
             <button id="replenish-will-button">Replenish Will (Cost: 100 Points)</button>
             <button id="increase-damage-button">Increase Damage (Cost: 200 Points)</button>
+        </div>
+        <!-- Leaderboard Section -->
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
         </div>
     </div>
 </body>

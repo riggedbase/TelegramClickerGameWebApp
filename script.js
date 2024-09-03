@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const gameContainer = document.getElementById('game-container');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
+    const leaderboardList = document.getElementById('leaderboard-list');
 
     let score = 0;
     let characterIndex = 0;
@@ -161,4 +162,50 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Set up Will replenishment every two seconds (2000 milliseconds)
     setInterval(replenishWill, 2000);
+
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Update Leaderboard with Firebase
+    function updateLeaderboard() {
+        const leaderboardRef = database.ref('leaderboard');
+        leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            const sortedLeaderboard = [];
+            for (const id in leaderboardData) {
+                sortedLeaderboard.push(leaderboardData[id]);
+            }
+            sortedLeaderboard.sort((a, b) => b.score - a.score);
+            leaderboardList.innerHTML = ''; // Clear the leaderboard list
+            sortedLeaderboard.forEach((entry) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${entry.name}: ${entry.score}`;
+                leaderboardList.appendChild(listItem);
+            });
+        });
+    }
+
+    // Add Player Score to Leaderboard
+    function addScoreToLeaderboard(playerName, playerScore) {
+        const leaderboardRef = database.ref('leaderboard');
+        const newEntryRef = leaderboardRef.push();
+        newEntryRef.set({
+            name: playerName,
+            score: playerScore
+        });
+    }
+
+    // Example: Add Score and Update Leaderboard
+    addScoreToLeaderboard('Player1', score); // Call this function whenever the player finishes a level
+    updateLeaderboard(); // Keep the leaderboard updated in real-time
 });
