@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const burnRiggedButton = document.getElementById('burn-rigged-button');
     const walletAddressInput = document.getElementById('wallet-address-input');
     const saveWalletButton = document.getElementById('save-wallet-button');
+    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button');
 
     let score = 0;
     let points = 0;
@@ -78,6 +79,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         pointsValue.textContent = points;
         walletPointsValue.textContent = points;
         riggedTokensValue.textContent = (points / 100).toFixed(2);
+        updateClaimAndBurnButtons();
     }
 
     function updateScore() {
@@ -244,16 +246,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     claimRiggedButton.addEventListener('click', () => {
-        if (walletAddress) {
-            alert('You have claimed your $RIGGED tokens!');
-            // Here you would typically make an API call to handle the claim
+        if (walletAddress && points > 0) {
+            points = 0;  // Reset points after claiming tokens
+            updatePoints();
+            alert('Your $RIGGED tokens have been claimed and sent to your wallet!');
+            claimRiggedButton.disabled = true; // Disable button after claiming
         } else {
-            alert('Please enter a valid Base network wallet address.');
+            alert('Please enter a wallet address and earn points to claim tokens.');
+        }
+    });
+
+    clearLeaderboardButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the leaderboard? This action cannot be undone.')) {
+            database.ref('leaderboard').remove();
+            updateLeaderboard();
         }
     });
 
     function updateClaimAndBurnButtons() {
-        burnRiggedButton.disabled = points <= 0;
+        burnRiggedButton.disabled = points <= 0; // Burn button always enabled when points > 0
         claimRiggedButton.disabled = walletAddress === '' || points <= 0;
     }
 
