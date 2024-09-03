@@ -48,12 +48,19 @@ body {
     margin-top: 5px;
 }
 
-#attack-button,
-#boost-button {
+button {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
     margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
 }
 
 #score, #points, #will, #level, #boost-active {
@@ -67,4 +74,26 @@ body {
 
 #boost-active-status {
     color: red;
+}
+
+#leaderboard {
+    margin-top: 20px;
+}
+
+#leaderboard-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboard-list li {
+    margin: 5px 0;
+}
+
+#name-change-container {
+    margin-top: 10px;
+}
+
+#player-name-input {
+    padding: 5px;
+    font-size: 16px;
 }

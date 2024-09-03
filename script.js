@@ -1,83 +1,52 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    // ... (previous code remains the same)
+    // Firebase configuration
+    const firebaseConfig = {
+        // Your Firebase config here
+    };
 
-    let score = 0;
-    let points = 0;
-    // ... (other variables)
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-    function handleAttack(numClicks) {
-        if (will >= numClicks) {
-            if (currentHealth > 0) {
-                let damage = 10 * numClicks * damageMultiplier;
-                will -= numClicks;
-                updateWill();
+    // Get DOM elements
+    const characterElement = document.getElementById('character');
+    const characterNameElement = document.getElementById('character-name');
+    const currentHealthElement = document.getElementById('current-health');
+    const maxHealthElement = document.getElementById('max-health');
+    const healthFillElement = document.getElementById('health-fill');
+    const levelValueElement = document.getElementById('level-value');
+    const scoreValue = document.getElementById('score-value');
+    const pointsValue = document.getElementById('points-value');
+    const willValue = document.getElementById('will-value');
+    const attackButton = document.getElementById('attack-button');
+    const boostButton = document.getElementById('boost-button');
+    const boostActiveStatus = document.getElementById('boost-active-status');
+    const replenishWillButton = document.getElementById('replenish-will-button');
+    const increaseDamageButton = document.getElementById('increase-damage-button');
+    const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    const leaderboard = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    const playerNameInput = document.getElementById('player-name-input');
+    const saveNameButton = document.getElementById('save-name-button');
+    const nameChangeContainer = document.getElementById('name-change-container');
 
-                if (boostActive) {
-                    damage *= 2;
-                    boostRemainingClicks -= numClicks;
-                    if (boostRemainingClicks <= 0) {
-                        boostActive = false;
-                        updateBoostStatus();
-                    }
-                }
+    // Game variables and logic
+    // ... (rest of your game code)
 
-                currentHealth -= damage;
-                if (currentHealth < 0) currentHealth = 0;
-                updateHealthDisplay();
+    // Event listeners
+    attackButton.addEventListener('click', () => handleAttack(1));
+    boostButton.addEventListener('click', activateBoost);
+    replenishWillButton.addEventListener('click', replenishWill);
+    increaseDamageButton.addEventListener('click', increaseDamage);
+    showLeaderboardButton.addEventListener('click', toggleLeaderboard);
+    saveNameButton.addEventListener('click', saveName);
 
-                score += damage;
-                points += damage;
-                scoreValue.textContent = score;
-                updatePoints();
-                
-                // Update leaderboard score in real-time
-                addOrUpdateScoreInLeaderboard(playerName, score);
-                
-                if (currentHealth <= 0) {
-                    nextCharacter();
-                }
-            }
-        } else {
-            alert('Out of Will! Wait for it to replenish.');
-        }
-    }
+    // Initialize game
+    updateCharacter();
+    updateBoostStatus();
+    updateWill();
+    updatePoints();
 
-    function nextCharacter() {
-        characterIndex = (characterIndex + 1) % characters.length;
-        if (characterIndex === 0) {
-            level++;
-            levelValueElement.textContent = level;
-        }
-        updateCharacter();
-        // Remove this line as we're now updating the score in real-time
-        // addOrUpdateScoreInLeaderboard(playerName, score);
-    }
-
-    function addOrUpdateScoreInLeaderboard(name, score) {
-        if (playerKey) {
-            database.ref('leaderboard/' + playerKey).update({ score: score });
-        } else {
-            const newEntryRef = database.ref('leaderboard').push();
-            playerKey = newEntryRef.key;
-            newEntryRef.set({ name: name, score: score });
-        }
-    }
-
-    saveNameButton.addEventListener('click', () => {
-        const newName = playerNameInput.value.trim();
-        if (newName && newName !== playerName) {
-            playerName = newName;
-            if (playerKey) {
-                database.ref('leaderboard/' + playerKey).update({ name: playerName, score: score });
-            } else {
-                addOrUpdateScoreInLeaderboard(playerName, score);
-            }
-            alert('Name updated successfully!');
-            playerNameInput.value = '';
-            nameChangeContainer.style.display = 'none';
-            updateLeaderboard();
-        }
-    });
-
-    // ... (rest of the code remains the same)
+    // Start will replenishment
+    setInterval(replenishWill, 2000);
 });

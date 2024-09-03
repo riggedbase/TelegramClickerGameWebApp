@@ -28,5 +28,25 @@
     Level: <span id="level-value">1</span>
   </div>
 
-  <!-- ... rest of the HTML remains the same ... -->
+  <div id="boost-container">
+    <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
+    <div id="boost-active">
+      Boost Active: <span id="boost-active-status">No</span>
+    </div>
+  </div>
+
+  <button id="replenish-will-button">Replenish Will (Cost: 100 points)</button>
+
+  <button id="increase-damage-button">Increase Damage (Cost: 200 points)</button>
+
+  <button id="show-leaderboard-button">Show Leaderboard</button>
+
+  <div id="leaderboard" style="display:none;">
+    <h2>Leaderboard</h2>
+    <ul id="leaderboard-list"></ul>
+    <div id="name-change-container" style="display:none;">
+      <input type="text" id="player-name-input" placeholder="Enter your name">
+      <button id="save-name-button">Save Name</button>
+    </div>
+  </div>
 </div>
