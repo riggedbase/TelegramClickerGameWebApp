@@ -1,41 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clicker Game</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="game-container">
-        <h1>Clicker Game</h1>
-        
-        <div id="character">😈</div>
-        <div id="character-name">Demon</div>
-        
-        <div id="health-bar">
-            <div id="health-fill"></div>
-        </div>
-        <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
-        
-        <div id="stats">
-            <span>Score: <span id="score">0</span></span>
-            <span>Points: <span id="points">0</span></span>
-            <span>Will: <span id="will">1000</span></span>
-            <span>Level: <span id="level">1</span></span>
-        </div>
-        
-        <div id="actions">
-            <button id="replenish-will-button">Replenish Will (100 points)</button>
-            <button id="increase-damage-button">Increase Damage (200 points)</button>
-            <button id="show-leaderboard-button">Show Leaderboard</button>
-        </div>
+console.log("Script loaded");
 
-        <div id="leaderboard"></div>
-    </div>
+document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM fully loaded");
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+    const gameContainer = document.getElementById('game-container');
+    const characterElement = document.getElementById('character');
+    const scoreElement = document.getElementById('score');
+    
+    let score = 0;
+
+    function handleClick() {
+        console.log("Click handled");
+        score += 1;
+        scoreElement.textContent = score;
+    }
+
+    if (gameContainer) {
+        gameContainer.addEventListener('click', handleClick);
+    } else {
+        console.log("Game container not found");
+    }
+
+    console.log("Game initialized");
+});
