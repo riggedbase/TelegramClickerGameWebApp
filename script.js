@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let touchInProgress = false;
     let damageMultiplier = 1;
     let playerName = "Player1"; // Default player name
+    let playerKey = null; // To keep track of the player's unique key in the database
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -187,13 +188,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveNameButton.addEventListener('click', (event) => {
         event.stopPropagation(); 
         const newName = playerNameInput.value.trim();
-        if (newName) {
+        if (newName && newName !== playerName) {
+            updatePlayerName(newName); // Update player name in Firebase
             playerName = newName;
             alert(`Player name updated to: ${playerName}`);
-        } else {
+        } else if (!newName) {
             alert('Please enter a valid name.');
         }
     });
+
+    function updatePlayerName(newName) {
+        const leaderboardRef = database.ref('leaderboard');
+        leaderboardRef.orderByChild('name').equalTo(playerName).once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                playerKey = Object.keys(data)[0]; 
+                const playerEntryRef = leaderboardRef.child(playerKey);
+                playerEntryRef.update({
+                    name: newName
+                }).then(() => {
+                    console.log(`Player name updated in Firebase: ${newName}`);
+                }).catch((error) => {
+                    console.error('Error updating player name in Firebase:', error);
+                });
+            }
+        });
+    }
 
     function addScoreToLeaderboard(playerName, playerScore) {
         const leaderboardRef = database.ref('leaderboard');
@@ -203,7 +223,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const data = snapshot.val();
             if (data) {
                 // Player exists, update their score
-                const playerKey = Object.keys(data)[0]; // Get the player's unique key
+                playerKey = Object.keys(data)[0]; // Get the player's unique key
                 const playerEntryRef = leaderboardRef.child(playerKey);
                 playerEntryRef.update({
                     score: playerScore
@@ -215,6 +235,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             } else {
                 // Player doesn't exist, add a new entry
                 const newEntryRef = leaderboardRef.push();
+                playerKey = newEntryRef.key; // Save the new player's key
                 newEntryRef.set({
                     name: playerName,
                     score: playerScore
