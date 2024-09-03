@@ -80,6 +80,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         riggedTokensValue.textContent = (points / 100).toFixed(2);
     }
 
+    function updateScore() {
+        scoreValue.textContent = score;
+    }
+
     function replenishWill() {
         if (will < 1000) {
             will++;
@@ -101,12 +105,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function handleAttack(numClicks) {
         if (will >= numClicks) {
             if (currentHealth > 0) {
-                let pointsToAdd = 10 * numClicks * damageMultiplier;
+                let damage = 10 * numClicks * damageMultiplier;
                 will -= numClicks;
                 updateWill();
 
                 if (boostActive) {
-                    pointsToAdd *= 2;
+                    damage *= 2;
                     boostRemainingClicks -= numClicks;
                     if (boostRemainingClicks <= 0) {
                         boostActive = false;
@@ -114,10 +118,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 }
 
-                currentHealth -= pointsToAdd;
-                score += pointsToAdd; // Ensure score is updated
-                points += pointsToAdd;
+                currentHealth -= damage;
+                score += damage;  // Update score correctly
+                points += damage;
                 updatePoints();
+                updateScore();
 
                 if (currentHealth <= 0) {
                     addOrUpdateScoreInLeaderboard(playerName, score); // Update leaderboard when character is defeated
@@ -232,7 +237,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     burnRiggedButton.addEventListener('click', () => {
-        // Logic to handle burning $RIGGED tokens
         points = 0;  // Reset points after burning tokens
         updatePoints();
         alert('You have burned your $RIGGED tokens!');
@@ -240,7 +244,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateClaimAndBurnButtons() {
         claimRiggedButton.disabled = walletAddress.length === 0;
-        burnRiggedButton.disabled = false;
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
@@ -281,6 +284,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     updateBoostStatus();
     updateWill();
     updatePoints();
+    updateScore();
     updateClaimAndBurnButtons();
 
     setInterval(replenishWill, 2000);
