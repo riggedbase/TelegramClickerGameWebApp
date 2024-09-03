@@ -10,7 +10,7 @@
     <div id="game-container">
         <h1>Clicker Game</h1>
         
-        <img id="character" src="demon.png" alt="Demon">
+        <div id="character">😈</div> <!-- Changed from <img> to <div> -->
         <div id="character-name">Demon</div>
         
         <div id="health-bar">
@@ -18,21 +18,22 @@
         </div>
         <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
         
-        <button id="attack-button">Attack</button>
-        
         <div id="stats">
-            <span>Score: <span id="score">400</span></span>
-            <span>Points: <span id="points">400</span></span>
-            <span>Will: <span id="will">960</span></span>
+            <span>Score: <span id="score">0</span></span>
+            <span>Points: <span id="points">0</span></span>
+            <span>Will: <span id="will">1000</span></span>
             <span>Level: <span id="level">1</span></span>
         </div>
         
         <div id="actions">
             <button id="boost-button">Buy Boost (50 points)</button>
+            <div id="boost-active">Boost Active: No</div>
             <button id="replenish-will-button">Replenish Will (100 points)</button>
             <button id="increase-damage-button">Increase Damage (200 points)</button>
             <button id="show-leaderboard-button">Show Leaderboard</button>
         </div>
+
+        <div id="leaderboard"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
