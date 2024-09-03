@@ -1,15 +1,13 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    font-family: Arial, sans-serif;
+    text-align: center;
     background-color: #f0f0f0;
     margin: 0;
-    font-family: Arial, sans-serif;
+    padding: 20px;
 }
 
 #game-container {
-    text-align: center;
+    display: inline-block;
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
@@ -17,26 +15,11 @@ body {
 }
 
 #character {
-    font-size: 50px;
+    font-size: 100px;
     margin: 20px 0;
 }
 
-#attack-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#score {
-    margin-top: 20px;
-    font-size: 18px;
-}
-
-#boost-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
+#attack-button,
 #boost-button {
     padding: 10px 20px;
     font-size: 16px;
@@ -44,8 +27,16 @@ body {
     margin: 5px;
 }
 
-#boost-active {
+#score, #will, #boost-active {
+    font-size: 18px;
     margin-top: 10px;
-    font-size: 16px;
+}
+
+#boost-container {
+    margin-top: 20px;
+}
+
+#boost-active-status {
     color: red;
 }
+

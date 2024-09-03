@@ -4,22 +4,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const characterElement = document.getElementById('character');
     const boostButton = document.getElementById('boost-button');
     const boostActiveStatus = document.getElementById('boost-active-status');
+    const willValue = document.getElementById('will-value');
+    const gameContainer = document.getElementById('game-container');
 
     let score = 0;
     let characterIndex = 0;
     let boostActive = false;
     let boostRemainingClicks = 0;
+    let will = 1000;
+    let level = 1;
 
     const characters = [
-        { emoji: '😈', health: 100, name: 'Demon' },
-        { emoji: '👹', health: 200, name: 'Ogre' },
-        { emoji: '👽', health: 300, name: 'Alien' }
+        { emoji: '😈', baseHealth: 100, name: 'Demon' },
+        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
+        { emoji: '👽', baseHealth: 300, name: 'Alien' }
     ];
 
-    let currentHealth = characters[characterIndex].health;
+    let currentHealth = characters[characterIndex].baseHealth;
 
     function updateCharacter() {
         characterElement.textContent = characters[characterIndex].emoji;
+        currentHealth = characters[characterIndex].baseHealth * level; // Increase health by level
     }
 
     function updateBoostStatus() {
@@ -27,31 +32,53 @@ document.addEventListener('DOMContentLoaded', (event) => {
         boostActiveStatus.style.color = boostActive ? 'green' : 'red';
     }
 
-    attackButton.addEventListener('click', () => {
-        if (currentHealth > 0) {
-            let pointsToAdd = 10;
+    function updateWill() {
+        willValue.textContent = will;
+    }
 
-            if (boostActive) {
-                pointsToAdd *= 2;  // Double the points if boost is active
-                boostRemainingClicks--;
-                if (boostRemainingClicks <= 0) {
-                    boostActive = false;
-                    updateBoostStatus();
-                }
-            }
+    function replenishWill() {
+        if (will < 1000) {
+            will++;
+            updateWill();
+        }
+    }
 
-            currentHealth -= pointsToAdd;
-            score += pointsToAdd;
-            scoreValue.textContent = score;
+    function nextLevel() {
+        level++;
+        if (level > 30) {
+            alert('Congratulations! You have completed all 30 levels!');
+            level = 30; // Cap the level at 30
         } else {
-            characterIndex++;
-            if (characterIndex < characters.length) {
-                currentHealth = characters[characterIndex].health;
-                updateCharacter();
+            characterIndex = (characterIndex + 1) % characters.length; // Loop through characters
+            updateCharacter();
+        }
+    }
+
+    // Allow clicking anywhere on the screen to attack
+    gameContainer.addEventListener('click', () => {
+        if (will > 0) { // Check if the player has enough Will
+            if (currentHealth > 0) {
+                let pointsToAdd = 10;
+                will--; // Reduce Will by 1 for each click
+                updateWill();
+
+                if (boostActive) {
+                    pointsToAdd *= 2; // Double the points if boost is active
+                    boostRemainingClicks--;
+                    if (boostRemainingClicks <= 0) {
+                        boostActive = false;
+                        updateBoostStatus();
+                    }
+                }
+
+                currentHealth -= pointsToAdd;
+                score += pointsToAdd;
+                scoreValue.textContent = score;
             } else {
-                alert('Congratulations! You have defeated all characters!');
-                updateLeaderboard(); // Assuming you have the leaderboard function implemented
+                nextLevel();
             }
+        } else {
+            alert('Out of Will! Wait for it to replenish.');
         }
     });
 
@@ -67,4 +94,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize the game state
     updateCharacter();
     updateBoostStatus();
+    updateWill();
+
+    // Set up Will replenishment every second
+    setInterval(replenishWill, 1000);
 });
