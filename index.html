@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Clicker Game</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-database-compat.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -15,36 +13,39 @@
         <div id="character">😈</div>
         <button id="attack-button">Attack</button>
         <div id="score">Score: <span id="score-value">0</span></div>
-        <div id="points">Points: <span id="points-value">0</span></div>
         <div id="will">Will: <span id="will-value">1000</span></div>
         <div id="boost-container">
             <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
-            <div id="boost-active">Boost Active: <span id="boost-active-status">No</span></div>
+            <div>Boost Active: <span id="boost-active-status">No</span></div>
         </div>
-        <button id="replenish-will-button">Replenish Will (Cost: 100 points)</button>
-        <button id="increase-damage-button">Increase Damage (Cost: 200 points)</button>
-        <button id="show-leaderboard-button">Show Leaderboard</button>
-        <button id="wallet-button">Wallet</button> <!-- Wallet Button -->
+        <div id="points">Points: <span id="points-value">0</span></div>
+        <button id="replenish-will-button">Replenish Will (100 Points)</button>
+        <button id="increase-damage-button">Increase Damage (200 Points)</button>
+        <button id="show-leaderboard-button">Leaderboard</button>
+        <button id="wallet-button">Wallet</button>
+    </div>
 
-        <!-- Leaderboard Section -->
-        <div id="leaderboard" style="display:none;">
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-list"></ul>
-            <div id="name-change-container" style="display:none;">
-                <input type="text" id="player-name-input" placeholder="Enter new player name">
-                <button id="save-name-button">Save Name</button>
-            </div>
-        </div>
-
-        <!-- Wallet Section -->
-        <div id="wallet-section" style="display:none;"> <!-- Wallet Section -->
-            <h2>Wallet</h2>
-            <p>Your Points: <span id="wallet-points-value">0</span></p>
-            <p>Congratulations, your points equate to: <span id="rigged-tokens-value">0</span> $RIGGED tokens</p>
-            <button id="claim-rigged-button" disabled>Claim $RIGGED</button>
-            <button id="burn-rigged-button" disabled>Burn $RIGGED</button>
-            <input type="text" id="wallet-address-input" placeholder="Enter your Base network wallet address">
+    <!-- Wallet Section -->
+    <div id="wallet-section" style="display: none;">
+        <h2>Wallet</h2>
+        <p>Total Points: <span id="wallet-points-value">0</span></p>
+        <p>$RIGGED Tokens: <span id="rigged-tokens-value">0.00</span></p>
+        <button id="claim-rigged-button">Claim $RIGGED</button>
+        <button id="burn-rigged-button">Burn $RIGGED</button>
+        <div>
+            <input type="text" id="wallet-address-input" placeholder="Enter Wallet Address">
             <button id="save-wallet-button">Save Wallet Address</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div id="leaderboard" style="display: none;">
+        <h2>Leaderboard</h2>
+        <ul id="leaderboard-list"></ul>
+        <button id="clear-leaderboard-button">Clear Leaderboard</button>
+        <div id="name-change-container">
+            <input type="text" id="player-name-input" placeholder="Enter New Name">
+            <button id="save-name-button">Save Name</button>
         </div>
     </div>
 </body>
