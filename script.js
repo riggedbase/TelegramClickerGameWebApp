@@ -121,13 +121,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
 
                 currentHealth -= damage;
-                score += damage;  // Update score correctly
+                score += damage;
                 points += damage;
                 updatePoints();
                 updateScore();
 
                 if (currentHealth <= 0) {
-                    addOrUpdateScoreInLeaderboard(playerName, score); // Update leaderboard when character is defeated
+                    addOrUpdateScoreInLeaderboard(playerName, score);
                     nextLevel();
                 }
             }
@@ -158,7 +158,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         handleAttack(1);
     });
 
-    boostButton.addEventListener('click', () => {
+    boostButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         if (points >= 50) {
             points -= 50;
             boostActive = true;
@@ -170,7 +171,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    replenishWillButton.addEventListener('click', () => {
+    replenishWillButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         if (points >= 100) {
             points -= 100;
             will = Math.min(will + 50, 1000);
@@ -181,7 +183,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    increaseDamageButton.addEventListener('click', () => {
+    increaseDamageButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         if (points >= 200) {
             points -= 200;
             damageMultiplier++;
@@ -206,7 +209,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         playerName = playerNameInput.value;
         localStorage.setItem('playerName', playerName);
         alert('Name updated successfully!');
-        addOrUpdateScoreInLeaderboard(playerName, score); // Update leaderboard after name change
+        addOrUpdateScoreInLeaderboard(playerName, score);
     });
 
     saveWalletButton.addEventListener('click', () => {
@@ -218,10 +221,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     claimRiggedButton.addEventListener('click', () => {
         if (walletAddress && points > 0) {
-            points = 0;  // Reset points after claiming tokens
+            points = 0; 
             updatePoints();
             alert('Your $RIGGED tokens have been claimed and sent to your wallet!');
-            claimRiggedButton.disabled = true; // Disable button after claiming
+            claimRiggedButton.disabled = true; 
         } else {
             alert('Please enter a wallet address and earn points to claim tokens.');
         }
@@ -245,7 +248,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     function updateClaimAndBurnButtons() {
-        burnRiggedButton.disabled = points <= 0; // Burn button enabled when points > 0
+        burnRiggedButton.disabled = points <= 0; 
         claimRiggedButton.disabled = walletAddress === '' || points <= 0;
     }
 
