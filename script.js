@@ -7,7 +7,7 @@ const firebaseConfig = {
   messagingSenderId: "492830453182",
   appId: "1:492830453182:web:3050eafa48fea21e145def",
   measurementId: "G-NNKC4YWY5R",
-  databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com" // Added this line
+  databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
@@ -15,31 +15,29 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM fully loaded");
-
     // Game elements
-    const characterImg = document.getElementById('character');
-    const characterName = document.getElementById('character-name');
+    const characterElement = document.getElementById('character');
+    const characterNameElement = document.getElementById('character-name');
     const healthFill = document.getElementById('health-fill');
-    const currentHealth = document.getElementById('current-health');
-    const maxHealth = document.getElementById('max-health');
-    const attackButton = document.getElementById('attack-button');
+    const currentHealthElement = document.getElementById('current-health');
+    const maxHealthElement = document.getElementById('max-health');
     const scoreElement = document.getElementById('score');
     const pointsElement = document.getElementById('points');
     const willElement = document.getElementById('will');
     const levelElement = document.getElementById('level');
     const boostButton = document.getElementById('boost-button');
+    const boostActiveElement = document.getElementById('boost-active');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
 
     // Game variables
-    let score = 400;
-    let points = 400;
-    let will = 960;
+    let score = 0;
+    let points = 0;
+    let will = 1000;
     let level = 1;
     let health = 100;
-    let maxHealthValue = 100;
+    let maxHealth = 100;
     let damagePerClick = 1;
     let boostActive = false;
     let boostRemainingClicks = 0;
@@ -47,28 +45,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let playerKey = null;
 
     const characters = [
-        { image: 'demon.png', baseHealth: 100, name: 'Demon' },
-        { image: 'ogre.png', baseHealth: 200, name: 'Ogre' },
-        { image: 'alien.png', baseHealth: 300, name: 'Alien' },
-        { image: 'dragon.png', baseHealth: 400, name: 'Dragon' },
-        { image: 'wizard.png', baseHealth: 500, name: 'Wizard' }
+        { emoji: '😈', baseHealth: 100, name: 'Demon' },
+        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
+        { emoji: '👽', baseHealth: 300, name: 'Alien' },
+        { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
+        { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
     ];
     let characterIndex = 0;
 
     function updateDisplay() {
-        characterImg.src = characters[characterIndex].image;
-        characterName.textContent = characters[characterIndex].name;
-        currentHealth.textContent = health;
-        maxHealth.textContent = maxHealthValue;
-        healthFill.style.width = `${(health / maxHealthValue) * 100}%`;
+        characterElement.textContent = characters[characterIndex].emoji;
+        characterNameElement.textContent = characters[characterIndex].name;
+        currentHealthElement.textContent = health;
+        maxHealthElement.textContent = maxHealth;
+        healthFill.style.width = `${(health / maxHealth) * 100}%`;
         scoreElement.textContent = score;
         pointsElement.textContent = points;
         willElement.textContent = will;
         levelElement.textContent = level;
+        boostActiveElement.textContent = boostActive ? 'Yes' : 'No';
     }
 
-    function handleAttack() {
-        console.log("Attack button clicked");
+    function handleClick() {
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
             health -= damage;
@@ -97,8 +95,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (characterIndex === 0) {
             level++;
         }
-        maxHealthValue = characters[characterIndex].baseHealth * level;
-        health = maxHealthValue;
+        maxHealth = characters[characterIndex].baseHealth * level;
+        health = maxHealth;
     }
 
     function activateBoost() {
@@ -137,7 +135,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function showLeaderboard() {
-        console.log("Show leaderboard clicked");
         const leaderboardElement = document.getElementById('leaderboard');
         leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
         database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
@@ -154,11 +151,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Event listeners
-    attackButton.addEventListener('click', handleAttack);
-    boostButton.addEventListener('click', activateBoost);
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', showLeaderboard);
+    document.getElementById('game-container').addEventListener('click', handleClick);
+    boostButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        activateBoost();
+    });
+    replenishWillButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        replenishWill();
+    });
+    increaseDamageButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        increaseDamage();
+    });
+    showLeaderboardButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showLeaderboard();
+    });
 
     // Initialize game
     updateDisplay();
