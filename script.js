@@ -82,7 +82,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     gameContainer.addEventListener('touchstart', (event) => {
-        const numTouches = event.touches.length; // Number of fingers touching the screen
+        // Prevents duplicate touchstart events
+        event.preventDefault();
+        const numTouches = event.changedTouches.length; // Correctly counts number of new touches
         handleAttack(numTouches);
     });
 
@@ -105,6 +107,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     updateBoostStatus();
     updateWill();
 
-    // Set up Will replenishment every second
-    setInterval(replenishWill, 1000);
+    // Set up Will replenishment every two seconds (2000 milliseconds)
+    setInterval(replenishWill, 2000);
 });
