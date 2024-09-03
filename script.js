@@ -15,6 +15,8 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM fully loaded");
+
     // Game elements
     const characterElement = document.getElementById('character');
     const characterNameElement = document.getElementById('character-name');
@@ -30,6 +32,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+
+    // Log which elements were not found
+    console.log("Elements not found:", {
+        characterElement: !characterElement,
+        characterNameElement: !characterNameElement,
+        healthFill: !healthFill,
+        currentHealthElement: !currentHealthElement,
+        maxHealthElement: !maxHealthElement,
+        scoreElement: !scoreElement,
+        pointsElement: !pointsElement,
+        willElement: !willElement,
+        levelElement: !levelElement,
+        boostButton: !boostButton,
+        boostActiveElement: !boostActiveElement,
+        replenishWillButton: !replenishWillButton,
+        increaseDamageButton: !increaseDamageButton,
+        showLeaderboardButton: !showLeaderboardButton
+    });
 
     // Game variables
     let score = 0;
@@ -54,19 +74,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let characterIndex = 0;
 
     function updateDisplay() {
-        characterElement.textContent = characters[characterIndex].emoji;
-        characterNameElement.textContent = characters[characterIndex].name;
-        currentHealthElement.textContent = health;
-        maxHealthElement.textContent = maxHealth;
-        healthFill.style.width = `${(health / maxHealth) * 100}%`;
-        scoreElement.textContent = score;
-        pointsElement.textContent = points;
-        willElement.textContent = will;
-        levelElement.textContent = level;
-        boostActiveElement.textContent = boostActive ? 'Yes' : 'No';
+        console.log("Updating display");
+        if (characterElement) characterElement.textContent = characters[characterIndex].emoji;
+        if (characterNameElement) characterNameElement.textContent = characters[characterIndex].name;
+        if (currentHealthElement) currentHealthElement.textContent = health;
+        if (maxHealthElement) maxHealthElement.textContent = maxHealth;
+        if (healthFill) healthFill.style.width = `${(health / maxHealth) * 100}%`;
+        if (scoreElement) scoreElement.textContent = score;
+        if (pointsElement) pointsElement.textContent = points;
+        if (willElement) willElement.textContent = will;
+        if (levelElement) levelElement.textContent = level;
+        if (boostActiveElement) boostActiveElement.textContent = boostActive ? 'Yes' : 'No';
     }
 
     function handleClick() {
+        console.log("Click handled");
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
             health -= damage;
@@ -91,6 +113,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function nextCharacter() {
+        console.log("Moving to next character");
         characterIndex = (characterIndex + 1) % characters.length;
         if (characterIndex === 0) {
             level++;
@@ -100,6 +123,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function activateBoost() {
+        console.log("Activating boost");
         if (points >= 50 && !boostActive) {
             points -= 50;
             boostActive = true;
@@ -109,6 +133,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function replenishWill() {
+        console.log("Replenishing will");
         if (points >= 100) {
             points -= 100;
             will = 1000;
@@ -117,6 +142,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function increaseDamage() {
+        console.log("Increasing damage");
         if (points >= 200) {
             points -= 200;
             damagePerClick++;
@@ -125,6 +151,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
+        console.log("Updating leaderboard");
         if (playerKey) {
             database.ref('leaderboard/' + playerKey).update({ score: score });
         } else {
@@ -135,36 +162,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function showLeaderboard() {
+        console.log("Showing leaderboard");
         const leaderboardElement = document.getElementById('leaderboard');
-        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-            const leaderboardData = snapshot.val();
-            if (leaderboardData) {
-                const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
-                sortedLeaderboard.forEach((entry) => {
-                    leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
-                });
-            } else {
-                leaderboardElement.innerHTML += '<p>No scores yet</p>';
-            }
-        });
+        if (leaderboardElement) {
+            leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+            database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+                const leaderboardData = snapshot.val();
+                if (leaderboardData) {
+                    const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
+                    sortedLeaderboard.forEach((entry) => {
+                        leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
+                    });
+                } else {
+                    leaderboardElement.innerHTML += '<p>No scores yet</p>';
+                }
+            });
+        } else {
+            console.log("Leaderboard element not found");
+        }
     }
 
     // Event listeners
-    document.getElementById('game-container').addEventListener('click', handleClick);
-    boostButton.addEventListener('click', (e) => {
+    if (document.getElementById('game-container')) {
+        document.getElementById('game-container').addEventListener('click', handleClick);
+    } else {
+        console.log("Game container not found");
+    }
+    if (boostButton) boostButton.addEventListener('click', (e) => {
         e.stopPropagation();
         activateBoost();
     });
-    replenishWillButton.addEventListener('click', (e) => {
+    if (replenishWillButton) replenishWillButton.addEventListener('click', (e) => {
         e.stopPropagation();
         replenishWill();
     });
-    increaseDamageButton.addEventListener('click', (e) => {
+    if (increaseDamageButton) increaseDamageButton.addEventListener('click', (e) => {
         e.stopPropagation();
         increaseDamage();
     });
-    showLeaderboardButton.addEventListener('click', (e) => {
+    if (showLeaderboardButton) showLeaderboardButton.addEventListener('click', (e) => {
         e.stopPropagation();
         showLeaderboard();
     });
