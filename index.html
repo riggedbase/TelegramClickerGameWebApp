@@ -4,14 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clicker Game</title>
+    <style>
+        #health-bar {
+            width: 200px;
+            height: 20px;
+            background-color: #ddd;
+        }
+        #health-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
     <div id="game-container">
         <h1>Clicker Game</h1>
         <div id="character">😈</div>
+        <div id="character-name">Demon</div>
+        <div id="health-bar"><div id="health-fill"></div></div>
+        <div>Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
         <div>Score: <span id="score">0</span></div>
+        <div>Points: <span id="points">0</span></div>
+        <div>Will: <span id="will">1000</span></div>
+        <div>Level: <span id="level">1</span></div>
+        <button id="replenish-will-button">Replenish Will (100 points)</button>
+        <button id="increase-damage-button">Increase Damage (200 points)</button>
+        <button id="show-leaderboard-button">Show Leaderboard</button>
+        <div id="leaderboard"></div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
