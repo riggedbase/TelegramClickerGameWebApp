@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const database = firebase.database();
 
     // Game elements
-    const gameArea = document.getElementById('game-area');
     const characterElement = document.getElementById('character');
     const characterNameElement = document.getElementById('character-name');
     const currentHealthElement = document.getElementById('current-health');
@@ -19,8 +18,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const pointsValue = document.getElementById('points-value');
     const willValue = document.getElementById('will-value');
     const levelValue = document.getElementById('level-value');
+    const attackButton = document.getElementById('attack-button');
     const boostButton = document.getElementById('boost-button');
-    const boostActiveStatus = document.getElementById('boost-active-status');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
@@ -30,11 +29,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const saveNameButton = document.getElementById('save-name-button');
 
     // Game variables
-    let score = 0;
-    let points = 0;
-    let will = 1000;
+    let score = 400;
+    let points = 400;
+    let will = 960;
     let level = 1;
-    let currentHealth = 100;
+    let currentHealth = 0;
     let maxHealth = 100;
     let damagePerClick = 1;
     let boostActive = false;
@@ -43,11 +42,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let playerKey = null;
 
     const characters = [
-        { emoji: '😈', baseHealth: 100, name: 'Demon' },
-        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
-        { emoji: '👽', baseHealth: 300, name: 'Alien' },
-        { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
-        { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
+        { image: 'demon.png', baseHealth: 100, name: 'Demon' },
+        { image: 'ogre.png', baseHealth: 200, name: 'Ogre' },
+        { image: 'alien.png', baseHealth: 300, name: 'Alien' },
+        { image: 'dragon.png', baseHealth: 400, name: 'Dragon' },
+        { image: 'wizard.png', baseHealth: 500, name: 'Wizard' }
     ];
     let characterIndex = 0;
 
@@ -59,11 +58,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         currentHealthElement.textContent = currentHealth;
         maxHealthElement.textContent = maxHealth;
         healthFillElement.style.width = `${(currentHealth / maxHealth) * 100}%`;
-        characterElement.textContent = characters[characterIndex].emoji;
+        characterElement.src = characters[characterIndex].image;
         characterNameElement.textContent = characters[characterIndex].name;
     }
 
-    function handleClick() {
+    function handleAttack() {
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
             currentHealth -= damage;
@@ -76,7 +75,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 boostRemainingClicks--;
                 if (boostRemainingClicks <= 0) {
                     boostActive = false;
-                    boostActiveStatus.textContent = 'No';
                 }
             }
 
@@ -103,7 +101,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             points -= 50;
             boostActive = true;
             boostRemainingClicks = 10;
-            boostActiveStatus.textContent = 'Yes';
             updateDisplay();
         }
     }
@@ -162,7 +159,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Event listeners
-    gameArea.addEventListener('click', handleClick);
+    attackButton.addEventListener('click', handleAttack);
     boostButton.addEventListener('click', activateBoost);
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
