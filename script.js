@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const database = firebase.database();
 
     const scoreValue = document.getElementById('score-value');
-    const pointsValue = document.getElementById('points-value'); // Points value element
+    const pointsValue = document.getElementById('points-value');
     const characterElement = document.getElementById('character');
     const boostButton = document.getElementById('boost-button');
     const boostActiveStatus = document.getElementById('boost-active-status');
@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
-    const walletButton = document.getElementById('wallet-button'); // Wallet Button
+    const walletButton = document.getElementById('wallet-button');
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
     const nameChangeContainer = document.getElementById('name-change-container');
-    const walletSection = document.getElementById('wallet-section'); // Wallet Section
+    const walletSection = document.getElementById('wallet-section');
     const walletPointsValue = document.getElementById('wallet-points-value');
     const riggedTokensValue = document.getElementById('rigged-tokens-value');
     const claimRiggedButton = document.getElementById('claim-rigged-button');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const saveWalletButton = document.getElementById('save-wallet-button');
 
     let score = 0;
-    let points = 0; // New variable for points (currency)
+    let points = 0;
     let characterIndex = 0;
     let boostActive = false;
     let boostRemainingClicks = 0;
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damageMultiplier = 1;
     let playerName = "Player1";
     let playerKey = null;
-    let walletAddress = localStorage.getItem('walletAddress') || ''; // Load from local storage
+    let walletAddress = localStorage.getItem('walletAddress') || '';
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -74,9 +74,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updatePoints() {
-        pointsValue.textContent = points; // Update points display
-        walletPointsValue.textContent = points; // Update wallet points display
-        riggedTokensValue.textContent = (points / 100).toFixed(2); // Example conversion rate to $RIGGED
+        pointsValue.textContent = points;
+        walletPointsValue.textContent = points;
+        riggedTokensValue.textContent = (points / 100).toFixed(2);
     }
 
     function replenishWill() {
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 currentHealth -= pointsToAdd;
                 score += pointsToAdd;
-                points += pointsToAdd; // Add points earned to points variable
+                points += pointsToAdd;
                 updatePoints();
 
                 if (currentHealth <= 0) {
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     gameContainer.addEventListener('click', (event) => {
         if (event.target === gameContainer || event.target === characterElement) {
-            handleAttack(1); // Register click as attack
+            handleAttack(1);
         }
     });
 
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             points -= 50;
             boostActive = true;
             boostRemainingClicks = 10;
-            updatePoints(); // Update points display
+            updatePoints();
             updateBoostStatus();
             alert('Boost activated! You now earn double points for 10 clicks.');
         } else if (boostActive) {
@@ -188,14 +188,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showLeaderboardButton.addEventListener('click', () => {
         leaderboard.style.display = 'block';
         nameChangeContainer.style.display = 'block';
-        walletSection.style.display = 'none'; // Hide wallet section
+        walletSection.style.display = 'none';
         updateLeaderboard();
     });
 
-    walletButton.addEventListener('click', (event) => { 
-        event.stopPropagation(); // Prevent event propagation
+    walletButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         walletSection.style.display = 'block';
-        leaderboard.style.display = 'none'; // Hide leaderboard section
+        leaderboard.style.display = 'none';
     });
 
     saveNameButton.addEventListener('click', () => {
@@ -212,11 +212,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    saveWalletButton.addEventListener('click', () => { 
+    saveWalletButton.addEventListener('click', () => {
         const address = walletAddressInput.value.trim();
         if (address) {
             walletAddress = address;
-            localStorage.setItem('walletAddress', walletAddress); // Save to local storage
+            localStorage.setItem('walletAddress', walletAddress);
             alert('Wallet address saved successfully!');
             updateClaimAndBurnButtons();
         } else {
@@ -225,8 +225,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     function updateClaimAndBurnButtons() {
-        claimRiggedButton.disabled = walletAddress.length === 0; // Enable claim button only if wallet address is present
-        burnRiggedButton.disabled = false; // Always enable burn button
+        claimRiggedButton.disabled = walletAddress.length === 0;
+        burnRiggedButton.disabled = false;
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
