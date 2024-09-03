@@ -32,8 +32,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const characterElement = document.getElementById('character');
     const attackButton = document.getElementById('attack-button');
     const boostButton = document.getElementById('boost-button');
-    const replenishWillButton = document.getElementById('replenish-will-button');
-    const increaseDamageButton = document.getElementById('increase-damage-button');
     const walletButton = document.getElementById('wallet-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
     const saveNameButton = document.getElementById('save-name-button');
@@ -47,8 +45,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const nameChangeContainer = document.getElementById('name-change-container');
     const playerNameInput = document.getElementById('player-name-input');
     const walletAddressInput = document.getElementById('wallet-address-input');
+    const riggedTokenElement = document.getElementById('rigged-token-value'); // Added to prevent null error
 
-    // Initialize scores and points
     function updateScore() {
         document.getElementById('score-value').textContent = score;
     }
@@ -137,7 +135,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updateRiggedTokens() {
-        const riggedTokenElement = document.getElementById('rigged-token-value');
         const riggedTokens = Math.floor(points / 100);
         riggedTokenElement.textContent = riggedTokens;
     }
@@ -217,4 +214,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     updateBoostStatus();
     updateClaimAndBurnButtons();
     updateLeaderboard();
+
+    setInterval(replenishWill, 2000);  // Replenish Will every 2 seconds
 });
