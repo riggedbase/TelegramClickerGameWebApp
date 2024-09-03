@@ -83,8 +83,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             updateScore();
             updatePoints();
             updateWill();
-            addOrUpdateScoreInLeaderboard(playerName, score);
-            updateCharacter(); // Call updateCharacter here to update the character after each attack
+            updateCharacter();  // Check if the character needs to change
+            addOrUpdateScoreInLeaderboard(playerName, score);  // Update the leaderboard after score update
         } else {
             alert('You have run out of Will! Wait for it to replenish.');
         }
@@ -144,11 +144,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function updateCharacter() {
-        if (score >= characterHealth) {
+        if (points >= characterHealth) {
             level++;  // Go to the next level
             characterHealth += 100 * level;  // Increase health for the next character
             score = 0;  // Reset score for the new character
+            points = 0; // Reset points for the new character
             updateScore();
+            updatePoints();
             alert(`Character defeated! Moving to level ${level}. New character health: ${characterHealth}`);
         }
     }
