@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const boostActiveStatus = document.getElementById('boost-active-status');
     const willValue = document.getElementById('will-value');
     const gameContainer = document.getElementById('game-container');
+    const replenishWillButton = document.getElementById('replenish-will-button');
+    const increaseDamageButton = document.getElementById('increase-damage-button');
 
     let score = 0;
     let characterIndex = 0;
@@ -13,6 +15,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let will = 1000;
     let level = 1;
     let touchInProgress = false; // Track touch status to avoid double taps
+    let damageMultiplier = 1; // New variable to increase damage with boosters
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -57,7 +60,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function handleAttack(numClicks) {
         if (will >= numClicks) { // Check if the player has enough Will for all clicks
             if (currentHealth > 0) {
-                let pointsToAdd = 10 * numClicks; // Multiply points by the number of clicks
+                let pointsToAdd = 10 * numClicks * damageMultiplier; // Apply damage multiplier
                 will -= numClicks; // Reduce Will by the number of clicks
                 updateWill();
 
@@ -122,6 +125,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
             boostRemainingClicks = 10; // Boost lasts for 10 clicks
             updateBoostStatus();
             alert('Boost activated! Earn double points for the next 10 clicks!');
+        }
+    });
+
+    replenishWillButton.addEventListener('click', () => {
+        if (score >= 100) {
+            score -= 100;
+            will = 1000;
+            updateWill();
+            scoreValue.textContent = score;
+            alert('Will replenished to 1000!');
+        } else {
+            alert('Not enough points to replenish Will!');
+        }
+    });
+
+    increaseDamageButton.addEventListener('click', () => {
+        if (score >= 200) {
+            score -= 200;
+            damageMultiplier = 2; // Increase damage by 2x
+            scoreValue.textContent = score;
+            alert('Damage increased by 2x for the next level!');
+        } else {
+            alert('Not enough points to increase damage!');
         }
     });
 
