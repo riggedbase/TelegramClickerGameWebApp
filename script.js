@@ -33,24 +33,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
 
-    // Log which elements were not found
-    console.log("Elements not found:", {
-        characterElement: !characterElement,
-        characterNameElement: !characterNameElement,
-        healthFill: !healthFill,
-        currentHealthElement: !currentHealthElement,
-        maxHealthElement: !maxHealthElement,
-        scoreElement: !scoreElement,
-        pointsElement: !pointsElement,
-        willElement: !willElement,
-        levelElement: !levelElement,
-        boostButton: !boostButton,
-        boostActiveElement: !boostActiveElement,
-        replenishWillButton: !replenishWillButton,
-        increaseDamageButton: !increaseDamageButton,
-        showLeaderboardButton: !showLeaderboardButton
-    });
-
     // Game variables
     let score = 0;
     let points = 0;
@@ -74,7 +56,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let characterIndex = 0;
 
     function updateDisplay() {
-        console.log("Updating display");
         if (characterElement) characterElement.textContent = characters[characterIndex].emoji;
         if (characterNameElement) characterNameElement.textContent = characters[characterIndex].name;
         if (currentHealthElement) currentHealthElement.textContent = health;
@@ -123,21 +104,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function activateBoost() {
-        console.log("Activating boost");
+        console.log("Activating boost. Points:", points, "Boost active:", boostActive);
         if (points >= 50 && !boostActive) {
             points -= 50;
             boostActive = true;
             boostRemainingClicks = 10;
+            console.log("Boost activated. Remaining clicks:", boostRemainingClicks);
             updateDisplay();
+        } else {
+            console.log("Cannot activate boost. Not enough points or already active.");
         }
     }
 
     function replenishWill() {
-        console.log("Replenishing will");
+        console.log("Replenishing will. Points:", points, "Current will:", will);
         if (points >= 100) {
             points -= 100;
             will = 1000;
+            console.log("Will replenished. New will:", will);
             updateDisplay();
+        } else {
+            console.log("Cannot replenish will. Not enough points.");
         }
     }
 
@@ -176,6 +163,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 } else {
                     leaderboardElement.innerHTML += '<p>No scores yet</p>';
                 }
+                // Add current player's score
+                leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
             });
         } else {
             console.log("Leaderboard element not found");
@@ -188,22 +177,49 @@ document.addEventListener('DOMContentLoaded', (event) => {
     } else {
         console.log("Game container not found");
     }
-    if (boostButton) boostButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        activateBoost();
-    });
-    if (replenishWillButton) replenishWillButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        replenishWill();
-    });
-    if (increaseDamageButton) increaseDamageButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        increaseDamage();
-    });
-    if (showLeaderboardButton) showLeaderboardButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showLeaderboard();
-    });
+
+    console.log("Boost button:", boostButton);
+    console.log("Replenish Will button:", replenishWillButton);
+
+    if (boostButton) {
+        boostButton.addEventListener('click', (e) => {
+            console.log("Boost button clicked");
+            e.stopPropagation();
+            activateBoost();
+        });
+    } else {
+        console.log("Boost button not found");
+    }
+
+    if (replenishWillButton) {
+        replenishWillButton.addEventListener('click', (e) => {
+            console.log("Replenish Will button clicked");
+            e.stopPropagation();
+            replenishWill();
+        });
+    } else {
+        console.log("Replenish Will button not found");
+    }
+
+    if (increaseDamageButton) {
+        increaseDamageButton.addEventListener('click', (e) => {
+            console.log("Increase Damage button clicked");
+            e.stopPropagation();
+            increaseDamage();
+        });
+    } else {
+        console.log("Increase Damage button not found");
+    }
+
+    if (showLeaderboardButton) {
+        showLeaderboardButton.addEventListener('click', (e) => {
+            console.log("Show Leaderboard button clicked");
+            e.stopPropagation();
+            showLeaderboard();
+        });
+    } else {
+        console.log("Show Leaderboard button not found");
+    }
 
     // Initialize game
     updateDisplay();
