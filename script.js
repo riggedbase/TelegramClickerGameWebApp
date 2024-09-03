@@ -119,7 +119,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    boostButton.addEventListener('click', () => {
+    boostButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click from propagating
         if (!boostActive) {
             boostActive = true;
             boostRemainingClicks = 10; // Boost lasts for 10 clicks
@@ -128,7 +129,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    replenishWillButton.addEventListener('click', () => {
+    replenishWillButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click from propagating
         if (score >= 100) {
             score -= 100;
             will = 1000;
@@ -140,7 +142,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    increaseDamageButton.addEventListener('click', () => {
+    increaseDamageButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click from propagating
         if (score >= 200) {
             score -= 200;
             damageMultiplier = 2; // Increase damage by 2x
