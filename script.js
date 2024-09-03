@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
+    const playerNameInput = document.getElementById('player-name-input');
+    const saveNameButton = document.getElementById('save-name-button');
 
     let score = 0;
     let characterIndex = 0;
@@ -17,8 +19,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let boostRemainingClicks = 0;
     let will = 1000;
     let level = 1;
-    let touchInProgress = false; // Track touch status to avoid double taps
-    let damageMultiplier = 1; // Variable to increase damage with boosters
+    let touchInProgress = false;
+    let damageMultiplier = 1;
+    let playerName = "Player1"; // Default player name
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -30,7 +33,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateCharacter() {
         characterElement.textContent = characters[characterIndex].emoji;
-        currentHealth = characters[characterIndex].baseHealth * level; // Increase health by level
+        currentHealth = characters[characterIndex].baseHealth * level; 
     }
 
     function updateBoostStatus() {
@@ -53,23 +56,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
         level++;
         if (level > 30) {
             alert('Congratulations! You have completed all 30 levels!');
-            level = 30; // Cap the level at 30
+            level = 30; 
         } else {
-            characterIndex = (characterIndex + 1) % characters.length; // Loop through characters
+            characterIndex = (characterIndex + 1) % characters.length; 
             updateCharacter();
         }
     }
 
     function handleAttack(numClicks) {
-        if (will >= numClicks) { // Check if the player has enough Will for all clicks
+        if (will >= numClicks) { 
             if (currentHealth > 0) {
-                let pointsToAdd = 10 * numClicks * damageMultiplier; // Apply damage multiplier
-                will -= numClicks; // Reduce Will by the number of clicks
+                let pointsToAdd = 10 * numClicks * damageMultiplier;
+                will -= numClicks; 
                 updateWill();
 
                 if (boostActive) {
-                    pointsToAdd *= 2;  // Double the points if boost is active
-                    boostRemainingClicks -= numClicks; // Reduce boost clicks
+                    pointsToAdd *= 2;
+                    boostRemainingClicks -= numClicks;
                     if (boostRemainingClicks <= 0) {
                         boostActive = false;
                         updateBoostStatus();
@@ -87,54 +90,50 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    // Detect if the device is mobile
     const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (isMobileDevice) {
-        // Disable the click event on mobile devices
         gameContainer.removeEventListener('click', handleAttack);
     }
 
     gameContainer.addEventListener('touchstart', (event) => {
-        if (!touchInProgress) { // Check if a touch is already in progress
-            touchInProgress = true; // Set flag to indicate touch is in progress
-            const numTouches = event.changedTouches.length; // Correctly counts number of new touches
+        if (!touchInProgress) { 
+            touchInProgress = true; 
+            const numTouches = event.changedTouches.length; 
             handleAttack(numTouches);
         }
     });
 
     gameContainer.addEventListener('touchend', (event) => {
-        touchInProgress = false; // Reset the flag when touch ends
+        touchInProgress = false;
     });
 
     gameContainer.addEventListener('touchcancel', (event) => {
-        touchInProgress = false; // Reset the flag if touch is cancelled
+        touchInProgress = false;
     });
 
     gameContainer.addEventListener('touchmove', (event) => {
-        touchInProgress = false; // Reset the flag if touch moves
+        touchInProgress = false;
     });
 
-    // For mouse click support (e.g., on desktop)
     if (!isMobileDevice) {
         gameContainer.addEventListener('click', () => {
-            handleAttack(1); // Single click counts as one attack
+            handleAttack(1); 
         });
     }
 
-    // Update all button click handlers to prevent event propagation
     boostButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click from propagating
+        event.stopPropagation(); 
         if (!boostActive) {
             boostActive = true;
-            boostRemainingClicks = 10; // Boost lasts for 10 clicks
+            boostRemainingClicks = 10; 
             updateBoostStatus();
             alert('Boost activated! Earn double points for the next 10 clicks!');
         }
     });
 
     replenishWillButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click from propagating
+        event.stopPropagation(); 
         if (score >= 100) {
             score -= 100;
             will = 1000;
@@ -147,65 +146,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     increaseDamageButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click from propagating
+        event.stopPropagation(); 
         if (score >= 200) {
             score -= 200;
-            damageMultiplier = 2; // Increase damage by 2x
+            damageMultiplier += 1;
             scoreValue.textContent = score;
-            alert('Damage increased by 2x for the next level!');
+            alert('Damage increased!');
         } else {
             alert('Not enough points to increase damage!');
         }
     });
 
-    // Show leaderboard when button is clicked
     showLeaderboardButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click from propagating
-        leaderboard.style.display = 'block'; // Show leaderboard
-        updateLeaderboard(); // Fetch and display leaderboard data
+        event.stopPropagation(); 
+        leaderboard.style.display = 'block';
+        updateLeaderboard();
     });
 
-    // Initialize Firebase with your configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
-        authDomain: "rigged-clicker-game-1.firebaseapp.com",
-        projectId: "rigged-clicker-game-1",
-        storageBucket: "rigged-clicker-game-1.appspot.com",
-        messagingSenderId: "492830453182",
-        appId: "1:492830453182:web:3050eafa48fea21e145def",
-        measurementId: "G-NNKC4YWY5R"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    saveNameButton.addEventListener('click', (event) => {
+        event.stopPropagation(); 
+        const newName = playerNameInput.value.trim();
+        if (newName) {
+            playerName = newName;
+            alert(`Player name updated to: ${playerName}`);
+        } else {
+            alert('Please enter a valid name.');
+        }
+    });
 
-    // Function to update leaderboard
-    function updateLeaderboard() {
-        const leaderboardRef = database.ref('leaderboard');
-        leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
-            const leaderboardData = snapshot.val();
-            console.log('Fetched leaderboard data:', leaderboardData); // Log fetched data
-
-            if (leaderboardData) {
-                const sortedLeaderboard = [];
-                for (const id in leaderboardData) {
-                    sortedLeaderboard.push(leaderboardData[id]);
-                }
-                sortedLeaderboard.sort((a, b) => b.score - a.score);
-                leaderboardList.innerHTML = ''; // Clear the leaderboard list
-                sortedLeaderboard.forEach((entry) => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${entry.name}: ${entry.score}`;
-                    leaderboardList.appendChild(listItem);
-                });
-            } else {
-                leaderboardList.innerHTML = '<li>No scores available</li>'; // Display a message if no data
-            }
-        }, (error) => {
-            console.error('Error fetching leaderboard data:', error);
-        });
-    }
-
-    // Function to add player score to leaderboard
     function addScoreToLeaderboard(playerName, playerScore) {
         const leaderboardRef = database.ref('leaderboard');
         const newEntryRef = leaderboardRef.push();
@@ -219,32 +187,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // Example: Add Score and Update Leaderboard
-    function finishLevel() {
-        const playerName = "Player1"; // Placeholder for player name or ID
-        addScoreToLeaderboard(playerName, score); // Add score when level is finished
-        score = 0; // Reset score for new level (if desired)
-        updateLeaderboard(); // Update leaderboard immediately
+    function updateLeaderboard() {
+        const leaderboardRef = database.ref('leaderboard');
+        leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            console.log('Fetched leaderboard data:', leaderboardData); 
+
+            if (leaderboardData) {
+                const sortedLeaderboard = [];
+                for (const id in leaderboardData) {
+                    sortedLeaderboard.push(leaderboardData[id]);
+                }
+                sortedLeaderboard.sort((a, b) => b.score - a.score);
+                leaderboardList.innerHTML = ''; 
+                sortedLeaderboard.forEach((entry) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${entry.name}: ${entry.score}`;
+                    leaderboardList.appendChild(listItem);
+                });
+            } else {
+                leaderboardList.innerHTML = '<li>No scores available</li>'; 
+            }
+        }, (error) => {
+            console.error('Error fetching leaderboard data:', error);
+        });
     }
 
-    // Example function to call when player completes a level
-    function nextLevel() {
-        level++;
-        if (level > 30) {
-            alert('Congratulations! You have completed all 30 levels!');
-            level = 30; // Cap the level at 30
-        } else {
-            characterIndex = (characterIndex + 1) % characters.length; // Loop through characters
-            updateCharacter();
-            finishLevel(); // Call finishLevel to update leaderboard
-        }
-    }
-
-    // Initialize the game state
     updateCharacter();
     updateBoostStatus();
     updateWill();
 
-    // Set up Will replenishment every two seconds (2000 milliseconds)
     setInterval(replenishWill, 2000);
 });
