@@ -240,15 +240,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
         points = 0;  // Reset points after burning tokens
         updatePoints();
         alert('You have burned your $RIGGED tokens!');
+        burnRiggedButton.disabled = false; // Ensure button stays enabled
+    });
+
+    claimRiggedButton.addEventListener('click', () => {
+        if (walletAddress) {
+            alert('You have claimed your $RIGGED tokens!');
+            // Here you would typically make an API call to handle the claim
+        } else {
+            alert('Please enter a valid Base network wallet address.');
+        }
     });
 
     function updateClaimAndBurnButtons() {
-        claimRiggedButton.disabled = walletAddress.length === 0;
+        burnRiggedButton.disabled = points <= 0;
+        claimRiggedButton.disabled = walletAddress === '' || points <= 0;
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
         if (playerKey) {
-            database.ref('leaderboard/' + playerKey).update({ score: score });
+            database.ref('leaderboard/' + playerKey).update({ name: name, score: score });
         } else {
             const newEntryRef = database.ref('leaderboard').push();
             playerKey = newEntryRef.key;
