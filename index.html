@@ -5,35 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Clicker Game</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-database-compat.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
     <div id="game-container">
         <h1>Clicker Game</h1>
-        <div id="characters">
-            <div id="character-1" class="character active">😈</div>
-            <div id="character-2" class="character">👹</div>
-            <div id="character-3" class="character">👾</div>
-            <div id="character-4" class="character">👻</div>
-            <!-- Add more characters as needed -->
-        </div>
+        <div id="character">😈</div>
         <button id="attack-button">Attack</button>
         <div id="score">Score: <span id="score-value">0</span></div>
-        <div id="points">Points: <span id="points-value">0</span></div>
+        <div id="points">Points: <span id="points-value">0</span></div> <!-- Added points display -->
         <div id="will">Will: <span id="will-value">1000</span></div>
         <div id="boost-container">
             <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
             <div id="boost-active">Boost Active: <span id="boost-active-status">No</span></div>
         </div>
-        <button id="show-leaderboard-button">Leaderboard</button>
-        <button id="clear-leaderboard-button">Clear Leaderboard</button>
-        <div id="leaderboard" style="display: none;">
+        <button id="replenish-will-button">Replenish Will (Cost: 100 points)</button>
+        <button id="increase-damage-button">Increase Damage (Cost: 200 points)</button>
+        <button id="show-leaderboard-button">Show Leaderboard</button>
+        <div id="leaderboard" style="display:none;">
             <h2>Leaderboard</h2>
             <ul id="leaderboard-list"></ul>
-            <div id="name-change-container">
-                <input type="text" id="player-name-input" placeholder="Enter your name">
+            <div id="name-change-container" style="display:none;">
+                <input type="text" id="player-name-input" placeholder="Enter new player name">
                 <button id="save-name-button">Save Name</button>
             </div>
         </div>

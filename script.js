@@ -14,78 +14,59 @@ document.addEventListener('DOMContentLoaded', (event) => {
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Game variables
-    let score = 0;
-    let points = 0;
-    let will = 1000;
-    let boostActive = false;
-    let boostRemainingClicks = 0;
-    let damageMultiplier = 1;
-    let playerKey = null;
-    let playerName = localStorage.getItem('playerName') || "Player 1";
-    let walletAddress = localStorage.getItem('walletAddress') || "";
-    let characterHealth = 100;  // Initial character health
-    let level = 1;  // Start at level 1
-    const maxCharacters = 4;  // Total number of characters
-
-    // DOM elements
-    const charactersContainer = document.getElementById('characters');
-    const characterElements = document.getElementsByClassName('character');
-    const attackButton = document.getElementById('attack-button');
+    const scoreValue = document.getElementById('score-value');
+    const pointsValue = document.getElementById('points-value'); // Points value element
+    const characterElement = document.getElementById('character');
     const boostButton = document.getElementById('boost-button');
-    const walletButton = document.getElementById('wallet-button');
+    const boostActiveStatus = document.getElementById('boost-active-status');
+    const willValue = document.getElementById('will-value');
+    const gameContainer = document.getElementById('game-container');
+    const replenishWillButton = document.getElementById('replenish-will-button');
+    const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
-    const saveNameButton = document.getElementById('save-name-button');
-    const saveWalletButton = document.getElementById('save-wallet-button');
-    const claimRiggedButton = document.getElementById('claim-rigged-button');
-    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button');
-    const burnRiggedButton = document.getElementById('burn-rigged-button');
-    const walletSection = document.getElementById('wallet-section');
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
     const playerNameInput = document.getElementById('player-name-input');
-    const walletAddressInput = document.getElementById('wallet-address-input');
-    const riggedTokenElement = document.getElementById('rigged-token-value');
+    const saveNameButton = document.getElementById('save-name-button');
+    const nameChangeContainer = document.getElementById('name-change-container');
+    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button');
 
-    function updateScore() {
-        document.getElementById('score-value').textContent = score;
-    }
+    let score = 0;
+    let points = 0; // New variable for points (currency)
+    let characterIndex = 0;
+    let boostActive = false;
+    let boostRemainingClicks = 0;
+    let will = 1000;
+    let level = 1;
+    let touchInProgress = false;
+    let damageMultiplier = 1;
+    let playerName = "Player1";
+    let playerKey = null;
 
-    function updatePoints() {
-        document.getElementById('points-value').textContent = points;
-        document.getElementById('wallet-points-value').textContent = points;
-        updateRiggedTokens();
-    }
+    const characters = [
+        { emoji: '😈', baseHealth: 100, name: 'Demon' },
+        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
+        { emoji: '👽', baseHealth: 300, name: 'Alien' }
+    ];
 
-    function updateWill() {
-        document.getElementById('will-value').textContent = will;
+    let currentHealth = characters[characterIndex].baseHealth * level;
+
+    function updateCharacter() {
+        characterElement.textContent = characters[characterIndex].emoji;
+        currentHealth = characters[characterIndex].baseHealth * level;
     }
 
     function updateBoostStatus() {
-        document.getElementById('boost-active-status').textContent = boostActive ? 'Yes' : 'No';
+        boostActiveStatus.textContent = boostActive ? 'Yes' : 'No';
+        boostActiveStatus.style.color = boostActive ? 'green' : 'red';
     }
 
-    function handleAttack(multiplier) {
-        if (will > 0) {
-            const damage = 10 * multiplier * damageMultiplier;
-            points += damage;
-            will--;
-            score += damage;
+    function updateWill() {
+        willValue.textContent = will;
+    }
 
-            if (boostActive) {
-                boostRemainingClicks--;
-                if (boostRemainingClicks <= 0) {
-                    boostActive = false;
-                }
-                updateBoostStatus();
-            }
-            updateScore();
-            updatePoints();
-            updateWill();
-            checkCharacterProgression();
-        } else {
-            alert('You have run out of Will! Wait for it to replenish.');
-        }
+    function updatePoints() {
+        pointsValue.textContent = points; // Update points display
     }
 
     function replenishWill() {
@@ -95,9 +76,143 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    function nextLevel() {
+        level++;
+        if (level > 30) {
+            alert('Congratulations! You have completed all 30 levels!');
+            level = 30;
+        } else {
+            characterIndex = (characterIndex + 1) % characters.length;
+            updateCharacter();
+        }
+    }
+
+    function handleAttack(numClicks) {
+        if (will >= numClicks) {
+            if (currentHealth > 0) {
+                let pointsToAdd = 10 * numClicks * damageMultiplier;
+                will -= numClicks;
+                updateWill();
+
+                if (boostActive) {
+                    pointsToAdd *= 2;
+                    boostRemainingClicks -= numClicks;
+                    if (boostRemainingClicks <= 0) {
+                        boostActive = false;
+                        updateBoostStatus();
+                    }
+                }
+
+                currentHealth -= pointsToAdd;
+                score += pointsToAdd;
+                points += pointsToAdd; // Increase points
+                scoreValue.textContent = score;
+                updatePoints(); // Update points display
+            } else {
+                nextLevel();
+                addOrUpdateScoreInLeaderboard(playerName, score);
+            }
+        } else {
+            alert('Out of Will! Wait for it to replenish.');
+        }
+    }
+
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobileDevice) {
+        gameContainer.removeEventListener('click', handleAttack);
+    }
+
+    gameContainer.addEventListener('touchstart', (event) => {
+        if (!touchInProgress) {
+            touchInProgress = true;
+            const numTouches = event.changedTouches.length;
+            handleAttack(numTouches);
+        }
+    });
+
+    gameContainer.addEventListener('touchend', (event) => {
+        touchInProgress = false;
+    });
+
+    gameContainer.addEventListener('touchcancel', (event) => {
+        touchInProgress = false;
+    });
+
+    gameContainer.addEventListener('touchmove', (event) => {
+        touchInProgress = false;
+    });
+
+    if (!isMobileDevice) {
+        gameContainer.addEventListener('click', () => {
+            handleAttack(1);
+        });
+    }
+
+    boostButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (!boostActive) {
+            if (points >= 50) { // Assume boost costs 50 points
+                boostActive = true;
+                boostRemainingClicks = 10;
+                points -= 50; // Deduct points for boost
+                updatePoints(); // Update points display
+                updateBoostStatus();
+                alert('Boost activated! Earn double points for the next 10 clicks!');
+            } else {
+                alert('Not enough points to buy boost!');
+            }
+        }
+    });
+
+    replenishWillButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (points >= 100) { // Assume replenish will cost 100 points
+            points -= 100;
+            will = 1000;
+            updatePoints(); // Update points display
+            updateWill();
+            alert('Will replenished!');
+        } else {
+            alert('Not enough points to replenish will!');
+        }
+    });
+
+    increaseDamageButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (points >= 200) { // Assume increase damage costs 200 points
+            points -= 200;
+            damageMultiplier += 1; // Increase damage multiplier
+            updatePoints(); // Update points display
+            alert('Damage increased!');
+        } else {
+            alert('Not enough points to increase damage!');
+        }
+    });
+
+    showLeaderboardButton.addEventListener('click', () => {
+        leaderboard.style.display = 'block';
+        nameChangeContainer.style.display = 'block';
+        updateLeaderboard();
+    });
+
+    saveNameButton.addEventListener('click', () => {
+        const newName = playerNameInput.value.trim();
+        if (newName && newName !== playerName) {
+            playerName = newName;
+            if (playerKey) {
+                database.ref('leaderboard/' + playerKey).update({ name: playerName });
+            }
+            alert('Name updated successfully!');
+            playerNameInput.value = '';
+            nameChangeContainer.style.display = 'none';
+            updateLeaderboard();
+        }
+    });
+
     function addOrUpdateScoreInLeaderboard(name, score) {
         if (playerKey) {
-            database.ref('leaderboard/' + playerKey).update({ name: name, score: score });
+            database.ref('leaderboard/' + playerKey).update({ score: score });
         } else {
             const newEntryRef = database.ref('leaderboard').push();
             playerKey = newEntryRef.key;
@@ -109,6 +224,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const leaderboardRef = database.ref('leaderboard');
         leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
             const leaderboardData = snapshot.val();
+            console.log('Fetched leaderboard data:', leaderboardData);
+
             if (leaderboardData) {
                 const sortedLeaderboard = [];
                 for (const id in leaderboardData) {
@@ -129,97 +246,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    function updateClaimAndBurnButtons() {
-        claimRiggedButton.disabled = walletAddress === '';
-        burnRiggedButton.disabled = points <= 0;
-    }
-
-    function updateRiggedTokens() {
-        const riggedTokens = Math.floor(points / 100);
-        riggedTokenElement.textContent = riggedTokens;
-    }
-
-    function checkCharacterProgression() {
-        if (points >= characterHealth) {
-            level++;
-            if (level <= maxCharacters) {
-                // Move to next character
-                characterHealth += 100 * level;  // Increase character health for next level
-                document.querySelector('.character.active').classList.remove('active');
-                document.getElementById(`character-${level}`).classList.add('active');
-                points = 0;  // Reset points for new character
-                updatePoints();
-                alert('Character defeated! Moving to next level.');
-            } else {
-                alert('Congratulations! You have defeated all characters!');
-                // Optional: Reset or end game
-            }
-        }
-    }
-
-    // Event Listeners
-    attackButton.addEventListener('click', () => handleAttack(1));
-    document.addEventListener('click', (event) => {
-        if (!event.target.matches('#attack-button, #boost-button, #wallet-button, #show-leaderboard-button, #save-name-button, #save-wallet-button, #claim-rigged-button, #clear-leaderboard-button, #burn-rigged-button')) {
-            handleAttack(1);
-        }
-    });
-
-    boostButton.addEventListener('click', () => {
-        if (points >= 50 && !boostActive) {
-            points -= 50;
-            boostActive = true;
-            boostRemainingClicks = 10;
-            updateBoostStatus();
-            updatePoints();
-        } else {
-            alert('Not enough points or boost already active.');
-        }
-    });
-
-    saveWalletButton.addEventListener('click', () => {
-        walletAddress = walletAddressInput.value;
-        localStorage.setItem('walletAddress', walletAddress);
-        updateClaimAndBurnButtons();
-    });
-
-    showLeaderboardButton.addEventListener('click', () => {
-        leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
-        playerNameInput.value = playerName;
-    });
-
-    saveNameButton.addEventListener('click', () => {
-        playerName = playerNameInput.value;
-        localStorage.setItem('playerName', playerName);
-        addOrUpdateScoreInLeaderboard(playerName, score);
-    });
-
-    claimRiggedButton.addEventListener('click', () => {
-        alert('Rigged tokens claimed!');
-    });
-
-    clearLeaderboardButton.addEventListener('click', () => {
-        database.ref('leaderboard').remove().then(() => {
-            alert('Leaderboard cleared!');
-            updateLeaderboard();
-        }).catch((error) => {
-            console.error('Error clearing leaderboard:', error);
-        });
-    });
-
-    burnRiggedButton.addEventListener('click', () => {
-        points = 0;
-        updatePoints();
-        alert('Rigged tokens burned!');
-    });
-
-    // Initialize
-    updateScore();
-    updatePoints();
-    updateWill();
+    updateCharacter();
     updateBoostStatus();
-    updateClaimAndBurnButtons();
-    updateLeaderboard();
+    updateWill();
+    updatePoints();
 
-    setInterval(replenishWill, 2000);  // Replenish Will every 2 seconds
+    setInterval(replenishWill, 2000);
 });
