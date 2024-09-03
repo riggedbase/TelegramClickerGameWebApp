@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         { emoji: '👽', baseHealth: 300, name: 'Alien' }
     ];
 
-    let currentHealth = characters[characterIndex].baseHealth;
+    let currentHealth = characters[characterIndex].baseHealth * level;
 
     function updateCharacter() {
         characterElement.textContent = characters[characterIndex].emoji;
@@ -54,17 +54,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    // Allow clicking anywhere on the screen to attack
-    gameContainer.addEventListener('click', () => {
-        if (will > 0) { // Check if the player has enough Will
+    function handleAttack(numClicks) {
+        if (will >= numClicks) { // Check if the player has enough Will for all clicks
             if (currentHealth > 0) {
-                let pointsToAdd = 10;
-                will--; // Reduce Will by 1 for each click
+                let pointsToAdd = 10 * numClicks; // Multiply points by the number of clicks
+                will -= numClicks; // Reduce Will by the number of clicks
                 updateWill();
 
                 if (boostActive) {
-                    pointsToAdd *= 2; // Double the points if boost is active
-                    boostRemainingClicks--;
+                    pointsToAdd *= 2;  // Double the points if boost is active
+                    boostRemainingClicks -= numClicks; // Reduce boost clicks
                     if (boostRemainingClicks <= 0) {
                         boostActive = false;
                         updateBoostStatus();
@@ -80,6 +79,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         } else {
             alert('Out of Will! Wait for it to replenish.');
         }
+    }
+
+    gameContainer.addEventListener('touchstart', (event) => {
+        const numTouches = event.touches.length; // Number of fingers touching the screen
+        handleAttack(numTouches);
+    });
+
+    // For mouse click support (e.g., on desktop)
+    gameContainer.addEventListener('click', () => {
+        handleAttack(1); // Single click counts as one attack
     });
 
     boostButton.addEventListener('click', () => {
