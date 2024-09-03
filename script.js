@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let will = 1000;
     let level = 1;
     let touchInProgress = false; // Track touch status to avoid double taps
-    let damageMultiplier = 1; // New variable to increase damage with boosters
+    let damageMultiplier = 1; // Variable to increase damage with boosters
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -183,17 +183,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const leaderboardRef = database.ref('leaderboard');
         leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
             const leaderboardData = snapshot.val();
-            const sortedLeaderboard = [];
-            for (const id in leaderboardData) {
-                sortedLeaderboard.push(leaderboardData[id]);
+            console.log('Fetched leaderboard data:', leaderboardData); // Log fetched data
+
+            if (leaderboardData) {
+                const sortedLeaderboard = [];
+                for (const id in leaderboardData) {
+                    sortedLeaderboard.push(leaderboardData[id]);
+                }
+                sortedLeaderboard.sort((a, b) => b.score - a.score);
+                leaderboardList.innerHTML = ''; // Clear the leaderboard list
+                sortedLeaderboard.forEach((entry) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${entry.name}: ${entry.score}`;
+                    leaderboardList.appendChild(listItem);
+                });
+            } else {
+                leaderboardList.innerHTML = '<li>No scores available</li>'; // Display a message if no data
             }
-            sortedLeaderboard.sort((a, b) => b.score - a.score);
-            leaderboardList.innerHTML = ''; // Clear the leaderboard list
-            sortedLeaderboard.forEach((entry) => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${entry.name}: ${entry.score}`;
-                leaderboardList.appendChild(listItem);
-            });
+        }, (error) => {
+            console.error('Error fetching leaderboard data:', error);
         });
     }
 
@@ -204,6 +212,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         newEntryRef.set({
             name: playerName,
             score: playerScore
+        }).then(() => {
+            console.log(`Score added to Firebase for ${playerName}: ${playerScore}`);
+        }).catch((error) => {
+            console.error('Error adding score to Firebase:', error);
         });
     }
 

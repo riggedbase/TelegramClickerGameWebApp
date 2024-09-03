@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Clicker Game</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database-compat.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -21,16 +20,13 @@
             <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
             <div id="boost-active">Boost Active: <span id="boost-active-status">No</span></div>
         </div>
-        <div id="booster-buttons">
-            <button id="replenish-will-button">Replenish Will (Cost: 100 Points)</button>
-            <button id="increase-damage-button">Increase Damage (Cost: 200 Points)</button>
+        <button id="replenish-will-button">Replenish Will (100 Points)</button>
+        <button id="increase-damage-button">Increase Damage (200 Points)</button>
+        <button id="show-leaderboard-button">Show Leaderboard</button>
+        <div id="leaderboard" style="display:none;">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
         </div>
-    </div>
-    <!-- Leaderboard Button and Section -->
-    <button id="show-leaderboard-button">Show Leaderboard</button>
-    <div id="leaderboard" style="display: none;">
-        <h2>Leaderboard</h2>
-        <ul id="leaderboard-list"></ul>
     </div>
 </body>
 </html>
