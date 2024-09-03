@@ -1,25 +1,17 @@
-console.log("Script loaded");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker Game</title>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Clicker Game</h1>
+        <div id="character">😈</div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM fully loaded");
-
-    const gameContainer = document.getElementById('game-container');
-    const characterElement = document.getElementById('character');
-    const scoreElement = document.getElementById('score');
-    
-    let score = 0;
-
-    function handleClick() {
-        console.log("Click handled");
-        score += 1;
-        scoreElement.textContent = score;
-    }
-
-    if (gameContainer) {
-        gameContainer.addEventListener('click', handleClick);
-    } else {
-        console.log("Game container not found");
-    }
-
-    console.log("Game initialized");
-});
+    <script src="script.js"></script>
+</body>
+</html>
