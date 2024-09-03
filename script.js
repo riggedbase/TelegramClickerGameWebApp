@@ -26,10 +26,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let walletAddress = localStorage.getItem('walletAddress') || "";
     let characterHealth = 100;  // Initial character health
     let level = 1;  // Start at level 1
+    const maxCharacters = 4;  // Total number of characters
 
     // DOM elements
-    const gameContainer = document.getElementById('game-container');
-    const characterElement = document.getElementById('character');
+    const charactersContainer = document.getElementById('characters');
+    const characterElements = document.getElementsByClassName('character');
     const attackButton = document.getElementById('attack-button');
     const boostButton = document.getElementById('boost-button');
     const walletButton = document.getElementById('wallet-button');
@@ -42,10 +43,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const walletSection = document.getElementById('wallet-section');
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
-    const nameChangeContainer = document.getElementById('name-change-container');
     const playerNameInput = document.getElementById('player-name-input');
     const walletAddressInput = document.getElementById('wallet-address-input');
-    const riggedTokenElement = document.getElementById('rigged-token-value'); // Added to prevent null error
+    const riggedTokenElement = document.getElementById('rigged-token-value');
 
     function updateScore() {
         document.getElementById('score-value').textContent = score;
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function updatePoints() {
         document.getElementById('points-value').textContent = points;
         document.getElementById('wallet-points-value').textContent = points;
-        updateRiggedTokens(); // Call this function to update Rigged tokens
+        updateRiggedTokens();
     }
 
     function updateWill() {
@@ -68,9 +68,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function handleAttack(multiplier) {
         if (will > 0) {
             const damage = 10 * multiplier * damageMultiplier;
-            score += damage;
             points += damage;
             will--;
+            score += damage;
+
             if (boostActive) {
                 boostRemainingClicks--;
                 if (boostRemainingClicks <= 0) {
@@ -81,8 +82,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             updateScore();
             updatePoints();
             updateWill();
-            updateCharacter();  // Check if the character needs to change
-            addOrUpdateScoreInLeaderboard(playerName, score);  // Update the leaderboard after score update
+            checkCharacterProgression();
         } else {
             alert('You have run out of Will! Wait for it to replenish.');
         }
@@ -139,14 +139,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
         riggedTokenElement.textContent = riggedTokens;
     }
 
-    function updateCharacter() {
+    function checkCharacterProgression() {
         if (points >= characterHealth) {
             level++;
-            characterHealth += 100 * level;  // Increase character health for next level
-            score = 0;
-            points = 0;
-            updateScore();
-            updatePoints();
+            if (level <= maxCharacters) {
+                // Move to next character
+                characterHealth += 100 * level;  // Increase character health for next level
+                document.querySelector('.character.active').classList.remove('active');
+                document.getElementById(`character-${level}`).classList.add('active');
+                points = 0;  // Reset points for new character
+                updatePoints();
+                alert('Character defeated! Moving to next level.');
+            } else {
+                alert('Congratulations! You have defeated all characters!');
+                // Optional: Reset or end game
+            }
         }
     }
 
@@ -178,7 +185,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     showLeaderboardButton.addEventListener('click', () => {
         leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
-        nameChangeContainer.style.display = 'block';
         playerNameInput.value = playerName;
     });
 
