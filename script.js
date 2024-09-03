@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const leaderboardList = document.getElementById('leaderboard-list');
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
+    const nameChangeContainer = document.getElementById('name-change-container');
 
     let score = 0;
     let characterIndex = 0;
@@ -160,6 +161,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showLeaderboardButton.addEventListener('click', (event) => {
         event.stopPropagation(); 
         leaderboard.style.display = 'block';
+        nameChangeContainer.style.display = 'block'; // Show the name change input and button
         updateLeaderboard();
     });
 
