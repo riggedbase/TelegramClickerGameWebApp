@@ -9,37 +9,29 @@
 <body>
     <div id="game-container">
         <h1>Clicker Game</h1>
-
-        <div id="character-container">
-            <img id="character" src="demon.png" alt="Demon">
-            <div id="character-name">Demon</div>
-            <div id="health-bar">
-                <div id="health-fill"></div>
-            </div>
-            <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
+        
+        <img id="character" src="demon.png" alt="Demon">
+        <div id="character-name">Demon</div>
+        
+        <div id="health-bar">
+            <div id="health-fill"></div>
         </div>
-
+        <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
+        
         <button id="attack-button">Attack</button>
-
+        
         <div id="stats">
-            <div>Score: <span id="score-value">400</span></div>
-            <div>Points: <span id="points-value">400</span></div>
-            <div>Will: <span id="will-value">960</span></div>
-            <div>Level: <span id="level-value">1</span></div>
+            <span>Score: <span id="score">400</span></span>
+            <span>Points: <span id="points">400</span></span>
+            <span>Will: <span id="will">960</span></span>
+            <span>Level: <span id="level">1</span></span>
         </div>
-
+        
         <div id="actions">
             <button id="boost-button">Buy Boost (50 points)</button>
             <button id="replenish-will-button">Replenish Will (100 points)</button>
             <button id="increase-damage-button">Increase Damage (200 points)</button>
             <button id="show-leaderboard-button">Show Leaderboard</button>
-        </div>
-
-        <div id="leaderboard" style="display:none;">
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-list"></ul>
-            <input type="text" id="player-name-input" placeholder="Enter your name">
-            <button id="save-name-button">Save Name</button>
         </div>
     </div>
 

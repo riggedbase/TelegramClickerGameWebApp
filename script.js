@@ -9,54 +9,54 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const database = firebase.database();
 
     // Game elements
-    const gameContainer = document.getElementById('game-container');
-    const characterElement = document.getElementById('character');
-    const characterNameElement = document.getElementById('character-name');
-    const healthElement = document.getElementById('health');
+    const characterImg = document.getElementById('character');
+    const characterName = document.getElementById('character-name');
+    const healthFill = document.getElementById('health-fill');
+    const currentHealth = document.getElementById('current-health');
+    const maxHealth = document.getElementById('max-health');
+    const attackButton = document.getElementById('attack-button');
     const scoreElement = document.getElementById('score');
     const pointsElement = document.getElementById('points');
     const willElement = document.getElementById('will');
     const levelElement = document.getElementById('level');
     const boostButton = document.getElementById('boost-button');
-    const boostActiveElement = document.getElementById('boost-active');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
 
     // Game variables
-    let score = 0;
-    let points = 0;
-    let will = 1000;
+    let score = 400;
+    let points = 400;
+    let will = 960;
     let level = 1;
     let health = 100;
-    let maxHealth = 100;
+    let maxHealthValue = 100;
     let damagePerClick = 1;
     let boostActive = false;
     let boostRemainingClicks = 0;
-    let playerName = "Player1";
-    let playerKey = null;
 
     const characters = [
-        { emoji: '😈', baseHealth: 100, name: 'Demon' },
-        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
-        { emoji: '👽', baseHealth: 300, name: 'Alien' },
-        { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
-        { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
+        { image: 'demon.png', baseHealth: 100, name: 'Demon' },
+        { image: 'ogre.png', baseHealth: 200, name: 'Ogre' },
+        { image: 'alien.png', baseHealth: 300, name: 'Alien' },
+        { image: 'dragon.png', baseHealth: 400, name: 'Dragon' },
+        { image: 'wizard.png', baseHealth: 500, name: 'Wizard' }
     ];
     let characterIndex = 0;
 
     function updateDisplay() {
-        characterElement.textContent = characters[characterIndex].emoji;
-        characterNameElement.textContent = characters[characterIndex].name;
-        healthElement.textContent = `Health: ${health} / ${maxHealth}`;
-        scoreElement.textContent = `Score: ${score}`;
-        pointsElement.textContent = `Points: ${points}`;
-        willElement.textContent = `Will: ${will}`;
-        levelElement.textContent = `Level: ${level}`;
-        boostActiveElement.textContent = `Boost Active: ${boostActive ? 'Yes' : 'No'}`;
+        characterImg.src = characters[characterIndex].image;
+        characterName.textContent = characters[characterIndex].name;
+        currentHealth.textContent = health;
+        maxHealth.textContent = maxHealthValue;
+        healthFill.style.width = `${(health / maxHealthValue) * 100}%`;
+        scoreElement.textContent = score;
+        pointsElement.textContent = points;
+        willElement.textContent = will;
+        levelElement.textContent = level;
     }
 
-    function handleClick() {
+    function handleAttack() {
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
             health -= damage;
@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
 
             updateDisplay();
-            addOrUpdateScoreInLeaderboard(playerName, score);
+            // Uncomment the next line when Firebase is set up
+            // addOrUpdateScoreInLeaderboard(playerName, score);
         }
     }
 
@@ -85,8 +86,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (characterIndex === 0) {
             level++;
         }
-        maxHealth = characters[characterIndex].baseHealth * level;
-        health = maxHealth;
+        maxHealthValue = characters[characterIndex].baseHealth * level;
+        health = maxHealthValue;
     }
 
     function activateBoost() {
@@ -114,42 +115,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function toggleLeaderboard() {
-        // Implement leaderboard toggle functionality here
+    function showLeaderboard() {
         console.log("Show leaderboard clicked");
-    }
-
-    function addOrUpdateScoreInLeaderboard(name, score) {
-        if (playerKey) {
-            database.ref('leaderboard/' + playerKey).update({ score: score });
-        } else {
-            const newEntryRef = database.ref('leaderboard').push();
-            playerKey = newEntryRef.key;
-            newEntryRef.set({ name: name, score: score });
-        }
+        // Implement leaderboard functionality here
     }
 
     // Event listeners
-    gameContainer.addEventListener('click', handleClick);
-    boostButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        activateBoost();
-    });
-    replenishWillButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        replenishWill();
-    });
-    increaseDamageButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        increaseDamage();
-    });
-    showLeaderboardButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleLeaderboard();
-    });
+    attackButton.addEventListener('click', handleAttack);
+    boostButton.addEventListener('click', activateBoost);
+    replenishWillButton.addEventListener('click', replenishWill);
+    increaseDamageButton.addEventListener('click', increaseDamage);
+    showLeaderboardButton.addEventListener('click', showLeaderboard);
 
     // Initialize game
     updateDisplay();
+
+    // Will replenishment
     setInterval(() => {
         if (will < 1000) {
             will++;
