@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    const attackButton = document.getElementById('attack-button');
     const scoreValue = document.getElementById('score-value');
     const characterElement = document.getElementById('character');
     const boostButton = document.getElementById('boost-button');
@@ -13,7 +12,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let boostRemainingClicks = 0;
     let will = 1000;
     let level = 1;
-    let touchInProgress = false; // New flag to track touch events
+    let touchInProgress = false; // Track touch status to avoid double taps
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -82,6 +81,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    // Detect if the device is mobile
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobileDevice) {
+        // Disable the click event on mobile devices
+        gameContainer.removeEventListener('click', handleAttack);
+    }
+
     gameContainer.addEventListener('touchstart', (event) => {
         if (!touchInProgress) { // Check if a touch is already in progress
             touchInProgress = true; // Set flag to indicate touch is in progress
@@ -103,9 +110,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     // For mouse click support (e.g., on desktop)
-    gameContainer.addEventListener('click', () => {
-        handleAttack(1); // Single click counts as one attack
-    });
+    if (!isMobileDevice) {
+        gameContainer.addEventListener('click', () => {
+            handleAttack(1); // Single click counts as one attack
+        });
+    }
 
     boostButton.addEventListener('click', () => {
         if (!boostActive) {
