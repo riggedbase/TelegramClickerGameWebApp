@@ -122,6 +122,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
+    // Update all button click handlers to prevent event propagation
     boostButton.addEventListener('click', (event) => {
         event.stopPropagation(); // Prevent the click from propagating
         if (!boostActive) {
@@ -157,13 +158,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // Initialize the game state
-    updateCharacter();
-    updateBoostStatus();
-    updateWill();
-
-    // Set up Will replenishment every two seconds (2000 milliseconds)
-    setInterval(replenishWill, 2000);
+    // Show leaderboard when button is clicked
+    showLeaderboardButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click from propagating
+        leaderboard.style.display = 'block'; // Show leaderboard
+        updateLeaderboard(); // Fetch and display leaderboard data
+    });
 
     // Initialize Firebase with your configuration
     const firebaseConfig = {
@@ -206,12 +206,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             score: playerScore
         });
     }
-
-    // Show leaderboard when button is clicked
-    showLeaderboardButton.addEventListener('click', () => {
-        leaderboard.style.display = 'block'; // Show leaderboard
-        updateLeaderboard(); // Fetch and display leaderboard data
-    });
 
     // Example: Add Score and Update Leaderboard
     function finishLevel() {
