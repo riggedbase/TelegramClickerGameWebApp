@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
     const database = firebase.database();
 
     const scoreValue = document.getElementById('score-value');
+    const pointsValue = document.getElementById('points-value'); // Points value element
     const characterElement = document.getElementById('character');
     const boostButton = document.getElementById('boost-button');
     const boostActiveStatus = document.getElementById('boost-active-status');
@@ -29,9 +29,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
     const nameChangeContainer = document.getElementById('name-change-container');
-    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button'); // New clear leaderboard button
+    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button');
 
     let score = 0;
+    let points = 0; // New variable for points (currency)
     let characterIndex = 0;
     let boostActive = false;
     let boostRemainingClicks = 0;
@@ -62,6 +63,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateWill() {
         willValue.textContent = will;
+    }
+
+    function updatePoints() {
+        pointsValue.textContent = points; // Update points display
     }
 
     function replenishWill() {
@@ -100,7 +105,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 currentHealth -= pointsToAdd;
                 score += pointsToAdd;
+                points += pointsToAdd; // Increase points
                 scoreValue.textContent = score;
+                updatePoints(); // Update points display
             } else {
                 nextLevel();
                 addOrUpdateScoreInLeaderboard(playerName, score);
@@ -145,123 +152,72 @@ document.addEventListener('DOMContentLoaded', (event) => {
     boostButton.addEventListener('click', (event) => {
         event.stopPropagation();
         if (!boostActive) {
-            boostActive = true;
-            boostRemainingClicks = 10;
-            updateBoostStatus();
-            alert('Boost activated! Earn double points for the next 10 clicks!');
+            if (points >= 50) { // Assume boost costs 50 points
+                boostActive = true;
+                boostRemainingClicks = 10;
+                points -= 50; // Deduct points for boost
+                updatePoints(); // Update points display
+                updateBoostStatus();
+                alert('Boost activated! Earn double points for the next 10 clicks!');
+            } else {
+                alert('Not enough points to buy boost!');
+            }
         }
     });
 
     replenishWillButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (score >= 100) {
-            score -= 100;
+        if (points >= 100) { // Assume replenish will cost 100 points
+            points -= 100;
             will = 1000;
+            updatePoints(); // Update points display
             updateWill();
-            scoreValue.textContent = score;
-            alert('Will replenished to 1000!');
+            alert('Will replenished!');
         } else {
-            alert('Not enough points to replenish Will!');
+            alert('Not enough points to replenish will!');
         }
     });
 
     increaseDamageButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (score >= 200) {
-            score -= 200;
-            damageMultiplier += 1;
-            scoreValue.textContent = score;
+        if (points >= 200) { // Assume increase damage costs 200 points
+            points -= 200;
+            damageMultiplier += 1; // Increase damage multiplier
+            updatePoints(); // Update points display
             alert('Damage increased!');
         } else {
             alert('Not enough points to increase damage!');
         }
     });
 
-    showLeaderboardButton.addEventListener('click', (event) => {
-        event.stopPropagation();
+    showLeaderboardButton.addEventListener('click', () => {
         leaderboard.style.display = 'block';
         nameChangeContainer.style.display = 'block';
         updateLeaderboard();
     });
 
-    saveNameButton.addEventListener('click', (event) => {
-        event.stopPropagation();
+    saveNameButton.addEventListener('click', () => {
         const newName = playerNameInput.value.trim();
         if (newName && newName !== playerName) {
-            updatePlayerNameAndScore(newName); // Update player name and score in Firebase
-        } else if (!newName) {
-            alert('Please enter a valid name.');
-        }
-    });
-
-    clearLeaderboardButton.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevents attack trigger
-        event.preventDefault();  // Prevents default button behavior
-        if (confirm("Are you sure you want to clear the leaderboard? This action is irreversible.")) {
-            clearLeaderboard(); // Clear leaderboard function for testing
-        }
-    });
-
-    function clearLeaderboard() {
-        const leaderboardRef = database.ref('leaderboard');
-        leaderboardRef.remove().then(() => {
-            console.log('Leaderboard cleared.');
-            alert('Leaderboard cleared!');
-            updateLeaderboard(); // Refresh leaderboard after clearing
-        }).catch((error) => {
-            console.error('Error clearing leaderboard:', error);
-        });
-    }
-
-    function updatePlayerNameAndScore(newName) {
-        if (playerKey) {
-            const playerEntryRef = database.ref('leaderboard/' + playerKey);
-            playerEntryRef.update({
-                name: newName,
-                score: score
-            }).then(() => {
-                console.log(`Player name and score updated in Firebase: ${newName}, ${score}`);
-                playerName = newName; // Update the local playerName variable
-                alert(`Player name updated to: ${newName}`);
-                updateLeaderboard();
-            }).catch((error) => {
-                console.error('Error updating player name and score in Firebase:', error);
-            });
-        } else {
-            console.error('Player key is not set.');
-        }
-    }
-
-    function addOrUpdateScoreInLeaderboard(playerName, playerScore) {
-        const leaderboardRef = database.ref('leaderboard');
-
-        leaderboardRef.orderByChild('name').equalTo(playerName).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // Player exists, update their score
-                playerKey = Object.keys(data)[0];
-                const playerEntryRef = leaderboardRef.child(playerKey);
-                playerEntryRef.update({
-                    score: playerScore
-                }).then(() => {
-                    console.log(`Score updated in Firebase for ${playerName}: ${playerScore}`);
-                }).catch((error) => {
-                    console.error('Error updating score in Firebase:', error);
-                });
-            } else {
-                // Player doesn't exist, add a new entry
-                const newEntryRef = leaderboardRef.push();
-                playerKey = newEntryRef.key;
-                newEntryRef.set({
-                    name: playerName,
-                    score: playerScore
-                }).then(() => {
-                    console.log(`Score added to Firebase for ${playerName}: ${playerScore}`);
-                }).catch((error) => {
-                    console.error('Error adding score to Firebase:', error);
-                });
+            playerName = newName;
+            if (playerKey) {
+                database.ref('leaderboard/' + playerKey).update({ name: playerName });
             }
-        });
+            alert('Name updated successfully!');
+            playerNameInput.value = '';
+            nameChangeContainer.style.display = 'none';
+            updateLeaderboard();
+        }
+    });
+
+    function addOrUpdateScoreInLeaderboard(name, score) {
+        if (playerKey) {
+            database.ref('leaderboard/' + playerKey).update({ score: score });
+        } else {
+            const newEntryRef = database.ref('leaderboard').push();
+            playerKey = newEntryRef.key;
+            newEntryRef.set({ name: name, score: score });
+        }
     }
 
     function updateLeaderboard() {
@@ -293,6 +249,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     updateCharacter();
     updateBoostStatus();
     updateWill();
+    updatePoints();
 
     setInterval(replenishWill, 2000);
 });
