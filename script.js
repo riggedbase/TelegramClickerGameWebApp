@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let boostRemainingClicks = 0;
     let will = 1000;
     let level = 1;
-    let touchStarted = false; // New flag to track touchstart event
+    let touchInProgress = false; // New flag to track touch events
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -83,19 +83,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     gameContainer.addEventListener('touchstart', (event) => {
-        if (!touchStarted) { // Check if a touch has already started
-            touchStarted = true; // Set flag to indicate touch has started
+        if (!touchInProgress) { // Check if a touch is already in progress
+            touchInProgress = true; // Set flag to indicate touch is in progress
             const numTouches = event.changedTouches.length; // Correctly counts number of new touches
             handleAttack(numTouches);
         }
     });
 
     gameContainer.addEventListener('touchend', (event) => {
-        touchStarted = false; // Reset the flag when touch ends
+        touchInProgress = false; // Reset the flag when touch ends
+    });
+
+    gameContainer.addEventListener('touchcancel', (event) => {
+        touchInProgress = false; // Reset the flag if touch is cancelled
     });
 
     gameContainer.addEventListener('touchmove', (event) => {
-        touchStarted = false; // Reset the flag if touch moves
+        touchInProgress = false; // Reset the flag if touch moves
     });
 
     // For mouse click support (e.g., on desktop)
