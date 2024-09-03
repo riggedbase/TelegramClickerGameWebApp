@@ -1,12 +1,21 @@
-document.addEventListener('DOMContentLoaded', (event) => {
-    // Firebase configuration
-    const firebaseConfig = {
-        // Your Firebase config here
-    };
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
+  authDomain: "rigged-clicker-game-1.firebaseapp.com",
+  projectId: "rigged-clicker-game-1",
+  storageBucket: "rigged-clicker-game-1.appspot.com",
+  messagingSenderId: "492830453182",
+  appId: "1:492830453182:web:3050eafa48fea21e145def",
+  measurementId: "G-NNKC4YWY5R",
+  databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com" // Added this line
+};
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM fully loaded");
 
     // Game elements
     const characterImg = document.getElementById('character');
@@ -34,6 +43,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damagePerClick = 1;
     let boostActive = false;
     let boostRemainingClicks = 0;
+    let playerName = "Player1";
+    let playerKey = null;
 
     const characters = [
         { image: 'demon.png', baseHealth: 100, name: 'Demon' },
@@ -57,6 +68,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleAttack() {
+        console.log("Attack button clicked");
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
             health -= damage;
@@ -76,8 +88,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
 
             updateDisplay();
-            // Uncomment the next line when Firebase is set up
-            // addOrUpdateScoreInLeaderboard(playerName, score);
+            addOrUpdateScoreInLeaderboard(playerName, score);
         }
     }
 
@@ -115,9 +126,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    function addOrUpdateScoreInLeaderboard(name, score) {
+        if (playerKey) {
+            database.ref('leaderboard/' + playerKey).update({ score: score });
+        } else {
+            const newEntryRef = database.ref('leaderboard').push();
+            playerKey = newEntryRef.key;
+            newEntryRef.set({ name: name, score: score });
+        }
+    }
+
     function showLeaderboard() {
         console.log("Show leaderboard clicked");
-        // Implement leaderboard functionality here
+        const leaderboardElement = document.getElementById('leaderboard');
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
+                sortedLeaderboard.forEach((entry) => {
+                    leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+        });
     }
 
     // Event listeners
