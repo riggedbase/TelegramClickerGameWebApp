@@ -1,21 +1,19 @@
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     margin: 0;
-    padding: 20px;
+    background-color: #f0f0f0;
 }
 
 #game-container {
-    display: inline-block;
-    background-color: #fff;
+    background-color: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#character-container {
-    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    text-align: center;
 }
 
 #character {
@@ -23,17 +21,23 @@ body {
     margin: 20px 0;
 }
 
-#character-name {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
 }
 
 #health-bar {
     width: 100%;
     height: 20px;
-    background-color: #e0e0e0;
+    background-color: #ddd;
     border-radius: 10px;
+    margin: 10px 0;
     overflow: hidden;
 }
 
@@ -42,58 +46,4 @@ body {
     height: 100%;
     background-color: #4CAF50;
     transition: width 0.3s ease-in-out;
-}
-
-#health-text {
-    margin-top: 5px;
-}
-
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 5px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-#score, #points, #will, #level, #boost-active {
-    font-size: 18px;
-    margin-top: 10px;
-}
-
-#boost-container {
-    margin-top: 20px;
-}
-
-#boost-active-status {
-    color: red;
-}
-
-#leaderboard {
-    margin-top: 20px;
-}
-
-#leaderboard-list {
-    list-style-type: none;
-    padding: 0;
-}
-
-#leaderboard-list li {
-    margin: 5px 0;
-}
-
-#name-change-container {
-    margin-top: 10px;
-}
-
-#player-name-input {
-    padding: 5px;
-    font-size: 16px;
 }
