@@ -9,31 +9,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const database = firebase.database();
 
     // Game elements
+    const gameContainer = document.getElementById('game-container');
     const characterElement = document.getElementById('character');
     const characterNameElement = document.getElementById('character-name');
-    const currentHealthElement = document.getElementById('current-health');
-    const maxHealthElement = document.getElementById('max-health');
-    const healthFillElement = document.getElementById('health-fill');
-    const scoreValue = document.getElementById('score-value');
-    const pointsValue = document.getElementById('points-value');
-    const willValue = document.getElementById('will-value');
-    const levelValue = document.getElementById('level-value');
-    const attackButton = document.getElementById('attack-button');
+    const healthElement = document.getElementById('health');
+    const scoreElement = document.getElementById('score');
+    const pointsElement = document.getElementById('points');
+    const willElement = document.getElementById('will');
+    const levelElement = document.getElementById('level');
     const boostButton = document.getElementById('boost-button');
+    const boostActiveElement = document.getElementById('boost-active');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
-    const leaderboard = document.getElementById('leaderboard');
-    const leaderboardList = document.getElementById('leaderboard-list');
-    const playerNameInput = document.getElementById('player-name-input');
-    const saveNameButton = document.getElementById('save-name-button');
 
     // Game variables
-    let score = 400;
-    let points = 400;
-    let will = 960;
+    let score = 0;
+    let points = 0;
+    let will = 1000;
     let level = 1;
-    let currentHealth = 0;
+    let health = 100;
     let maxHealth = 100;
     let damagePerClick = 1;
     let boostActive = false;
@@ -42,31 +37,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let playerKey = null;
 
     const characters = [
-        { image: 'demon.png', baseHealth: 100, name: 'Demon' },
-        { image: 'ogre.png', baseHealth: 200, name: 'Ogre' },
-        { image: 'alien.png', baseHealth: 300, name: 'Alien' },
-        { image: 'dragon.png', baseHealth: 400, name: 'Dragon' },
-        { image: 'wizard.png', baseHealth: 500, name: 'Wizard' }
+        { emoji: '😈', baseHealth: 100, name: 'Demon' },
+        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
+        { emoji: '👽', baseHealth: 300, name: 'Alien' },
+        { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
+        { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
     ];
     let characterIndex = 0;
 
     function updateDisplay() {
-        scoreValue.textContent = score;
-        pointsValue.textContent = points;
-        willValue.textContent = will;
-        levelValue.textContent = level;
-        currentHealthElement.textContent = currentHealth;
-        maxHealthElement.textContent = maxHealth;
-        healthFillElement.style.width = `${(currentHealth / maxHealth) * 100}%`;
-        characterElement.src = characters[characterIndex].image;
+        characterElement.textContent = characters[characterIndex].emoji;
         characterNameElement.textContent = characters[characterIndex].name;
+        healthElement.textContent = `Health: ${health} / ${maxHealth}`;
+        scoreElement.textContent = `Score: ${score}`;
+        pointsElement.textContent = `Points: ${points}`;
+        willElement.textContent = `Will: ${will}`;
+        levelElement.textContent = `Level: ${level}`;
+        boostActiveElement.textContent = `Boost Active: ${boostActive ? 'Yes' : 'No'}`;
     }
 
-    function handleAttack() {
+    function handleClick() {
         if (will > 0) {
             let damage = damagePerClick * (boostActive ? 2 : 1);
-            currentHealth -= damage;
-            if (currentHealth < 0) currentHealth = 0;
+            health -= damage;
             score += damage;
             points += damage;
             will -= 1;
@@ -78,7 +71,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             }
 
-            if (currentHealth <= 0) {
+            if (health <= 0) {
                 nextCharacter();
             }
 
@@ -93,7 +86,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             level++;
         }
         maxHealth = characters[characterIndex].baseHealth * level;
-        currentHealth = maxHealth;
+        health = maxHealth;
     }
 
     function activateBoost() {
@@ -122,8 +115,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function toggleLeaderboard() {
-        leaderboard.style.display = leaderboard.style.display === 'none' ? 'block' : 'none';
-        updateLeaderboard();
+        // Implement leaderboard toggle functionality here
+        console.log("Show leaderboard clicked");
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
@@ -136,35 +129,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function updateLeaderboard() {
-        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-            const leaderboardData = snapshot.val();
-            leaderboardList.innerHTML = '';
-            Object.values(leaderboardData).sort((a, b) => b.score - a.score).forEach((entry) => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${entry.name}: ${entry.score}`;
-                leaderboardList.appendChild(listItem);
-            });
-        });
-    }
-
-    function saveName() {
-        const newName = playerNameInput.value.trim();
-        if (newName && newName !== playerName) {
-            playerName = newName;
-            addOrUpdateScoreInLeaderboard(playerName, score);
-            playerNameInput.value = '';
-            updateLeaderboard();
-        }
-    }
-
     // Event listeners
-    attackButton.addEventListener('click', handleAttack);
-    boostButton.addEventListener('click', activateBoost);
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', toggleLeaderboard);
-    saveNameButton.addEventListener('click', saveName);
+    gameContainer.addEventListener('click', handleClick);
+    boostButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        activateBoost();
+    });
+    replenishWillButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        replenishWill();
+    });
+    increaseDamageButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        increaseDamage();
+    });
+    showLeaderboardButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleLeaderboard();
+    });
 
     // Initialize game
     updateDisplay();
