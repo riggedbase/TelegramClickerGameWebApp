@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const pointsElement = document.getElementById('points');
     const willElement = document.getElementById('will');
     const levelElement = document.getElementById('level');
-    const boostButton = document.getElementById('boost-button');
-    const boostActiveElement = document.getElementById('boost-active');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
@@ -41,8 +39,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let health = 100;
     let maxHealth = 100;
     let damagePerClick = 1;
-    let boostActive = false;
-    let boostRemainingClicks = 0;
     let playerName = "Player1";
     let playerKey = null;
 
@@ -65,24 +61,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (pointsElement) pointsElement.textContent = points;
         if (willElement) willElement.textContent = will;
         if (levelElement) levelElement.textContent = level;
-        if (boostActiveElement) boostActiveElement.textContent = boostActive ? 'Yes' : 'No';
     }
 
     function handleClick() {
         console.log("Click handled");
         if (will > 0) {
-            let damage = damagePerClick * (boostActive ? 2 : 1);
+            let damage = damagePerClick;
             health -= damage;
             score += damage;
             points += damage;
             will -= 1;
-
-            if (boostActive) {
-                boostRemainingClicks--;
-                if (boostRemainingClicks <= 0) {
-                    boostActive = false;
-                }
-            }
 
             if (health <= 0) {
                 nextCharacter();
@@ -103,19 +91,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         health = maxHealth;
     }
 
-    function activateBoost() {
-        console.log("Activating boost. Points:", points, "Boost active:", boostActive);
-        if (points >= 50 && !boostActive) {
-            points -= 50;
-            boostActive = true;
-            boostRemainingClicks = 10;
-            console.log("Boost activated. Remaining clicks:", boostRemainingClicks);
-            updateDisplay();
-        } else {
-            console.log("Cannot activate boost. Not enough points or already active.");
-        }
-    }
-
     function replenishWill() {
         console.log("Replenishing will. Points:", points, "Current will:", will);
         if (points >= 100) {
@@ -129,11 +104,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function increaseDamage() {
-        console.log("Increasing damage");
+        console.log("Increasing damage. Points:", points, "Current damage:", damagePerClick);
         if (points >= 200) {
             points -= 200;
             damagePerClick++;
+            console.log("Damage increased. New damage:", damagePerClick);
             updateDisplay();
+        } else {
+            console.log("Cannot increase damage. Not enough points.");
         }
     }
 
@@ -178,18 +156,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Game container not found");
     }
 
-    console.log("Boost button:", boostButton);
     console.log("Replenish Will button:", replenishWillButton);
-
-    if (boostButton) {
-        boostButton.addEventListener('click', (e) => {
-            console.log("Boost button clicked");
-            e.stopPropagation();
-            activateBoost();
-        });
-    } else {
-        console.log("Boost button not found");
-    }
+    console.log("Increase Damage button:", increaseDamageButton);
 
     if (replenishWillButton) {
         replenishWillButton.addEventListener('click', (e) => {
