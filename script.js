@@ -197,14 +197,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function addScoreToLeaderboard(playerName, playerScore) {
         const leaderboardRef = database.ref('leaderboard');
-        const newEntryRef = leaderboardRef.push();
-        newEntryRef.set({
-            name: playerName,
-            score: playerScore
-        }).then(() => {
-            console.log(`Score added to Firebase for ${playerName}: ${playerScore}`);
-        }).catch((error) => {
-            console.error('Error adding score to Firebase:', error);
+
+        // Check if the player already exists in the leaderboard
+        leaderboardRef.orderByChild('name').equalTo(playerName).once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // Player exists, update their score
+                const playerKey = Object.keys(data)[0]; // Get the player's unique key
+                const playerEntryRef = leaderboardRef.child(playerKey);
+                playerEntryRef.update({
+                    score: playerScore
+                }).then(() => {
+                    console.log(`Score updated in Firebase for ${playerName}: ${playerScore}`);
+                }).catch((error) => {
+                    console.error('Error updating score in Firebase:', error);
+                });
+            } else {
+                // Player doesn't exist, add a new entry
+                const newEntryRef = leaderboardRef.push();
+                newEntryRef.set({
+                    name: playerName,
+                    score: playerScore
+                }).then(() => {
+                    console.log(`Score added to Firebase for ${playerName}: ${playerScore}`);
+                }).catch((error) => {
+                    console.error('Error adding score to Firebase:', error);
+                });
+            }
         });
     }
 
