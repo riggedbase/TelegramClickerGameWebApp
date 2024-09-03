@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Firebase configuration object
+    // Correct Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
         authDomain: "rigged-clicker-game-1.firebaseapp.com",
-        databaseURL: "https://rigged-clicker-game-1.firebaseio.com",
+        databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com", // Updated URL
         projectId: "rigged-clicker-game-1",
         storageBucket: "rigged-clicker-game-1.appspot.com",
         messagingSenderId: "492830453182",
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // Make sure database is defined after Firebase initialization
+    // Initialize database reference after Firebase initialization
     const database = firebase.database();
 
     const scoreValue = document.getElementById('score-value');
