@@ -24,12 +24,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    const walletButton = document.getElementById('wallet-button'); // New Wallet Button
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
     const nameChangeContainer = document.getElementById('name-change-container');
-    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button');
+    const walletSection = document.getElementById('wallet-section'); // New Wallet Section
+    const walletPointsValue = document.getElementById('wallet-points-value');
+    const riggedTokensValue = document.getElementById('rigged-tokens-value');
+    const claimRiggedButton = document.getElementById('claim-rigged-button');
+    const burnRiggedButton = document.getElementById('burn-rigged-button');
+    const walletAddressInput = document.getElementById('wallet-address-input');
+    const saveWalletButton = document.getElementById('save-wallet-button');
 
     let score = 0;
     let points = 0; // New variable for points (currency)
@@ -42,6 +49,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damageMultiplier = 1;
     let playerName = "Player1";
     let playerKey = null;
+    let walletAddress = ''; // New variable for wallet address
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -67,6 +75,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updatePoints() {
         pointsValue.textContent = points; // Update points display
+        walletPointsValue.textContent = points; // Update wallet points display
+        riggedTokensValue.textContent = (points / 100).toFixed(2); // Example conversion rate to $RIGGED
     }
 
     function replenishWill() {
@@ -105,72 +115,51 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 currentHealth -= pointsToAdd;
                 score += pointsToAdd;
-                points += pointsToAdd; // Increase points
-                scoreValue.textContent = score;
-                updatePoints(); // Update points display
-            } else {
-                nextLevel();
-                addOrUpdateScoreInLeaderboard(playerName, score);
+                points += pointsToAdd; // Add points earned to points variable
+                updatePoints();
+
+                if (currentHealth <= 0) {
+                    nextLevel();
+                }
             }
         } else {
-            alert('Out of Will! Wait for it to replenish.');
+            alert('Not enough will to attack!');
         }
-    }
-
-    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobileDevice) {
-        gameContainer.removeEventListener('click', handleAttack);
     }
 
     gameContainer.addEventListener('touchstart', (event) => {
         if (!touchInProgress) {
             touchInProgress = true;
-            const numTouches = event.changedTouches.length;
-            handleAttack(numTouches);
+            handleAttack(event.touches.length);
         }
     });
 
-    gameContainer.addEventListener('touchend', (event) => {
+    gameContainer.addEventListener('touchend', () => {
         touchInProgress = false;
     });
-
-    gameContainer.addEventListener('touchcancel', (event) => {
-        touchInProgress = false;
-    });
-
-    gameContainer.addEventListener('touchmove', (event) => {
-        touchInProgress = false;
-    });
-
-    if (!isMobileDevice) {
-        gameContainer.addEventListener('click', () => {
-            handleAttack(1);
-        });
-    }
 
     boostButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (!boostActive) {
-            if (points >= 50) { // Assume boost costs 50 points
-                boostActive = true;
-                boostRemainingClicks = 10;
-                points -= 50; // Deduct points for boost
-                updatePoints(); // Update points display
-                updateBoostStatus();
-                alert('Boost activated! Earn double points for the next 10 clicks!');
-            } else {
-                alert('Not enough points to buy boost!');
-            }
+        if (points >= 50 && !boostActive) {
+            points -= 50;
+            boostActive = true;
+            boostRemainingClicks = 10;
+            updatePoints(); // Update points display
+            updateBoostStatus();
+            alert('Boost activated! You now earn double points for 10 clicks.');
+        } else if (boostActive) {
+            alert('Boost is already active!');
+        } else {
+            alert('Not enough points to activate boost!');
         }
     });
 
     replenishWillButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (points >= 100) { // Assume replenish will cost 100 points
+        if (points >= 100) {
             points -= 100;
             will = 1000;
-            updatePoints(); // Update points display
+            updatePoints();
             updateWill();
             alert('Will replenished!');
         } else {
@@ -180,10 +169,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     increaseDamageButton.addEventListener('click', (event) => {
         event.stopPropagation();
-        if (points >= 200) { // Assume increase damage costs 200 points
+        if (points >= 200) {
             points -= 200;
-            damageMultiplier += 1; // Increase damage multiplier
-            updatePoints(); // Update points display
+            damageMultiplier += 1;
+            updatePoints();
             alert('Damage increased!');
         } else {
             alert('Not enough points to increase damage!');
@@ -193,7 +182,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showLeaderboardButton.addEventListener('click', () => {
         leaderboard.style.display = 'block';
         nameChangeContainer.style.display = 'block';
+        walletSection.style.display = 'none'; // Hide wallet section
         updateLeaderboard();
+    });
+
+    walletButton.addEventListener('click', () => { // New Wallet button listener
+        walletSection.style.display = 'block';
+        leaderboard.style.display = 'none'; // Hide leaderboard section
     });
 
     saveNameButton.addEventListener('click', () => {
@@ -210,6 +205,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    saveWalletButton.addEventListener('click', () => { // Save wallet address
+        const address = walletAddressInput.value.trim();
+        if (address) {
+            walletAddress = address;
+            localStorage.setItem('walletAddress', walletAddress); // Save to local storage
+            alert('Wallet address saved successfully!');
+            updateClaimAndBurnButtons();
+        } else {
+            alert('Please enter a valid wallet address.');
+        }
+    });
+
+    function updateClaimAndBurnButtons() {
+        const isEnabled = walletAddress.length > 0;
+        claimRiggedButton.disabled = !isEnabled;
+        burnRiggedButton.disabled = !isEnabled;
+    }
+
     function addOrUpdateScoreInLeaderboard(name, score) {
         if (playerKey) {
             database.ref('leaderboard/' + playerKey).update({ score: score });
@@ -224,8 +237,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const leaderboardRef = database.ref('leaderboard');
         leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
             const leaderboardData = snapshot.val();
-            console.log('Fetched leaderboard data:', leaderboardData);
-
             if (leaderboardData) {
                 const sortedLeaderboard = [];
                 for (const id in leaderboardData) {
@@ -250,6 +261,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     updateBoostStatus();
     updateWill();
     updatePoints();
+    updateClaimAndBurnButtons();
 
     setInterval(replenishWill, 2000);
 });
