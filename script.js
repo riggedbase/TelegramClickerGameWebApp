@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
-    const walletButton = document.getElementById('wallet-button'); // New Wallet Button
+    const walletButton = document.getElementById('wallet-button'); // Wallet Button
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
     const nameChangeContainer = document.getElementById('name-change-container');
-    const walletSection = document.getElementById('wallet-section'); // New Wallet Section
+    const walletSection = document.getElementById('wallet-section'); // Wallet Section
     const walletPointsValue = document.getElementById('wallet-points-value');
     const riggedTokensValue = document.getElementById('rigged-tokens-value');
     const claimRiggedButton = document.getElementById('claim-rigged-button');
@@ -186,7 +186,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateLeaderboard();
     });
 
-    walletButton.addEventListener('click', () => { // New Wallet button listener
+    walletButton.addEventListener('click', (event) => { // Updated Wallet button listener
+        event.stopPropagation(); // Prevent event propagation
         walletSection.style.display = 'block';
         leaderboard.style.display = 'none'; // Hide leaderboard section
     });
