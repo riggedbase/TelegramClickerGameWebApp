@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Correct Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
         authDomain: "rigged-clicker-game-1.firebaseapp.com",
-        databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com", // Updated URL
+        databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com",
         projectId: "rigged-clicker-game-1",
         storageBucket: "rigged-clicker-game-1.appspot.com",
         messagingSenderId: "492830453182",
@@ -14,7 +13,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // Initialize database reference after Firebase initialization
     const database = firebase.database();
 
     const scoreValue = document.getElementById('score-value');
@@ -31,6 +29,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const playerNameInput = document.getElementById('player-name-input');
     const saveNameButton = document.getElementById('save-name-button');
     const nameChangeContainer = document.getElementById('name-change-container');
+    const clearLeaderboardButton = document.getElementById('clear-leaderboard-button'); // New clear leaderboard button
 
     let score = 0;
     let characterIndex = 0;
@@ -40,8 +39,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let level = 1;
     let touchInProgress = false;
     let damageMultiplier = 1;
-    let playerName = "Player1"; // Default player name
-    let playerKey = null; // To keep track of the player's unique key in the database
+    let playerName = "Player1";
+    let playerKey = null;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateCharacter() {
         characterElement.textContent = characters[characterIndex].emoji;
-        currentHealth = characters[characterIndex].baseHealth * level; 
+        currentHealth = characters[characterIndex].baseHealth * level;
     }
 
     function updateBoostStatus() {
@@ -76,18 +75,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
         level++;
         if (level > 30) {
             alert('Congratulations! You have completed all 30 levels!');
-            level = 30; 
+            level = 30;
         } else {
-            characterIndex = (characterIndex + 1) % characters.length; 
+            characterIndex = (characterIndex + 1) % characters.length;
             updateCharacter();
         }
     }
 
     function handleAttack(numClicks) {
-        if (will >= numClicks) { 
+        if (will >= numClicks) {
             if (currentHealth > 0) {
                 let pointsToAdd = 10 * numClicks * damageMultiplier;
-                will -= numClicks; 
+                will -= numClicks;
                 updateWill();
 
                 if (boostActive) {
@@ -104,7 +103,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 scoreValue.textContent = score;
             } else {
                 nextLevel();
-                addScoreToLeaderboard(playerName, score); // Add score to leaderboard after level completion
+                addOrUpdateScoreInLeaderboard(playerName, score);
             }
         } else {
             alert('Out of Will! Wait for it to replenish.');
@@ -118,9 +117,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     gameContainer.addEventListener('touchstart', (event) => {
-        if (!touchInProgress) { 
-            touchInProgress = true; 
-            const numTouches = event.changedTouches.length; 
+        if (!touchInProgress) {
+            touchInProgress = true;
+            const numTouches = event.changedTouches.length;
             handleAttack(numTouches);
         }
     });
@@ -139,22 +138,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     if (!isMobileDevice) {
         gameContainer.addEventListener('click', () => {
-            handleAttack(1); 
+            handleAttack(1);
         });
     }
 
     boostButton.addEventListener('click', (event) => {
-        event.stopPropagation(); 
+        event.stopPropagation();
         if (!boostActive) {
             boostActive = true;
-            boostRemainingClicks = 10; 
+            boostRemainingClicks = 10;
             updateBoostStatus();
             alert('Boost activated! Earn double points for the next 10 clicks!');
         }
     });
 
     replenishWillButton.addEventListener('click', (event) => {
-        event.stopPropagation(); 
+        event.stopPropagation();
         if (score >= 100) {
             score -= 100;
             will = 1000;
@@ -167,7 +166,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     increaseDamageButton.addEventListener('click', (event) => {
-        event.stopPropagation(); 
+        event.stopPropagation();
         if (score >= 200) {
             score -= 200;
             damageMultiplier += 1;
@@ -179,51 +178,67 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     showLeaderboardButton.addEventListener('click', (event) => {
-        event.stopPropagation(); 
+        event.stopPropagation();
         leaderboard.style.display = 'block';
-        nameChangeContainer.style.display = 'block'; // Show the name change input and button
+        nameChangeContainer.style.display = 'block';
         updateLeaderboard();
     });
 
     saveNameButton.addEventListener('click', (event) => {
-        event.stopPropagation(); 
+        event.stopPropagation();
         const newName = playerNameInput.value.trim();
         if (newName && newName !== playerName) {
-            updatePlayerName(newName); // Update player name in Firebase
-            playerName = newName;
-            alert(`Player name updated to: ${playerName}`);
+            updatePlayerNameAndScore(newName); // Update player name and score in Firebase
         } else if (!newName) {
             alert('Please enter a valid name.');
         }
     });
 
-    function updatePlayerName(newName) {
+    clearLeaderboardButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (confirm("Are you sure you want to clear the leaderboard? This action is irreversible.")) {
+            clearLeaderboard(); // Clear leaderboard function for testing
+        }
+    });
+
+    function clearLeaderboard() {
         const leaderboardRef = database.ref('leaderboard');
-        leaderboardRef.orderByChild('name').equalTo(playerName).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                playerKey = Object.keys(data)[0]; 
-                const playerEntryRef = leaderboardRef.child(playerKey);
-                playerEntryRef.update({
-                    name: newName
-                }).then(() => {
-                    console.log(`Player name updated in Firebase: ${newName}`);
-                }).catch((error) => {
-                    console.error('Error updating player name in Firebase:', error);
-                });
-            }
+        leaderboardRef.remove().then(() => {
+            console.log('Leaderboard cleared.');
+            alert('Leaderboard cleared!');
+            updateLeaderboard(); // Refresh leaderboard after clearing
+        }).catch((error) => {
+            console.error('Error clearing leaderboard:', error);
         });
     }
 
-    function addScoreToLeaderboard(playerName, playerScore) {
+    function updatePlayerNameAndScore(newName) {
+        if (playerKey) {
+            const playerEntryRef = database.ref('leaderboard/' + playerKey);
+            playerEntryRef.update({
+                name: newName,
+                score: score
+            }).then(() => {
+                console.log(`Player name and score updated in Firebase: ${newName}, ${score}`);
+                playerName = newName; // Update the local playerName variable
+                alert(`Player name updated to: ${newName}`);
+                updateLeaderboard();
+            }).catch((error) => {
+                console.error('Error updating player name and score in Firebase:', error);
+            });
+        } else {
+            console.error('Player key is not set.');
+        }
+    }
+
+    function addOrUpdateScoreInLeaderboard(playerName, playerScore) {
         const leaderboardRef = database.ref('leaderboard');
 
-        // Check if the player already exists in the leaderboard
         leaderboardRef.orderByChild('name').equalTo(playerName).once('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 // Player exists, update their score
-                playerKey = Object.keys(data)[0]; // Get the player's unique key
+                playerKey = Object.keys(data)[0];
                 const playerEntryRef = leaderboardRef.child(playerKey);
                 playerEntryRef.update({
                     score: playerScore
@@ -235,7 +250,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             } else {
                 // Player doesn't exist, add a new entry
                 const newEntryRef = leaderboardRef.push();
-                playerKey = newEntryRef.key; // Save the new player's key
+                playerKey = newEntryRef.key;
                 newEntryRef.set({
                     name: playerName,
                     score: playerScore
@@ -252,7 +267,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const leaderboardRef = database.ref('leaderboard');
         leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
             const leaderboardData = snapshot.val();
-            console.log('Fetched leaderboard data:', leaderboardData); 
+            console.log('Fetched leaderboard data:', leaderboardData);
 
             if (leaderboardData) {
                 const sortedLeaderboard = [];
@@ -260,14 +275,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     sortedLeaderboard.push(leaderboardData[id]);
                 }
                 sortedLeaderboard.sort((a, b) => b.score - a.score);
-                leaderboardList.innerHTML = ''; 
+                leaderboardList.innerHTML = '';
                 sortedLeaderboard.forEach((entry) => {
                     const listItem = document.createElement('li');
                     listItem.textContent = `${entry.name}: ${entry.score}`;
                     leaderboardList.appendChild(listItem);
                 });
             } else {
-                leaderboardList.innerHTML = '<li>No scores available</li>'; 
+                leaderboardList.innerHTML = '<li>No scores available</li>';
             }
         }, (error) => {
             console.error('Error fetching leaderboard data:', error);

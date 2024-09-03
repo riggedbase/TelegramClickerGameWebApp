@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Clicker Game</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app-compat.js"></script>
-    <!-- Add Firebase Database SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.2.0/firebase-database-compat.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -22,20 +20,19 @@
             <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
             <div id="boost-active">Boost Active: <span id="boost-active-status">No</span></div>
         </div>
-        <button id="replenish-will-button">Replenish Will (100 Points)</button>
-        <button id="increase-damage-button">Increase Damage (200 Points)</button>
+        <button id="replenish-will-button">Replenish Will (Cost: 100 points)</button>
+        <button id="increase-damage-button">Increase Damage (Cost: 200 points)</button>
         <button id="show-leaderboard-button">Show Leaderboard</button>
-
         <div id="leaderboard" style="display:none;">
             <h2>Leaderboard</h2>
             <ul id="leaderboard-list"></ul>
-
-            <!-- Name change section hidden initially -->
             <div id="name-change-container" style="display:none;">
-                <input type="text" id="player-name-input" placeholder="Enter your name">
+                <input type="text" id="player-name-input" placeholder="Enter new player name">
                 <button id="save-name-button">Save Name</button>
             </div>
         </div>
+        <!-- Add Clear Leaderboard Button for Testing -->
+        <button id="clear-leaderboard-button">Clear Leaderboard (Testing Only)</button>
     </div>
 </body>
 </html>
