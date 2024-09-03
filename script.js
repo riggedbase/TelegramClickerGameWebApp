@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damageMultiplier = 1;
     let playerName = "Player1";
     let playerKey = null;
-    let walletAddress = ''; // New variable for wallet address
+    let walletAddress = localStorage.getItem('walletAddress') || ''; // Load from local storage
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -138,6 +138,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         touchInProgress = false;
     });
 
+    gameContainer.addEventListener('click', (event) => {
+        if (event.target === gameContainer || event.target === characterElement) {
+            handleAttack(1); // Register click as attack
+        }
+    });
+
     boostButton.addEventListener('click', (event) => {
         event.stopPropagation();
         if (points >= 50 && !boostActive) {
@@ -186,7 +192,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateLeaderboard();
     });
 
-    walletButton.addEventListener('click', (event) => { // Updated Wallet button listener
+    walletButton.addEventListener('click', (event) => { 
         event.stopPropagation(); // Prevent event propagation
         walletSection.style.display = 'block';
         leaderboard.style.display = 'none'; // Hide leaderboard section
@@ -206,7 +212,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    saveWalletButton.addEventListener('click', () => { // Save wallet address
+    saveWalletButton.addEventListener('click', () => { 
         const address = walletAddressInput.value.trim();
         if (address) {
             walletAddress = address;
@@ -219,9 +225,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     function updateClaimAndBurnButtons() {
-        const isEnabled = walletAddress.length > 0;
-        claimRiggedButton.disabled = !isEnabled;
-        burnRiggedButton.disabled = !isEnabled;
+        claimRiggedButton.disabled = walletAddress.length === 0; // Enable claim button only if wallet address is present
+        burnRiggedButton.disabled = false; // Always enable burn button
     }
 
     function addOrUpdateScoreInLeaderboard(name, score) {
