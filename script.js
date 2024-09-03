@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // Reference to the Firebase Realtime Database
-    const database = firebase.database();  // Make sure this is after firebase.initializeApp
+    // Make sure database is defined after Firebase initialization
+    const database = firebase.database();
 
     const scoreValue = document.getElementById('score-value');
     const characterElement = document.getElementById('character');
@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 scoreValue.textContent = score;
             } else {
                 nextLevel();
+                addScoreToLeaderboard(playerName, score); // Add score to leaderboard after level completion
             }
         } else {
             alert('Out of Will! Wait for it to replenish.');
