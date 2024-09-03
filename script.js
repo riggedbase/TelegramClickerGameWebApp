@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const gameContainer = document.getElementById('game-container');
     const replenishWillButton = document.getElementById('replenish-will-button');
     const increaseDamageButton = document.getElementById('increase-damage-button');
+    const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
 
     let score = 0;
@@ -163,20 +165,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Set up Will replenishment every two seconds (2000 milliseconds)
     setInterval(replenishWill, 2000);
 
-    // Initialize Firebase
+    // Initialize Firebase with your configuration
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
+        authDomain: "rigged-clicker-game-1.firebaseapp.com",
+        projectId: "rigged-clicker-game-1",
+        storageBucket: "rigged-clicker-game-1.appspot.com",
+        messagingSenderId: "492830453182",
+        appId: "1:492830453182:web:3050eafa48fea21e145def",
+        measurementId: "G-NNKC4YWY5R"
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Update Leaderboard with Firebase
+    // Function to update leaderboard
     function updateLeaderboard() {
         const leaderboardRef = database.ref('leaderboard');
         leaderboardRef.orderByChild('score').limitToLast(10).on('value', (snapshot) => {
@@ -195,7 +197,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    // Add Player Score to Leaderboard
+    // Function to add player score to leaderboard
     function addScoreToLeaderboard(playerName, playerScore) {
         const leaderboardRef = database.ref('leaderboard');
         const newEntryRef = leaderboardRef.push();
@@ -205,7 +207,38 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
+    // Show leaderboard when button is clicked
+    showLeaderboardButton.addEventListener('click', () => {
+        leaderboard.style.display = 'block'; // Show leaderboard
+        updateLeaderboard(); // Fetch and display leaderboard data
+    });
+
     // Example: Add Score and Update Leaderboard
-    addScoreToLeaderboard('Player1', score); // Call this function whenever the player finishes a level
-    updateLeaderboard(); // Keep the leaderboard updated in real-time
+    function finishLevel() {
+        const playerName = "Player1"; // Placeholder for player name or ID
+        addScoreToLeaderboard(playerName, score); // Add score when level is finished
+        score = 0; // Reset score for new level (if desired)
+        updateLeaderboard(); // Update leaderboard immediately
+    }
+
+    // Example function to call when player completes a level
+    function nextLevel() {
+        level++;
+        if (level > 30) {
+            alert('Congratulations! You have completed all 30 levels!');
+            level = 30; // Cap the level at 30
+        } else {
+            characterIndex = (characterIndex + 1) % characters.length; // Loop through characters
+            updateCharacter();
+            finishLevel(); // Call finishLevel to update leaderboard
+        }
+    }
+
+    // Initialize the game state
+    updateCharacter();
+    updateBoostStatus();
+    updateWill();
+
+    // Set up Will replenishment every two seconds (2000 milliseconds)
+    setInterval(replenishWill, 2000);
 });
