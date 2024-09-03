@@ -7,37 +7,55 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-container">
-        <h1>Clicker Game</h1>
+    <div id="game-area">
+        <div id="game-container">
+            <h1>Clicker Game</h1>
 
-        <div id="character-container">
-            <div id="character">😈</div>
-            <div id="character-name">Demon</div>
-            <div id="health-bar">
-                <div id="health-fill"></div>
+            <div id="character-container">
+                <div id="character">😈</div>
+                <div id="character-name">Demon</div>
+                <div id="health-bar">
+                    <div id="health-fill"></div>
+                </div>
+                <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
             </div>
-            <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
+
+            <div id="score">
+                Score: <span id="score-value">0</span>
+            </div>
+
+            <div id="points">
+                Points: <span id="points-value">0</span>
+            </div>
+
+            <div id="will">
+                Will: <span id="will-value">1000</span>
+            </div>
+
+            <div id="level">
+                Level: <span id="level-value">1</span>
+            </div>
+
+            <div id="boost-container">
+                <button id="boost-button">Buy Boost (2x Points for 10 Clicks)</button>
+                <div id="boost-active">
+                    Boost Active: <span id="boost-active-status">No</span>
+                </div>
+            </div>
+
+            <button id="replenish-will-button">Replenish Will (Cost: 100 points)</button>
+            <button id="increase-damage-button">Increase Damage (Cost: 200 points)</button>
+            <button id="show-leaderboard-button">Show Leaderboard</button>
         </div>
 
-        <button id="attack-button">Attack</button>
-
-        <div id="score">
-            Score: <span id="score-value">0</span>
+        <div id="leaderboard" style="display:none;">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
+            <div id="name-change-container">
+                <input type="text" id="player-name-input" placeholder="Enter your name">
+                <button id="save-name-button">Save Name</button>
+            </div>
         </div>
-
-        <div id="points">
-            Points: <span id="points-value">0</span>
-        </div>
-
-        <div id="will">
-            Will: <span id="will-value">1000</span>
-        </div>
-
-        <div id="level">
-            Level: <span id="level-value">1</span>
-        </div>
-
-        <!-- ... rest of your HTML ... -->
     </div>
 
     <!-- Firebase scripts -->
