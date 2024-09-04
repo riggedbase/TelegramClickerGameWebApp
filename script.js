@@ -67,21 +67,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
         levelElement.textContent = level;
     }
 
-    function handleClick() {
-        console.log("Click handled");
-        if (will > 0) {
-            let damage = damagePerClick;
-            health -= damage;
-            score += damage;
-            points += damage;
-            will -= 1;
+    function handleClick(event) {
+        // Only process clicks directly on the game container, not on buttons
+        if (event.target === gameContainer) {
+            console.log("Click handled");
+            if (will > 0) {
+                let damage = damagePerClick;
+                health -= damage;
+                score += damage;
+                points += damage;
+                will -= 1;
 
-            if (health <= 0) {
-                nextCharacter();
+                if (health <= 0) {
+                    nextCharacter();
+                }
+
+                updateDisplay();
+                addOrUpdateScoreInLeaderboard(playerName, score);
             }
-
-            updateDisplay();
-            addOrUpdateScoreInLeaderboard(playerName, score);
         }
     }
 
@@ -158,13 +161,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize game
     updateDisplay();
 
-    // Will replenishment
+    // Will replenishment (half the previous rate)
     setInterval(() => {
         if (will < 1000) {
             will++;
             updateDisplay();
         }
-    }, 1000);
+    }, 2000); // Changed from 1000 to 2000 milliseconds
 
     console.log("Game initialized");
 });
