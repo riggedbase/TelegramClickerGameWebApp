@@ -84,14 +84,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
-    function handleClick(event) {
-        // Prevent damage when clicking on buttons
-        if (event.target.tagName === 'BUTTON') return;
-
+    function handleAttack(damage) {
         if (will > 0) {
-            health -= damagePerClick;
-            score += damagePerClick;
-            points += damagePerClick;
+            health -= damage;
+            score += damage;
+            points += damage;
             will -= 1;
 
             if (health <= 0) {
@@ -99,6 +96,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
 
             updateDisplay();
+        }
+    }
+
+    function handleClick(event) {
+        // Prevent damage when clicking on buttons
+        if (event.target.tagName === 'BUTTON') return;
+
+        handleAttack(damagePerClick);
+    }
+
+    function handleTouch(event) {
+        // Prevent damage when touching on buttons
+        if (event.target.tagName === 'BUTTON') return;
+
+        event.preventDefault(); // Prevent default behavior such as scrolling
+        for (let i = 0; i < event.touches.length; i++) {
+            handleAttack(damagePerClick);
         }
     }
 
@@ -192,6 +206,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Event listeners
     gameContainer.addEventListener('click', handleClick);
+    gameContainer.addEventListener('touchstart', handleTouch); // For mobile devices
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
     showLeaderboardButton.addEventListener('click', showLeaderboard);
