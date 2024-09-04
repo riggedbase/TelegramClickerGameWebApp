@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let increaseDamageCost = 200;
     let baseWalletAddress = '';
     let riggedTokens = 0;
+    let pointsAfterLastBurn = 0;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateWalletDisplay() {
         walletPointsElement.textContent = points;
+        riggedTokens = Math.floor((points - pointsAfterLastBurn) / 100);
         riggedTokensElement.textContent = riggedTokens;
         baseWalletAddressInput.value = baseWalletAddress;
     }
@@ -99,7 +101,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             score += damage;
             points += damage;
             will -= clickCount;
-            riggedTokens = Math.floor(points / 100);
 
             if (health <= 0) {
                 nextCharacter();
@@ -235,6 +236,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Claiming RIGGED tokens");
         points = 0;
         riggedTokens = 0;
+        pointsAfterLastBurn = 0;
         updateDisplay();
     }
 
@@ -242,6 +244,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         event.stopPropagation();
         console.log("Burning RIGGED tokens");
         riggedTokens = 0;
+        pointsAfterLastBurn = points;
         updateDisplay();
     }
 
