@@ -108,20 +108,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
-        // Only process clicks directly on the game container or character, not on any child elements
-        if (event.target === gameContainer || event.target === characterElement) {
-            console.log("Click handled");
-            handleDamage();
+        // Check if the click is on a button or within the wallet screen
+        if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
+            return;
         }
+        
+        console.log("Click handled");
+        handleDamage();
     }
 
     function handleTouch(event) {
-        // Only process touches directly on the game container or character, not on any child elements
-        if (event.target === gameContainer || event.target === characterElement) {
-            console.log("Touch handled", event.touches.length);
-            event.preventDefault(); // Prevent default touch behavior
-            handleDamage(event.touches.length);
+        // Check if the touch is on a button or within the wallet screen
+        if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
+            return;
         }
+
+        console.log("Touch handled", event.touches.length);
+        event.preventDefault(); // Prevent default touch behavior
+        handleDamage(event.touches.length);
     }
 
     function nextCharacter() {
@@ -198,7 +202,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function saveWalletAddress(event) {
         event.preventDefault(); // Prevent form submission
-        event.stopPropagation(); // Prevent click from bubbling to game container
         baseWalletAddress = baseWalletAddressInput.value;
         console.log("Base wallet address saved:", baseWalletAddress);
         updateWalletDisplay();
@@ -206,7 +209,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function claimRigged(event) {
-        event.stopPropagation(); // Prevent click from bubbling to game container
         if (!baseWalletAddress) {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
             return;
@@ -218,7 +220,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function burnRigged(event) {
-        event.stopPropagation(); // Prevent click from bubbling to game container
         // Here you would typically call the API to burn RIGGED tokens
         console.log("Burning RIGGED tokens");
         riggedTokensElement.textContent = "0";
@@ -226,37 +227,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Event listeners
-    gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('touchstart', handleTouch, { passive: false });
+    document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-    replenishWillButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        replenishWill();
-    });
-    increaseDamageButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        increaseDamage();
-    });
-    showLeaderboardButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showLeaderboard();
-    });
-    showWalletButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showWallet();
-    });
-    closeWalletButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeWallet();
-    });
+    replenishWillButton.addEventListener('click', replenishWill);
+    increaseDamageButton.addEventListener('click', increaseDamage);
+    showLeaderboardButton.addEventListener('click', showLeaderboard);
+    showWalletButton.addEventListener('click', showWallet);
+    closeWalletButton.addEventListener('click', closeWallet);
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
     claimRiggedButton.addEventListener('click', claimRigged);
     burnRiggedButton.addEventListener('click', burnRigged);
-
-    // Prevent clicks on wallet elements from causing damage
-    walletScreen.addEventListener('click', (e) => e.stopPropagation());
-    baseWalletAddressInput.addEventListener('click', (e) => e.stopPropagation());
 
     // Initialize game
     updateDisplay();
