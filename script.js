@@ -95,21 +95,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
         health = maxHealth;
     }
 
-    function replenishWill() {
+    function replenishWill(event) {
+        event.stopPropagation(); // Prevent the click from bubbling up to the game container
         console.log("Replenishing will");
         if (points >= 100) {
             points -= 100;
             will = 1000;
             updateDisplay();
+            console.log("Will replenished to 1000");
+        } else {
+            console.log("Not enough points to replenish will");
         }
     }
 
-    function increaseDamage() {
+    function increaseDamage(event) {
+        event.stopPropagation(); // Prevent the click from bubbling up to the game container
         console.log("Increasing damage");
         if (points >= 200) {
             points -= 200;
-            damagePerClick++;
+            damagePerClick *= 2; // Double the damage
             updateDisplay();
+            console.log("Damage increased. New damage per click:", damagePerClick);
+        } else {
+            console.log("Not enough points to increase damage");
         }
     }
 
@@ -123,7 +131,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function showLeaderboard() {
+    function showLeaderboard(event) {
+        event.stopPropagation(); // Prevent the click from bubbling up to the game container
+        console.log("Showing leaderboard");
         leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
         database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
             const leaderboardData = snapshot.val();
