@@ -71,14 +71,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
-    function handleGameContainerClick(event) {
-        console.log("Game container clicked");
+    function handleDamage(clickCount = 1) {
         if (will > 0) {
-            let damage = damagePerClick;
+            let damage = damagePerClick * clickCount;
             health -= damage;
             score += damage;
             points += damage;
-            will -= 1;
+            will -= clickCount;
 
             if (health <= 0) {
                 nextCharacter();
@@ -87,6 +86,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
             updateDisplay();
             addOrUpdateScoreInLeaderboard(playerName, score);
         }
+    }
+
+    function handleClick(event) {
+        console.log("Click handled");
+        handleDamage();
+    }
+
+    function handleTouch(event) {
+        console.log("Touch handled", event.touches.length);
+        event.preventDefault(); // Prevent default touch behavior
+        handleDamage(event.touches.length);
     }
 
     function nextCharacter() {
@@ -153,10 +163,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Event listeners
-    gameContainer.addEventListener('click', handleGameContainerClick);
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', showLeaderboard);
+    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('touchstart', handleTouch, { passive: false });
+    document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    replenishWillButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        replenishWill();
+    });
+    increaseDamageButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        increaseDamage();
+    });
+    showLeaderboardButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showLeaderboard();
+    });
 
     // Initialize game
     updateDisplay();
