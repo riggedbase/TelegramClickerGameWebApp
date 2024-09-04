@@ -36,18 +36,25 @@
 <body>
     <div id="game-container">
         <h1>Clicker Game</h1>
+        
         <div id="character">😈</div>
         <div id="character-name">Demon</div>
-        <div id="health-bar"><div id="health-fill"></div></div>
+        
+        <div id="health-bar">
+            <div id="health-fill"></div>
+        </div>
         <div>Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
+        
         <div>Score: <span id="score">0</span></div>
         <div>Points: <span id="points">0</span></div>
         <div>Will: <span id="will">1000</span></div>
         <div>Level: <span id="level">1</span></div>
+        
         <button id="replenish-will-button">Replenish Will (100 points)</button>
         <button id="increase-damage-button">Increase Damage (200 points)</button>
         <button id="show-leaderboard-button">Show Leaderboard</button>
         <button id="show-wallet-button">Wallet</button>
+        
         <div id="leaderboard"></div>
     </div>
 
@@ -58,7 +65,7 @@
             <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
             <div>
                 <label for="base-wallet-address">Base Wallet Address:</label>
-                <input type="text" id="base-wallet-address" maxlength="42">
+                <input type="text" id="base-wallet-address">
                 <button id="save-wallet-address">Save Address</button>
                 <div id="wallet-address-error" style="color: red;"></div>
             </div>
