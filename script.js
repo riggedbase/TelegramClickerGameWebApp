@@ -111,23 +111,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
-        // Check if the click is on a button or within the wallet screen
         if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
             return;
         }
-        
         console.log("Click handled");
         handleDamage();
     }
 
     function handleTouch(event) {
-        // Check if the touch is on a button or within the wallet screen
         if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
             return;
         }
-
         console.log("Touch handled", event.touches.length);
-        event.preventDefault(); // Prevent default touch behavior
+        event.preventDefault();
         handleDamage(event.touches.length);
     }
 
@@ -147,7 +143,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (points >= replenishWillCost) {
             points -= replenishWillCost;
             will = 1000;
-            replenishWillCost *= 2; // Double the cost for next time
+            replenishWillCost *= 2;
             updateDisplay();
             console.log("Will replenished to 1000. New cost:", replenishWillCost);
         } else {
@@ -160,8 +156,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Increasing damage");
         if (points >= increaseDamageCost) {
             points -= increaseDamageCost;
-            damagePerClick *= 2; // Double the damage
-            increaseDamageCost *= 2; // Double the cost for next time
+            damagePerClick *= 2;
+            increaseDamageCost *= 2;
             updateDisplay();
             console.log("Damage increased. New damage per click:", damagePerClick, "New cost:", increaseDamageCost);
         } else {
@@ -209,8 +205,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function saveWalletAddress(event) {
-        event.preventDefault(); // Prevent form submission
-        event.stopPropagation(); // Prevent click from bubbling to game container
+        event.preventDefault();
+        event.stopPropagation();
         baseWalletAddress = baseWalletAddressInput.value;
         console.log("Base wallet address saved:", baseWalletAddress);
         updateWalletDisplay();
@@ -236,7 +232,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (!validateWalletAddress()) {
             return;
         }
-        // Here you would typically call the API to claim RIGGED tokens
         console.log("Claiming RIGGED tokens");
         points = 0;
         riggedTokens = 0;
@@ -245,7 +240,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function burnRigged(event) {
         event.stopPropagation();
-        // Here you would typically call the API to burn RIGGED tokens
         console.log("Burning RIGGED tokens");
         riggedTokens = 0;
         updateDisplay();

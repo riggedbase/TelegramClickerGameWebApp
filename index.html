@@ -58,8 +58,9 @@
             <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
             <div>
                 <label for="base-wallet-address">Base Wallet Address:</label>
-                <input type="text" id="base-wallet-address">
+                <input type="text" id="base-wallet-address" maxlength="42">
                 <button id="save-wallet-address">Save Address</button>
+                <div id="wallet-address-error" style="color: red;"></div>
             </div>
             <button id="claim-rigged">Claim $RIGGED</button>
             <button id="burn-rigged">Burn $RIGGED</button>
