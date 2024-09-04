@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
-        if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
+        if (event.target.tagName === 'BUTTON' || (walletScreen && walletScreen.contains(event.target))) {
             return;
         }
         console.log("Click handled");
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleTouch(event) {
-        if (event.target.tagName === 'BUTTON' || walletScreen.contains(event.target)) {
+        if (event.target.tagName === 'BUTTON' || (walletScreen && walletScreen.contains(event.target))) {
             return;
         }
         console.log("Touch handled", event.touches.length);
@@ -128,7 +128,83 @@ document.addEventListener('DOMContentLoaded', (event) => {
         handleDamage(event.touches.length);
     }
 
-    // ... (other game functions remain the same)
+    function nextCharacter() {
+        console.log("Moving to next character");
+        characterIndex = (characterIndex + 1) % characters.length;
+        if (characterIndex === 0) {
+            level++;
+        }
+        maxHealth = characters[characterIndex].baseHealth * level;
+        health = maxHealth;
+        updateDisplay();
+    }
+
+    function replenishWill(event) {
+        event.stopPropagation();
+        console.log("Replenishing will");
+        if (points >= replenishWillCost) {
+            points -= replenishWillCost;
+            will = 1000;
+            replenishWillCost *= 2;
+            updateDisplay();
+            console.log("Will replenished to 1000. New cost:", replenishWillCost);
+        } else {
+            console.log("Not enough points to replenish will");
+        }
+    }
+
+    function increaseDamage(event) {
+        event.stopPropagation();
+        console.log("Increasing damage");
+        if (points >= increaseDamageCost) {
+            points -= increaseDamageCost;
+            damagePerClick *= 2;
+            increaseDamageCost *= 2;
+            updateDisplay();
+            console.log("Damage increased. New damage per click:", damagePerClick, "New cost:", increaseDamageCost);
+        } else {
+            console.log("Not enough points to increase damage");
+        }
+    }
+
+    function addOrUpdateScoreInLeaderboard(name, score) {
+        if (playerKey) {
+            database.ref('leaderboard/' + playerKey).update({ score: score });
+        } else {
+            const newEntryRef = database.ref('leaderboard').push();
+            playerKey = newEntryRef.key;
+            newEntryRef.set({ name: name, score: score });
+        }
+    }
+
+    function showLeaderboard(event) {
+        event.stopPropagation();
+        console.log("Showing leaderboard");
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
+                sortedLeaderboard.forEach((entry) => {
+                    leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+        });
+    }
+
+    function showWallet(event) {
+        event.stopPropagation();
+        updateWalletDisplay();
+        walletScreen.style.display = 'block';
+    }
+
+    function closeWallet(event) {
+        event.stopPropagation();
+        walletScreen.style.display = 'none';
+    }
 
     function saveWalletAddress(event) {
         event.preventDefault();
@@ -154,10 +230,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
+    function claimRigged(event) {
+        event.stopPropagation();
+        if (!baseWalletAddress) {
+            alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
+            return;
+        }
+        if (!validateWalletAddress(baseWalletAddress)) {
+            return;
+        }
+        console.log("Claiming RIGGED tokens");
+        points = 0;
+        riggedTokens = 0;
+        pointsAtLastBurn = 0;
+        updateDisplay();
+    }
+
+    function burnRigged(event) {
+        event.stopPropagation();
+        console.log("Burning RIGGED tokens");
+        riggedTokens = 0;
+        pointsAtLastBurn = points;
+        updateDisplay();
+    }
+
     // Event listeners
-    gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('touchstart', handleTouch, { passive: false });
+    document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
@@ -169,19 +269,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     burnRiggedButton.addEventListener('click', burnRigged);
 
     // Prevent event propagation for wallet screen elements
-    walletScreen.addEventListener('click', (e) => e.stopPropagation());
-    walletScreen.addEventListener('touchstart', (e) => e.stopPropagation());
+    if (walletScreen) {
+        walletScreen.addEventListener('click', (e) => e.stopPropagation());
+        walletScreen.addEventListener('touchstart', (e) => e.stopPropagation());
+    }
 
     // Handle input separately
-    baseWalletAddressInput.addEventListener('input', function(e) {
-        e.stopPropagation();
-        if (this.value.length > 42) {
-            this.value = this.value.slice(0, 42);
-        }
-    });
-
-    baseWalletAddressInput.addEventListener('click', (e) => e.stopPropagation());
-    baseWalletAddressInput.addEventListener('touchstart', (e) => e.stopPropagation());
+    if (baseWalletAddressInput) {
+        baseWalletAddressInput.addEventListener('input', function(e) {
+            e.stopPropagation();
+            if (this.value.length > 42) {
+                this.value = this.value.slice(0, 42);
+            }
+        });
+        baseWalletAddressInput.addEventListener('click', (e) => e.stopPropagation());
+        baseWalletAddressInput.addEventListener('touchstart', (e) => e.stopPropagation());
+    }
 
     // Initialize game
     updateDisplay();
