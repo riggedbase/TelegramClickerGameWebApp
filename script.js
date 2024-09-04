@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let replenishWillCost = 100;
     let increaseDamageCost = 200;
     let baseWalletAddress = '';
+    let riggedTokens = 0;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -87,7 +88,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateWalletDisplay() {
         walletPointsElement.textContent = points;
-        riggedTokensElement.textContent = Math.floor(points / 100);
+        riggedTokensElement.textContent = riggedTokens;
         baseWalletAddressInput.value = baseWalletAddress;
     }
 
@@ -98,6 +99,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             score += damage;
             points += damage;
             will -= clickCount;
+            riggedTokens = Math.floor(points / 100);
 
             if (health <= 0) {
                 nextCharacter();
@@ -218,8 +220,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function validateWalletAddress() {
         if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
             walletAddressError.textContent = '';
+            return true;
         } else {
             walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
+            return false;
         }
     }
 
@@ -229,9 +233,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
             return;
         }
+        if (!validateWalletAddress()) {
+            return;
+        }
         // Here you would typically call the API to claim RIGGED tokens
         console.log("Claiming RIGGED tokens");
         points = 0;
+        riggedTokens = 0;
         updateDisplay();
     }
 
@@ -239,7 +247,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         event.stopPropagation();
         // Here you would typically call the API to burn RIGGED tokens
         console.log("Burning RIGGED tokens");
-        riggedTokensElement.textContent = "0";
+        riggedTokens = 0;
         updateDisplay();
     }
 
@@ -261,7 +269,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (this.value.length > 42) {
             this.value = this.value.slice(0, 42);
         }
-        validateWalletAddress();
     });
 
     // Initialize game
