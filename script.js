@@ -232,11 +232,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     claimRiggedButton.addEventListener('click', claimRigged);
     burnRiggedButton.addEventListener('click', burnRigged);
 
-    baseWalletAddressInput.addEventListener('input', (e) => {
-        if (e.target.value.length > 42) {
-            e.target.value = e.target.value.slice(0, 42);
-        }
-    });
+    if (baseWalletAddressInput) {
+        baseWalletAddressInput.addEventListener('input', (e) => {
+            e.stopPropagation();
+            const input = e.target;
+            const cursorPosition = input.selectionStart;
+            if (input.value.length > 42) {
+                input.value = input.value.slice(0, 42);
+                input.setSelectionRange(cursorPosition - 1, cursorPosition - 1);
+            }
+        });
+        baseWalletAddressInput.addEventListener('click', (e) => e.stopPropagation());
+        baseWalletAddressInput.addEventListener('touchstart', (e) => e.stopPropagation());
+    }
 
     // Initialize game
     updateDisplay();
