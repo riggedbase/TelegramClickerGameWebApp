@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damagePerClick = 1;
     let playerName = "Player1";
     let playerKey = null;
+    let replenishWillCost = 100;
+    let increaseDamageCost = 200;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -65,6 +67,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         pointsElement.textContent = points;
         willElement.textContent = will;
         levelElement.textContent = level;
+        replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
+        increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
     function handleClick(event) {
@@ -101,11 +105,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function replenishWill(event) {
         event.stopPropagation(); // Prevent the click from bubbling up to the game container
         console.log("Replenishing will");
-        if (points >= 100) {
-            points -= 100;
+        if (points >= replenishWillCost) {
+            points -= replenishWillCost;
             will = 1000;
+            replenishWillCost *= 2; // Double the cost for next time
             updateDisplay();
-            console.log("Will replenished to 1000");
+            console.log("Will replenished to 1000. New cost:", replenishWillCost);
         } else {
             console.log("Not enough points to replenish will");
         }
@@ -114,11 +119,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function increaseDamage(event) {
         event.stopPropagation(); // Prevent the click from bubbling up to the game container
         console.log("Increasing damage");
-        if (points >= 200) {
-            points -= 200;
+        if (points >= increaseDamageCost) {
+            points -= increaseDamageCost;
             damagePerClick *= 2; // Double the damage
+            increaseDamageCost *= 2; // Double the cost for next time
             updateDisplay();
-            console.log("Damage increased. New damage per click:", damagePerClick);
+            console.log("Damage increased. New damage per click:", damagePerClick, "New cost:", increaseDamageCost);
         } else {
             console.log("Not enough points to increase damage");
         }
@@ -161,13 +167,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Initialize game
     updateDisplay();
 
-    // Will replenishment (half the previous rate)
+    // Will replenishment
     setInterval(() => {
         if (will < 1000) {
             will++;
             updateDisplay();
         }
-    }, 2000); // Changed from 1000 to 2000 milliseconds
+    }, 2000);
 
     console.log("Game initialized");
 });
