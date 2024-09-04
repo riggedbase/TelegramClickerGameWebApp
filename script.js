@@ -35,6 +35,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
     const leaderboardElement = document.getElementById('leaderboard');
 
+    // Wallet elements
+    const showWalletButton = document.getElementById('show-wallet-button');
+    const walletScreen = document.getElementById('wallet-screen');
+    const walletPointsElement = document.getElementById('wallet-points');
+    const riggedTokensElement = document.getElementById('rigged-tokens');
+    const baseWalletAddressInput = document.getElementById('base-wallet-address');
+    const saveWalletAddressButton = document.getElementById('save-wallet-address');
+    const claimRiggedButton = document.getElementById('claim-rigged');
+    const burnRiggedButton = document.getElementById('burn-rigged');
+    const closeWalletButton = document.getElementById('close-wallet');
+
     // Game variables
     let score = 0;
     let points = 0;
@@ -47,6 +58,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let playerKey = null;
     let replenishWillCost = 100;
     let increaseDamageCost = 200;
+    let baseWalletAddress = '';
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -69,6 +81,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         levelElement.textContent = level;
         replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+        updateWalletDisplay();
+    }
+
+    function updateWalletDisplay() {
+        walletPointsElement.textContent = points;
+        riggedTokensElement.textContent = Math.floor(points / 100);
+        baseWalletAddressInput.value = baseWalletAddress;
     }
 
     function handleDamage(clickCount = 1) {
@@ -162,6 +181,38 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
+    function showWallet() {
+        updateWalletDisplay();
+        walletScreen.style.display = 'block';
+    }
+
+    function closeWallet() {
+        walletScreen.style.display = 'none';
+    }
+
+    function saveWalletAddress() {
+        baseWalletAddress = baseWalletAddressInput.value;
+        console.log("Base wallet address saved:", baseWalletAddress);
+        // Here you would typically save this to persistent storage
+    }
+
+    function claimRigged() {
+        if (!baseWalletAddress) {
+            alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
+            return;
+        }
+        // Here you would typically call the API to claim RIGGED tokens
+        console.log("Claiming RIGGED tokens");
+        points = 0;
+        updateDisplay();
+    }
+
+    function burnRigged() {
+        // Here you would typically call the API to burn RIGGED tokens
+        console.log("Burning RIGGED tokens");
+        updateDisplay();
+    }
+
     // Event listeners
     document.body.addEventListener('click', handleClick);
     document.body.addEventListener('touchstart', handleTouch, { passive: false });
@@ -179,6 +230,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         e.stopPropagation();
         showLeaderboard();
     });
+    showWalletButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showWallet();
+    });
+    closeWalletButton.addEventListener('click', closeWallet);
+    saveWalletAddressButton.addEventListener('click', saveWalletAddress);
+    claimRiggedButton.addEventListener('click', claimRigged);
+    burnRiggedButton.addEventListener('click', burnRigged);
 
     // Initialize game
     updateDisplay();
