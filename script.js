@@ -19,29 +19,126 @@ const database = firebase.database();
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM fully loaded");
 
-    // ... (previous code remains the same)
+    // Game elements
+    const gameContainer = document.getElementById('game-container');
+    const characterElement = document.getElementById('character');
+    const characterNameElement = document.getElementById('character-name');
+    const healthFill = document.getElementById('health-fill');
+    const currentHealthElement = document.getElementById('current-health');
+    const maxHealthElement = document.getElementById('max-health');
+    const scoreElement = document.getElementById('score');
+    const pointsElement = document.getElementById('points');
+    const willElement = document.getElementById('will');
+    const levelElement = document.getElementById('level');
+    const replenishWillButton = document.getElementById('replenish-will-button');
+    const increaseDamageButton = document.getElementById('increase-damage-button');
+    const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    const leaderboardElement = document.getElementById('leaderboard');
 
-    // Wallet input handling
-    let walletInputBuffer = '';
+    // Wallet elements
+    const showWalletButton = document.getElementById('show-wallet-button');
+    const walletScreen = document.getElementById('wallet-screen');
+    const walletPointsElement = document.getElementById('wallet-points');
+    const riggedTokensElement = document.getElementById('rigged-tokens');
+    const baseWalletAddressInput = document.getElementById('base-wallet-address');
+    const saveWalletAddressButton = document.getElementById('save-wallet-address');
+    const claimRiggedButton = document.getElementById('claim-rigged');
+    const burnRiggedButton = document.getElementById('burn-rigged');
+    const closeWalletButton = document.getElementById('close-wallet');
+    const walletAddressError = document.getElementById('wallet-address-error');
 
-    function handleWalletInput(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const input = e.data || e.inputType;
-        if (input === 'deleteContentBackward') {
-            walletInputBuffer = walletInputBuffer.slice(0, -1);
-        } else if (input && walletInputBuffer.length < 42) {
-            walletInputBuffer += input;
-        }
-        
-        baseWalletAddressInput.value = walletInputBuffer;
+    // Game variables
+    let score = 0;
+    let points = 0;
+    let will = 1000;
+    let level = 1;
+    let health = 100;
+    let maxHealth = 100;
+    let damagePerClick = 1;
+    let playerName = "Player1";
+    let playerKey = null;
+    let replenishWillCost = 100;
+    let increaseDamageCost = 200;
+    let baseWalletAddress = '';
+    let riggedTokens = 0;
+    let pointsAtLastBurn = 0;
+
+    const characters = [
+        { emoji: '😈', baseHealth: 100, name: 'Demon' },
+        { emoji: '👹', baseHealth: 200, name: 'Ogre' },
+        { emoji: '👽', baseHealth: 300, name: 'Alien' },
+        { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
+        { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
+    ];
+    let characterIndex = 0;
+
+    function updateDisplay() {
+        characterElement.textContent = characters[characterIndex].emoji;
+        characterNameElement.textContent = characters[characterIndex].name;
+        currentHealthElement.textContent = health;
+        maxHealthElement.textContent = maxHealth;
+        healthFill.style.width = `${(health / maxHealth) * 100}%`;
+        scoreElement.textContent = score;
+        pointsElement.textContent = points;
+        willElement.textContent = will;
+        levelElement.textContent = level;
+        replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
+        increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+        updateWalletDisplay();
     }
+
+    function updateWalletDisplay() {
+        walletPointsElement.textContent = points;
+        riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
+        riggedTokensElement.textContent = riggedTokens;
+        baseWalletAddressInput.value = baseWalletAddress;
+    }
+
+    function handleDamage(clickCount = 1) {
+        if (will > 0) {
+            let damage = damagePerClick * clickCount;
+            health -= damage;
+            score += damage;
+            points += damage;
+            will -= clickCount;
+
+            if (health <= 0) {
+                nextCharacter();
+            }
+
+            updateDisplay();
+            addOrUpdateScoreInLeaderboard(playerName, score);
+        }
+    }
+
+    function handleClick(event) {
+        console.log("Click handled");
+        handleDamage();
+    }
+
+    function handleTouch(event) {
+        console.log("Touch handled", event.touches.length);
+        event.preventDefault();
+        handleDamage(event.touches.length);
+    }
+
+    function nextCharacter() {
+        console.log("Moving to next character");
+        characterIndex = (characterIndex + 1) % characters.length;
+        if (characterIndex === 0) {
+            level++;
+        }
+        maxHealth = characters[characterIndex].baseHealth * level;
+        health = maxHealth;
+        updateDisplay();
+    }
+
+    // ... (other game functions remain the same)
 
     function saveWalletAddress(event) {
         event.preventDefault();
         event.stopPropagation();
-        const newAddress = walletInputBuffer;
+        const newAddress = baseWalletAddressInput.value;
         if (validateWalletAddress(newAddress)) {
             baseWalletAddress = newAddress;
             console.log("Base wallet address saved:", baseWalletAddress);
@@ -62,21 +159,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    // ... (rest of the functions remain the same)
-
     // Event listeners
-    document.body.addEventListener('click', handleClick);
-    document.body.addEventListener('touchstart', handleTouch, { passive: false });
-    document.body.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    gameContainer.addEventListener('click', handleClick);
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
 
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', showLeaderboard);
-    showWalletButton.addEventListener('click', showWallet);
-    closeWalletButton.addEventListener('click', closeWallet);
+    replenishWillButton.addEventListener('click', (e) => { e.stopPropagation(); replenishWill(); });
+    increaseDamageButton.addEventListener('click', (e) => { e.stopPropagation(); increaseDamage(); });
+    showLeaderboardButton.addEventListener('click', (e) => { e.stopPropagation(); showLeaderboard(); });
+    showWalletButton.addEventListener('click', (e) => { e.stopPropagation(); showWallet(); });
+    closeWalletButton.addEventListener('click', (e) => { e.stopPropagation(); closeWallet(); });
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
-    claimRiggedButton.addEventListener('click', claimRigged);
-    burnRiggedButton.addEventListener('click', burnRigged);
+    claimRiggedButton.addEventListener('click', (e) => { e.stopPropagation(); claimRigged(); });
+    burnRiggedButton.addEventListener('click', (e) => { e.stopPropagation(); burnRigged(); });
 
     // Prevent event propagation for wallet screen elements
     if (walletScreen) {
@@ -84,10 +178,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         walletScreen.addEventListener('touchstart', (e) => e.stopPropagation());
     }
 
-    // Handle wallet input separately
+    // Handle wallet input
     if (baseWalletAddressInput) {
-        baseWalletAddressInput.addEventListener('input', handleWalletInput);
-        baseWalletAddressInput.addEventListener('keydown', (e) => e.stopPropagation());
+        baseWalletAddressInput.addEventListener('input', (e) => {
+            e.stopPropagation();
+            if (e.target.value.length > 42) {
+                e.target.value = e.target.value.slice(0, 42);
+            }
+        });
         baseWalletAddressInput.addEventListener('click', (e) => e.stopPropagation());
         baseWalletAddressInput.addEventListener('touchstart', (e) => e.stopPropagation());
     }
