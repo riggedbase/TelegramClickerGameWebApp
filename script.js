@@ -107,13 +107,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleTouch(event) {
-        // Prevent damage when touching on buttons
-        if (event.target.tagName === 'BUTTON') return;
+        // Prevent damage when touching on buttons or the leaderboard
+        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) return;
 
         event.preventDefault(); // Prevent default behavior such as scrolling
         for (let i = 0; i < event.touches.length; i++) {
             handleAttack(damagePerClick);
         }
+    }
+
+    function handleLeaderboardTouch(event) {
+        // Allow default touch behavior (scrolling) within the leaderboard
+        event.stopPropagation();
     }
 
     function nextCharacter() {
@@ -161,6 +166,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
             leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
         });
         leaderboardElement.style.display = 'block';
+        
+        // Add touch event listeners to allow scrolling within the leaderboard
+        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
     }
 
     function showWallet() {
@@ -206,7 +215,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Event listeners
     gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch); // For mobile devices
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false }); // For mobile devices
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false }); // Prevent scrolling on the game container
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
     showLeaderboardButton.addEventListener('click', showLeaderboard);
