@@ -108,14 +108,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
-        console.log("Click handled");
-        handleDamage();
+        // Only process clicks on the game container, not on buttons or wallet screen
+        if (event.target === gameContainer || event.target === characterElement) {
+            console.log("Click handled");
+            handleDamage();
+        }
     }
 
     function handleTouch(event) {
-        console.log("Touch handled", event.touches.length);
-        event.preventDefault(); // Prevent default touch behavior
-        handleDamage(event.touches.length);
+        // Only process touches on the game container, not on buttons or wallet screen
+        if (event.target === gameContainer || event.target === characterElement) {
+            console.log("Touch handled", event.touches.length);
+            event.preventDefault(); // Prevent default touch behavior
+            handleDamage(event.touches.length);
+        }
     }
 
     function nextCharacter() {
@@ -190,13 +196,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
         walletScreen.style.display = 'none';
     }
 
-    function saveWalletAddress() {
+    function saveWalletAddress(event) {
+        event.preventDefault(); // Prevent form submission
         baseWalletAddress = baseWalletAddressInput.value;
         console.log("Base wallet address saved:", baseWalletAddress);
+        updateWalletDisplay();
         // Here you would typically save this to persistent storage
     }
 
-    function claimRigged() {
+    function claimRigged(event) {
+        event.stopPropagation(); // Prevent click from bubbling to game container
         if (!baseWalletAddress) {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
             return;
@@ -207,7 +216,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateDisplay();
     }
 
-    function burnRigged() {
+    function burnRigged(event) {
+        event.stopPropagation(); // Prevent click from bubbling to game container
         // Here you would typically call the API to burn RIGGED tokens
         console.log("Burning RIGGED tokens");
         updateDisplay();
