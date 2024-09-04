@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const claimRiggedButton = document.getElementById('claim-rigged');
     const burnRiggedButton = document.getElementById('burn-rigged');
     const closeWalletButton = document.getElementById('close-wallet');
+    const walletAddressError = document.getElementById('wallet-address-error');
 
     // Game variables
     let score = 0;
@@ -138,7 +139,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         health = maxHealth;
     }
 
-    function replenishWill() {
+    function replenishWill(event) {
+        event.stopPropagation();
         console.log("Replenishing will");
         if (points >= replenishWillCost) {
             points -= replenishWillCost;
@@ -151,7 +153,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function increaseDamage() {
+    function increaseDamage(event) {
+        event.stopPropagation();
         console.log("Increasing damage");
         if (points >= increaseDamageCost) {
             points -= increaseDamageCost;
@@ -174,7 +177,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function showLeaderboard() {
+    function showLeaderboard(event) {
+        event.stopPropagation();
         console.log("Showing leaderboard");
         leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
         database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
@@ -191,24 +195,36 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    function showWallet() {
+    function showWallet(event) {
+        event.stopPropagation();
         updateWalletDisplay();
         walletScreen.style.display = 'block';
     }
 
-    function closeWallet() {
+    function closeWallet(event) {
+        event.stopPropagation();
         walletScreen.style.display = 'none';
     }
 
     function saveWalletAddress(event) {
         event.preventDefault(); // Prevent form submission
+        event.stopPropagation(); // Prevent click from bubbling to game container
         baseWalletAddress = baseWalletAddressInput.value;
         console.log("Base wallet address saved:", baseWalletAddress);
         updateWalletDisplay();
-        // Here you would typically save this to persistent storage
+        validateWalletAddress();
+    }
+
+    function validateWalletAddress() {
+        if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
+            walletAddressError.textContent = '';
+        } else {
+            walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
+        }
     }
 
     function claimRigged(event) {
+        event.stopPropagation();
         if (!baseWalletAddress) {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
             return;
@@ -220,6 +236,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function burnRigged(event) {
+        event.stopPropagation();
         // Here you would typically call the API to burn RIGGED tokens
         console.log("Burning RIGGED tokens");
         riggedTokensElement.textContent = "0";
@@ -239,6 +256,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
     claimRiggedButton.addEventListener('click', claimRigged);
     burnRiggedButton.addEventListener('click', burnRigged);
+
+    baseWalletAddressInput.addEventListener('input', function(e) {
+        if (this.value.length > 42) {
+            this.value = this.value.slice(0, 42);
+        }
+        validateWalletAddress();
+    });
 
     // Initialize game
     updateDisplay();
