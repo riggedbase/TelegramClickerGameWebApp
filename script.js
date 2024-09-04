@@ -71,24 +71,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
-    function handleClick(event) {
-        // Only process clicks directly on the game container, not on buttons
-        if (event.target === gameContainer) {
-            console.log("Click handled");
-            if (will > 0) {
-                let damage = damagePerClick;
-                health -= damage;
-                score += damage;
-                points += damage;
-                will -= 1;
+    function handleGameContainerClick(event) {
+        console.log("Game container clicked");
+        if (will > 0) {
+            let damage = damagePerClick;
+            health -= damage;
+            score += damage;
+            points += damage;
+            will -= 1;
 
-                if (health <= 0) {
-                    nextCharacter();
-                }
-
-                updateDisplay();
-                addOrUpdateScoreInLeaderboard(playerName, score);
+            if (health <= 0) {
+                nextCharacter();
             }
+
+            updateDisplay();
+            addOrUpdateScoreInLeaderboard(playerName, score);
         }
     }
 
@@ -102,8 +99,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         health = maxHealth;
     }
 
-    function replenishWill(event) {
-        event.stopPropagation(); // Prevent the click from bubbling up to the game container
+    function replenishWill() {
         console.log("Replenishing will");
         if (points >= replenishWillCost) {
             points -= replenishWillCost;
@@ -116,8 +112,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function increaseDamage(event) {
-        event.stopPropagation(); // Prevent the click from bubbling up to the game container
+    function increaseDamage() {
         console.log("Increasing damage");
         if (points >= increaseDamageCost) {
             points -= increaseDamageCost;
@@ -140,8 +135,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function showLeaderboard(event) {
-        event.stopPropagation(); // Prevent the click from bubbling up to the game container
+    function showLeaderboard() {
         console.log("Showing leaderboard");
         leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
         database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
@@ -159,7 +153,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Event listeners
-    gameContainer.addEventListener('click', handleClick);
+    gameContainer.addEventListener('click', handleGameContainerClick);
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
     showLeaderboardButton.addEventListener('click', showLeaderboard);
