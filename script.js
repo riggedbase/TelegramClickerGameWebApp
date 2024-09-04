@@ -84,7 +84,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
-    function handleClick() {
+    function handleClick(event) {
+        // Prevent damage when clicking on buttons
+        if (event.target.tagName === 'BUTTON') return;
+
         if (will > 0) {
             health -= damagePerClick;
             score += damagePerClick;
@@ -108,7 +111,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         health = maxHealth;
     }
 
-    function replenishWill() {
+    function replenishWill(event) {
+        event.stopPropagation(); // Prevent click from bubbling to game container
         if (points >= replenishWillCost) {
             points -= replenishWillCost;
             will = 1000;
@@ -117,13 +121,32 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function increaseDamage() {
+    function increaseDamage(event) {
+        event.stopPropagation(); // Prevent click from bubbling to game container
         if (points >= increaseDamageCost) {
             points -= increaseDamageCost;
             damagePerClick *= 2;
             increaseDamageCost *= 2;
             updateDisplay();
         }
+    }
+
+    function showLeaderboard(event) {
+        event.stopPropagation(); // Prevent click from bubbling to game container
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
+                sortedLeaderboard.forEach((entry) => {
+                    leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+        });
+        leaderboardElement.style.display = 'block';
     }
 
     function showWallet() {
@@ -171,9 +194,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     gameContainer.addEventListener('click', handleClick);
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', () => {
-        // Implement leaderboard functionality here
-    });
+    showLeaderboardButton.addEventListener('click', showLeaderboard);
     showWalletButton.addEventListener('click', showWallet);
     closeWalletButton.addEventListener('click', closeWallet);
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
