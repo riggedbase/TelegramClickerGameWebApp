@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let increaseDamageCost = 200;
     let baseWalletAddress = '';
     let riggedTokens = 0;
-    let pointsAfterLastBurn = 0;
+    let pointsAtLastBurn = 0;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function updateWalletDisplay() {
         walletPointsElement.textContent = points;
-        riggedTokens = Math.floor((points - pointsAfterLastBurn) / 100);
+        riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
         riggedTokensElement.textContent = riggedTokens;
         baseWalletAddressInput.value = baseWalletAddress;
     }
@@ -208,18 +208,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function saveWalletAddress(event) {
         event.preventDefault();
         event.stopPropagation();
-        baseWalletAddress = baseWalletAddressInput.value;
-        console.log("Base wallet address saved:", baseWalletAddress);
-        updateWalletDisplay();
-        validateWalletAddress();
+        const newAddress = baseWalletAddressInput.value;
+        if (validateWalletAddress(newAddress)) {
+            baseWalletAddress = newAddress;
+            console.log("Base wallet address saved:", baseWalletAddress);
+            updateWalletDisplay();
+            walletAddressError.textContent = 'Wallet address saved successfully!';
+            walletAddressError.style.color = 'green';
+        }
     }
 
-    function validateWalletAddress() {
-        if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
+    function validateWalletAddress(address) {
+        if (address.length === 42 || address.endsWith('.eth')) {
             walletAddressError.textContent = '';
             return true;
         } else {
             walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
+            walletAddressError.style.color = 'red';
             return false;
         }
     }
@@ -230,13 +235,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
             return;
         }
-        if (!validateWalletAddress()) {
+        if (!validateWalletAddress(baseWalletAddress)) {
             return;
         }
         console.log("Claiming RIGGED tokens");
         points = 0;
         riggedTokens = 0;
-        pointsAfterLastBurn = 0;
+        pointsAtLastBurn = 0;
         updateDisplay();
     }
 
@@ -244,7 +249,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         event.stopPropagation();
         console.log("Burning RIGGED tokens");
         riggedTokens = 0;
-        pointsAfterLastBurn = points;
+        pointsAtLastBurn = points;
         updateDisplay();
     }
 
@@ -266,6 +271,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (this.value.length > 42) {
             this.value = this.value.slice(0, 42);
         }
+        validateWalletAddress(this.value);
     });
 
     // Initialize game
