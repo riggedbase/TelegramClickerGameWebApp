@@ -1,173 +1,143 @@
-console.log("Script loaded");
-
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
-    authDomain: "rigged-clicker-game-1.firebaseapp.com",
-    projectId: "rigged-clicker-game-1",
-    storageBucket: "rigged-clicker-game-1.appspot.com",
-    messagingSenderId: "492830453182",
-    appId: "1:492830453182:web:3050eafa48fea21e145def",
-    measurementId: "G-NNKC4YWY5R",
-    databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
-let telegramUserId = null;
-let displayName = null;
-
-// Declare all game variables with initial values
-let score = 0;
-let points = 0;
-let will = 1000;
-let level = 1;
-let health = 100;
-let maxHealth = 100;
-let damagePerClick = 1;
-let replenishWillCost = 100;
-let increaseDamageCost = 200;
-let baseWalletAddress = '';
-let riggedTokens = 0;
-let pointsAtLastBurn = 0;
-
-const characters = [
-    { emoji: '😈', baseHealth: 100, name: 'Demon' },
-    { emoji: '👹', baseHealth: 200, name: 'Ogre' },
-    { emoji: '👽', baseHealth: 300, name: 'Alien' },
-    { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
-    { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
-];
-let characterIndex = 0;
-
-function authenticateTelegramUser() {
-    return new Promise((resolve) => {
-        if (window.Telegram && window.Telegram.WebApp) {
-            const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-            
-            if (initDataUnsafe && initDataUnsafe.user) {
-                telegramUserId = initDataUnsafe.user.id.toString();
-                resolve(telegramUserId);
-            } else {
-                telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
-                resolve(telegramUserId);
-            }
-        } else {
-            telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
-            resolve(telegramUserId);
-        }
-    });
-}
-
-function generateRandomUsername() {
-    const adjectives = ['Happy', 'Lucky', 'Sunny', 'Clever', 'Swift', 'Brave', 'Bright'];
-    const nouns = ['Player', 'Gamer', 'Hero', 'Champion', 'Warrior', 'Master', 'Star'];
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const number = Math.floor(Math.random() * 1000);
-    return `${adj}${noun}${number}`;
-}
-
-// Simple profanity filter (expand this list as needed)
-const profanityList = ['badword1', 'badword2', 'badword3'];
-
-function isProfanity(word) {
-    return profanityList.some(badWord => word.toLowerCase().includes(badWord));
-}
-
-function changeUsername(newUsername) {
-    if (!isProfanity(newUsername)) {
-        displayName = newUsername;
-        saveProgress();
-        return true;
-    }
-    return false;
-}
-
-// Function to save progress to Firebase
-function saveProgress() {
-    if (telegramUserId) {
-        database.ref('users/' + telegramUserId).set({
-            displayName: displayName,
-            score: score,
-            points: points,
-            will: will,
-            level: level,
-            health: health,
-            maxHealth: maxHealth,
-            damagePerClick: damagePerClick,
-            replenishWillCost: replenishWillCost,
-            increaseDamageCost: increaseDamageCost,
-            baseWalletAddress: baseWalletAddress,
-            riggedTokens: riggedTokens,
-            pointsAtLastBurn: pointsAtLastBurn,
-            characterIndex: characterIndex
-        });
-    }
-}
-
-// Function to load progress from Firebase
-function loadProgress() {
-    return new Promise((resolve, reject) => {
-        if (telegramUserId) {
-            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    displayName = data.displayName || generateRandomUsername();
-                    score = data.score || 0;
-                    points = data.points || 0;
-                    will = data.will || 1000;
-                    level = data.level || 1;
-                    health = data.health || 100;
-                    maxHealth = data.maxHealth || 100;
-                    damagePerClick = data.damagePerClick || 1;
-                    replenishWillCost = data.replenishWillCost || 100;
-                    increaseDamageCost = data.increaseDamageCost || 200;
-                    baseWalletAddress = data.baseWalletAddress || '';
-                    riggedTokens = data.riggedTokens || 0;
-                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                    characterIndex = data.characterIndex || 0;
-                    updateDisplay();
-                    resolve();
-                } else {
-                    displayName = generateRandomUsername();
-                    resolve();
-                }
-            }).catch(reject);
-        } else {
-            reject("No Telegram User ID available");
-        }
-    });
-}
-
-// Define updateDisplay function
-function updateDisplay() {
-    document.getElementById('score').textContent = `Score: ${score}`;
-    document.getElementById('points').textContent = `Points: ${points}`;
-    document.getElementById('will').textContent = `Will: ${will}`;
-    document.getElementById('rigged-tokens').textContent = `Rigged Tokens: ${riggedTokens}`;
-    document.getElementById('character').textContent = characters[characterIndex].emoji;
-}
-
-// Event listeners and other functions remain unchanged...
-
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM fully loaded");
-    authenticateTelegramUser()
-        .then(() => loadProgress())
-        .then(() => {
+
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
+        authDomain: "rigged-clicker-game-1.firebaseapp.com",
+        projectId: "rigged-clicker-game-1",
+        storageBucket: "rigged-clicker-game-1.appspot.com",
+        messagingSenderId: "492830453182",
+        appId: "1:492830453182:web:3050eafa48fea21e145def",
+        measurementId: "G-NNKC4YWY5R",
+        databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Game state variables
+    let score = 0;
+    let points = 0;
+    let will = 1000;
+    let level = 1;
+    let maxHealth = 100;
+    let currentHealth = maxHealth;
+    let damage = 10;
+    let riggedTokens = 0;
+    let baseWalletAddress = "";
+
+    // UI Elements
+    const characterElement = document.getElementById('character');
+    const healthFillElement = document.getElementById('health-fill');
+    const currentHealthElement = document.getElementById('current-health');
+    const maxHealthElement = document.getElementById('max-health');
+    const scoreElement = document.getElementById('score');
+    const pointsElement = document.getElementById('points');
+    const willElement = document.getElementById('will');
+    const levelElement = document.getElementById('level');
+    const walletPointsElement = document.getElementById('wallet-points');
+    const riggedTokensElement = document.getElementById('rigged-tokens');
+    const baseWalletAddressElement = document.getElementById('base-wallet-address');
+    const leaderboardElement = document.getElementById('leaderboard');
+
+    const replenishWillButton = document.getElementById('replenish-will-button');
+    const increaseDamageButton = document.getElementById('increase-damage-button');
+    const showLeaderboardButton = document.getElementById('show-leaderboard-button');
+    const showWalletButton = document.getElementById('show-wallet-button');
+    const claimRiggedButton = document.getElementById('claim-rigged');
+    const burnRiggedButton = document.getElementById('burn-rigged');
+    const saveWalletAddressButton = document.getElementById('save-wallet-address');
+    const closeWalletButton = document.getElementById('close-wallet');
+    const changeUsernameButton = document.getElementById('change-username-button');
+
+    function updateDisplay() {
+        scoreElement.textContent = score;
+        pointsElement.textContent = points;
+        willElement.textContent = will;
+        levelElement.textContent = level;
+        currentHealthElement.textContent = currentHealth;
+        maxHealthElement.textContent = maxHealth;
+        walletPointsElement.textContent = points;
+        riggedTokensElement.textContent = riggedTokens;
+        healthFillElement.style.width = `${(currentHealth / maxHealth) * 100}%`;
+    }
+
+    function handleAttack() {
+        if (will <= 0) return;
+        will--;
+        currentHealth -= damage;
+        score += damage;
+        points += damage;
+
+        if (currentHealth <= 0) {
+            nextCharacter();
+        }
+
+        updateDisplay();
+    }
+
+    function nextCharacter() {
+        level++;
+        maxHealth += 50;
+        currentHealth = maxHealth;
+        updateDisplay();
+    }
+
+    function increaseDamage() {
+        if (points >= 200) {
+            points -= 200;
+            damage += 10;
             updateDisplay();
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized");
-        })
-        .catch((error) => {
-            console.error("Error initializing game:", error);
-            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-            displayName = generateRandomUsername();
+        }
+    }
+
+    function replenishWill() {
+        if (points >= 100) {
+            points -= 100;
+            will += 50;
             updateDisplay();
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized with new session due to error");
-        });
+        }
+    }
+
+    function claimRigged() {
+        // Placeholder for claim logic
+        alert(`Claiming ${points} $RIGGED tokens.`);
+        riggedTokens += points;
+        points = 0;
+        updateDisplay();
+    }
+
+    function burnRigged() {
+        // Placeholder for burn logic
+        alert(`Burning ${riggedTokens} $RIGGED tokens.`);
+        riggedTokens = 0;
+        updateDisplay();
+    }
+
+    function saveWalletAddress() {
+        baseWalletAddress = baseWalletAddressElement.value;
+        alert(`Wallet address saved: ${baseWalletAddress}`);
+    }
+
+    function clearLeaderboard() {
+        leaderboardElement.innerHTML = ''; // Clears the leaderboard display
+        // Clear leaderboard in Firebase
+        database.ref('leaderboard').remove();
+    }
+
+    // Add event listeners
+    characterElement.addEventListener('click', handleAttack);
+    replenishWillButton.addEventListener('click', replenishWill);
+    increaseDamageButton.addEventListener('click', increaseDamage);
+    showLeaderboardButton.addEventListener('click', () => leaderboardElement.style.display = 'block');
+    showWalletButton.addEventListener('click', () => document.getElementById('wallet-screen').style.display = 'block');
+    closeWalletButton.addEventListener('click', () => document.getElementById('wallet-screen').style.display = 'none');
+    claimRiggedButton.addEventListener('click', claimRigged);
+    burnRiggedButton.addEventListener('click', burnRigged);
+    saveWalletAddressButton.addEventListener('click', saveWalletAddress);
+    changeUsernameButton.addEventListener('click', changeUsername);
+    document.getElementById('clear-leaderboard-button').addEventListener('click', clearLeaderboard);
+
+    updateDisplay();
 });
