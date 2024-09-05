@@ -29,10 +29,14 @@ function authenticateTelegramUser() {
                 telegramUserId = initDataUnsafe.user.id.toString();
                 resolve(telegramUserId);
             } else {
-                reject("Couldn't get user data from Telegram WebApp");
+                // Use a fallback ID for testing outside Telegram
+                telegramUserId = 'web_' + Math.random().toString(36).substring(2, 15);
+                resolve(telegramUserId);
             }
         } else {
-            reject("Telegram WebApp is not available");
+            // Use a fallback ID for testing outside Telegram
+            telegramUserId = 'web_' + Math.random().toString(36).substring(2, 15);
+            resolve(telegramUserId);
         }
     });
 }
@@ -58,7 +62,8 @@ function isProfanity(word) {
 function changeUsername(newUsername) {
     if (!isProfanity(newUsername)) {
         displayName = newUsername;
-        saveProgress();
+        saveProgress(); // Save the updated username
+        updateLeaderboard(); // Immediately update leaderboard to reflect username change
         return true;
     }
     return false;
@@ -197,34 +202,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             will -= 1;
 
             if (health <= 0) {
+                score += maxHealth;
+                points += maxHealth;
                 nextCharacter();
             }
-
             updateDisplay();
-            saveProgress();
+            saveProgress();  // Save progress after every attack
         }
-    }
-
-    function handleClick(event) {
-        // Prevent damage when clicking on buttons
-        if (event.target.tagName === 'BUTTON') return;
-
-        handleAttack(damagePerClick);
-    }
-
-    function handleTouch(event) {
-        // Prevent damage when touching on buttons or the leaderboard
-        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) return;
-
-        event.preventDefault(); // Prevent default behavior such as scrolling
-        for (let i = 0; i < event.touches.length; i++) {
-            handleAttack(damagePerClick);
-        }
-    }
-
-    function handleLeaderboardTouch(event) {
-        // Allow default touch behavior (scrolling) within the leaderboard
-        event.stopPropagation();
     }
 
     function nextCharacter() {
@@ -234,7 +218,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
         maxHealth = characters[characterIndex].baseHealth * level;
         health = maxHealth;
-        updateDisplay(); // This was missing in your version
+        updateDisplay();
         saveProgress();
     }
 
