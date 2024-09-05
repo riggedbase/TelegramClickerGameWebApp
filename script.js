@@ -105,7 +105,7 @@ function loadProgress() {
                     level = data.level || 1;
                     health = data.health || 100;
                     maxHealth = data.maxHealth || 100;
-                    damagePerClick = data.damagePerClick || 1;
+                    damagePerClick = data.damagePerClick || 10; // Keeping original damage per click
                     replenishWillCost = data.replenishWillCost || 100;
                     increaseDamageCost = data.increaseDamageCost || 200;
                     baseWalletAddress = data.baseWalletAddress || '';
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let level = 1;
     let health = 100;
     let maxHealth = 100;
-    let damagePerClick = 1;
+    let damagePerClick = 10; // Maintaining original damage per click
     let replenishWillCost = 100;
     let increaseDamageCost = 200;
     let baseWalletAddress = '';
@@ -209,15 +209,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
             health -= damage;
             score += damage;
             points += damage;
-            will -= 1;
-
+            will--;
             if (health <= 0) {
-                score += maxHealth;
-                points += maxHealth;
                 nextCharacter();
             }
             updateDisplay();
-            saveProgress();  // Save progress after every attack
+            saveProgress();
         }
     }
 
