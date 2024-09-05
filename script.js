@@ -131,15 +131,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    characterElement.addEventListener('click', handleAttack);
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', showLeaderboard);
-    showWalletButton.addEventListener('click', showWallet);
-    closeWalletButton.addEventListener('click', hideWallet);
-    changeUsernameButton.addEventListener('click', changeUsername);
+    characterElement.addEventListener('click', (event) => {
+        if (!event.target.closest('button')) {
+            handleAttack();
+        }
+    });
 
-    saveWalletAddressButton.addEventListener('click', () => {
+    replenishWillButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        replenishWill();
+    });
+    
+    increaseDamageButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        increaseDamage();
+    });
+    
+    showLeaderboardButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showLeaderboard();
+    });
+    
+    showWalletButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        showWallet();
+    });
+
+    closeWalletButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        hideWallet();
+    });
+    
+    changeUsernameButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        changeUsername();
+    });
+
+    saveWalletAddressButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         const walletAddress = baseWalletAddressInput.value;
         if (walletAddress) {
             console.log(`Wallet address saved: ${walletAddress}`);
@@ -148,11 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    claimRiggedButton.addEventListener('click', () => {
+    claimRiggedButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         console.log('Claiming $RIGGED');
     });
 
-    burnRiggedButton.addEventListener('click', () => {
+    burnRiggedButton.addEventListener('click', (event) => {
+        event.stopPropagation();
         points = 0;
         updateDisplay();
         console.log('$RIGGED burned');
@@ -161,4 +192,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDisplay();
     loadProgress();
 });
-
