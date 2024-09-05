@@ -194,9 +194,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
-    function handleClick() {
-        if (will > 0) {
-            handleAttack(damagePerClick);
+    function handleClick(event) {
+        // Ensure clicks on buttons or other interactive elements are not registered as damage
+        const target = event.target;
+        if (!target.closest('button') && !target.closest('#leaderboard') && !target.closest('#wallet-screen')) {
+            if (will > 0) {
+                handleAttack(damagePerClick);
+            }
         }
     }
 
@@ -219,9 +223,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function nextCharacter() {
         characterIndex = (characterIndex + 1) % characters.length;
-        if (characterIndex === 0) {
-            level++;
-        }
+        level++;
         maxHealth = characters[characterIndex].baseHealth * level;
         health = maxHealth;
         updateDisplay();
