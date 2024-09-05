@@ -16,6 +16,110 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+let telegramUserId = null;
+let displayName = null;
+
+// Function to authenticate Telegram user
+function authenticateTelegramUser() {
+    return new Promise((resolve, reject) => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+            
+            if (initDataUnsafe && initDataUnsafe.user) {
+                telegramUserId = initDataUnsafe.user.id.toString();
+                resolve(telegramUserId);
+            } else {
+                reject("Couldn't get user data from Telegram WebApp");
+            }
+        } else {
+            reject("Telegram WebApp is not available");
+        }
+    });
+}
+
+// Function to generate a random username
+function generateRandomUsername() {
+    const adjectives = ['Happy', 'Lucky', 'Sunny', 'Clever', 'Swift', 'Brave', 'Bright'];
+    const nouns = ['Player', 'Gamer', 'Hero', 'Champion', 'Warrior', 'Master', 'Star'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const number = Math.floor(Math.random() * 1000);
+    return `${adj}${noun}${number}`;
+}
+
+// Simple profanity filter (expand this list as needed)
+const profanityList = ['badword1', 'badword2', 'badword3'];
+
+function isProfanity(word) {
+    return profanityList.some(badWord => word.toLowerCase().includes(badWord));
+}
+
+// Function to change username
+function changeUsername(newUsername) {
+    if (!isProfanity(newUsername)) {
+        displayName = newUsername;
+        saveProgress();
+        return true;
+    }
+    return false;
+}
+
+// Function to save progress to Firebase
+function saveProgress() {
+    if (telegramUserId) {
+        database.ref('users/' + telegramUserId).set({
+            displayName: displayName,
+            score: score,
+            points: points,
+            will: will,
+            level: level,
+            health: health,
+            maxHealth: maxHealth,
+            damagePerClick: damagePerClick,
+            replenishWillCost: replenishWillCost,
+            increaseDamageCost: increaseDamageCost,
+            baseWalletAddress: baseWalletAddress,
+            riggedTokens: riggedTokens,
+            pointsAtLastBurn: pointsAtLastBurn,
+            characterIndex: characterIndex
+        });
+    }
+}
+
+// Function to load progress from Firebase
+function loadProgress() {
+    return new Promise((resolve, reject) => {
+        if (telegramUserId) {
+            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    displayName = data.displayName || generateRandomUsername();
+                    score = data.score || 0;
+                    points = data.points || 0;
+                    will = data.will || 1000;
+                    level = data.level || 1;
+                    health = data.health || 100;
+                    maxHealth = data.maxHealth || 100;
+                    damagePerClick = data.damagePerClick || 1;
+                    replenishWillCost = data.replenishWillCost || 100;
+                    increaseDamageCost = data.increaseDamageCost || 200;
+                    baseWalletAddress = data.baseWalletAddress || '';
+                    riggedTokens = data.riggedTokens || 0;
+                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                    characterIndex = data.characterIndex || 0;
+                    updateDisplay();
+                    resolve();
+                } else {
+                    displayName = generateRandomUsername();
+                    resolve();
+                }
+            }).catch(reject);
+        } else {
+            reject("No Telegram User ID available");
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM fully loaded");
 
@@ -35,6 +139,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const showLeaderboardButton = document.getElementById('show-leaderboard-button');
     const showWalletButton = document.getElementById('show-wallet-button');
     const leaderboardElement = document.getElementById('leaderboard');
+    const changeUsernameButton = document.getElementById('change-username-button');
 
     // Wallet elements
     const walletScreen = document.getElementById('wallet-screen');
@@ -96,6 +201,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
 
             updateDisplay();
+            saveProgress();
         }
     }
 
@@ -128,6 +234,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
         maxHealth = characters[characterIndex].baseHealth * level;
         health = maxHealth;
+        saveProgress();
     }
 
     function replenishWill(event) {
@@ -137,6 +244,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             will = 1000;
             replenishWillCost *= 2;
             updateDisplay();
+            saveProgress();
         }
     }
 
@@ -147,27 +255,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
             damagePerClick *= 2;
             increaseDamageCost *= 2;
             updateDisplay();
+            saveProgress();
         }
     }
 
     function showLeaderboard(event) {
-        event.stopPropagation(); // Prevent click from bubbling to game container
+        event.stopPropagation();
         leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
             const leaderboardData = snapshot.val();
             if (leaderboardData) {
-                const sortedLeaderboard = Object.values(leaderboardData).sort((a, b) => b.score - a.score);
+                const sortedLeaderboard = Object.entries(leaderboardData)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .sort((a, b) => b.score - a.score);
                 sortedLeaderboard.forEach((entry) => {
-                    leaderboardElement.innerHTML += `<p>${entry.name}: ${entry.score}</p>`;
+                    const isCurrentUser = entry.id === telegramUserId;
+                    const displayNameText = isCurrentUser ? `${entry.displayName} (You)` : entry.displayName;
+                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
                 });
             } else {
                 leaderboardElement.innerHTML += '<p>No scores yet</p>';
             }
-            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
         });
         leaderboardElement.style.display = 'block';
         
-        // Add touch event listeners to allow scrolling within the leaderboard
         leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
         leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
     }
@@ -193,6 +304,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
             walletAddressError.style.color = 'red';
         }
+        saveProgress();
     }
 
     function claimRigged() {
@@ -202,6 +314,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             pointsAtLastBurn = 0;
             updateDisplay();
             showWallet();
+            saveProgress();
         } else {
             alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
         }
@@ -211,12 +324,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         riggedTokens = 0;
         pointsAtLastBurn = points;
         showWallet();
+        saveProgress();
     }
 
     // Event listeners
     gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false }); // For mobile devices
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false }); // Prevent scrolling on the game container
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
     showLeaderboardButton.addEventListener('click', showLeaderboard);
@@ -225,17 +339,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
     claimRiggedButton.addEventListener('click', claimRigged);
     burnRiggedButton.addEventListener('click', burnRigged);
+    changeUsernameButton.addEventListener('click', () => {
+        const newUsername = prompt("Enter new username:");
+        if (newUsername && changeUsername(newUsername)) {
+            alert("Username changed successfully!");
+        } else {
+            alert("Invalid username. Please try again.");
+        }
+    });
 
     // Initialize game
-    updateDisplay();
-
-    // Will replenishment
-    setInterval(() => {
-        if (will < 1000) {
-            will++;
+    authenticateTelegramUser()
+        .then(() => loadProgress())
+        .then(() => {
             updateDisplay();
-        }
-    }, 2000);
-
-    console.log("Game initialized");
+            // Add periodic saving (every 30 seconds)
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized");
+        })
+        .catch((error) => {
+            console.error("Error initializing game:", error);
+            alert("There was an error initializing the game. Please try again.");
+        });
 });
