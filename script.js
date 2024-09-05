@@ -194,6 +194,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
     }
 
+    function handleClick(event) {
+        if (event.target !== replenishWillButton && event.target !== increaseDamageButton && event.target !== showLeaderboardButton && event.target !== showWalletButton && event.target !== changeUsernameButton) {
+            handleAttack(damagePerClick);
+        }
+    }
+
     function handleAttack(damage) {
         if (will > 0) {
             health -= damage;
@@ -206,6 +212,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 points += maxHealth;
                 nextCharacter();
             }
+
             updateDisplay();
             saveProgress();  // Save progress after every attack
         }
@@ -263,9 +270,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
         leaderboardElement.style.display = 'block';
-        
-        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
     }
 
     function showWallet() {
@@ -314,7 +318,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Event listeners
     gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchstart', handleClick, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
@@ -338,8 +342,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         .then(() => loadProgress())
         .then(() => {
             updateDisplay();
-            // Add periodic saving (every 30 seconds)
-            setInterval(saveProgress, 30000);
+            setInterval(saveProgress, 30000); // Periodically save progress every 30 seconds
             console.log("Game initialized");
         })
         .catch((error) => {
