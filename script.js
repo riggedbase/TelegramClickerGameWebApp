@@ -26,6 +26,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damage = 10;
     let riggedTokens = 0;
     let baseWalletAddress = "";
+    let username = generateRandomUsername();
+    let telegramID = "web_" + Math.random().toString(36).substr(2, 9);
+
+    // Telegram Integration
+    if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+        telegramID = "telegram_" + window.Telegram.WebApp.initDataUnsafe.user.id;
+        username = window.Telegram.WebApp.initDataUnsafe.user.username;
+    }
 
     // UI Elements
     const characterElement = document.getElementById('character');
@@ -51,6 +59,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const closeWalletButton = document.getElementById('close-wallet');
     const changeUsernameButton = document.getElementById('change-username-button');
 
+    // Functions
     function updateDisplay() {
         scoreElement.textContent = score;
         pointsElement.textContent = points;
@@ -101,7 +110,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function claimRigged() {
-        // Placeholder for claim logic
         alert(`Claiming ${points} $RIGGED tokens.`);
         riggedTokens += points;
         points = 0;
@@ -109,7 +117,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function burnRigged() {
-        // Placeholder for burn logic
         alert(`Burning ${riggedTokens} $RIGGED tokens.`);
         riggedTokens = 0;
         updateDisplay();
@@ -120,17 +127,67 @@ document.addEventListener('DOMContentLoaded', (event) => {
         alert(`Wallet address saved: ${baseWalletAddress}`);
     }
 
+    function changeUsername() {
+        username = document.getElementById('username-input').value;
+        alert(`Username changed to: ${username}`);
+    }
+
     function clearLeaderboard() {
         leaderboardElement.innerHTML = ''; // Clears the leaderboard display
-        // Clear leaderboard in Firebase
         database.ref('leaderboard').remove();
     }
 
-    // Add event listeners
+    function generateRandomUsername() {
+        return 'Player' + Math.floor(Math.random() * 10000);
+    }
+
+    // Firebase operations
+    function saveProgress() {
+        const userData = {
+            username: username,
+            score: score,
+            points: points,
+            level: level,
+            riggedTokens: riggedTokens,
+            baseWalletAddress: baseWalletAddress
+        };
+        database.ref('users/' + telegramID).set(userData);
+    }
+
+    function loadProgress() {
+        database.ref('users/' + telegramID).once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                score = data.score || 0;
+                points = data.points || 0;
+                level = data.level || 1;
+                riggedTokens = data.riggedTokens || 0;
+                baseWalletAddress = data.baseWalletAddress || "";
+                username = data.username || generateRandomUsername();
+                updateDisplay();
+            }
+        }).catch((error) => {
+            console.error("Error loading progress:", error);
+        });
+    }
+
+    function updateLeaderboard() {
+        database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then((snapshot) => {
+            leaderboardElement.innerHTML = '';
+            snapshot.forEach((childSnapshot) => {
+                const entry = childSnapshot.val();
+                const entryElement = document.createElement('div');
+                entryElement.textContent = `${entry.username}: ${entry.score}`;
+                leaderboardElement.appendChild(entryElement);
+            });
+        });
+    }
+
+    // Event listeners
     characterElement.addEventListener('click', handleAttack);
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', () => leaderboardElement.style.display = 'block');
+    showLeaderboardButton.addEventListener('click', updateLeaderboard);
     showWalletButton.addEventListener('click', () => document.getElementById('wallet-screen').style.display = 'block');
     closeWalletButton.addEventListener('click', () => document.getElementById('wallet-screen').style.display = 'none');
     claimRiggedButton.addEventListener('click', claimRigged);
@@ -139,5 +196,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     changeUsernameButton.addEventListener('click', changeUsername);
     document.getElementById('clear-leaderboard-button').addEventListener('click', clearLeaderboard);
 
+    // Initialize game
+    loadProgress();
     updateDisplay();
 });
