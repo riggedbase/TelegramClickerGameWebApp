@@ -264,30 +264,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function showLeaderboard(event) {
-    event.stopPropagation();
-    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-    database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-        const leaderboardData = snapshot.val();
-        if (leaderboardData) {
-            const sortedLeaderboard = Object.entries(leaderboardData)
-                .map(([id, data]) => ({ id, ...data }))
-                .sort((a, b) => b.score - a.score);
-            sortedLeaderboard.forEach((entry) => {
-                const isCurrentUser = entry.id === telegramUserId;
-                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
-                leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
-            });
-        } else {
-            leaderboardElement.innerHTML += '<p>No scores yet</p>';
-        }
-        // Always show current user's score
-        leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
-    });
-    leaderboardElement.style.display = 'block';
-    
-    leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-    leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
-}
+        event.stopPropagation();
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.entries(leaderboardData)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .sort((a, b) => b.score - a.score);
+                sortedLeaderboard.forEach((entry) => {
+                    const isCurrentUser = entry.id === telegramUserId;
+                    const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
+                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+            // Always show current user's score
+            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+        });
+        leaderboardElement.style.display = 'block';
+
+        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
+    }
 
     function showWallet() {
         walletPointsElement.textContent = points;
@@ -355,21 +355,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     // Initialize game
-authenticateTelegramUser()
-    .then(() => loadProgress())
-    .then(() => {
-        updateDisplay();
-        // Add periodic saving (every 30 seconds)
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized");
-    })
-    .catch((error) => {
-        console.error("Error initializing game:", error);
-        // Instead of showing an alert, we'll just log the error and continue
-        // with a new user session
-        telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-        displayName = generateRandomUsername();
-        updateDisplay();
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized with new session due to error");
-    });
+    authenticateTelegramUser()
+        .then(() => loadProgress())
+        .then(() => {
+            updateDisplay();
+            // Add periodic saving (every 30 seconds)
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized");
+        })
+        .catch((error) => {
+            console.error("Error initializing game:", error);
+            // Instead of showing an alert, we'll just log the error and continue
+            // with a new user session
+            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+            displayName = generateRandomUsername();
+            updateDisplay();
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized with new session due to error");
+        });
+});
