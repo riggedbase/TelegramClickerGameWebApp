@@ -2,14 +2,14 @@ console.log("Script loaded");
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
-  authDomain: "rigged-clicker-game-1.firebaseapp.com",
-  projectId: "rigged-clicker-game-1",
-  storageBucket: "rigged-clicker-game-1.appspot.com",
-  messagingSenderId: "492830453182",
-  appId: "1:492830453182:web:3050eafa48fea21e145def",
-  measurementId: "G-NNKC4YWY5R",
-  databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
+    authDomain: "rigged-clicker-game-1.firebaseapp.com",
+    projectId: "rigged-clicker-game-1",
+    storageBucket: "rigged-clicker-game-1.appspot.com",
+    messagingSenderId: "492830453182",
+    appId: "1:492830453182:web:3050eafa48fea21e145def",
+    measurementId: "G-NNKC4YWY5R",
+    databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
         maxHealth = characters[characterIndex].baseHealth * level;
         health = maxHealth;
+        updateDisplay(); // This was missing in your version
         saveProgress();
     }
 
