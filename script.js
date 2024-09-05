@@ -195,33 +195,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
-        // Ensure clicks on buttons or other interactive elements are not registered as damage
-        const target = event.target;
-        if (!target.closest('button') && !target.closest('#leaderboard') && !target.closest('#wallet-screen')) {
+        if (event.target === gameContainer || event.target === characterElement) {
             if (will > 0) {
-                handleAttack(damagePerClick);
+                score += damagePerClick; // Only affect score
+                points += damagePerClick; // Points affect in-game currency
+                will--;
+                health -= damagePerClick; // Ensure damage per click is consistent
+                if (health <= 0) {
+                    nextCharacter();
+                }
+                updateDisplay();
+                saveProgress();
             }
-        }
-    }
-
-    function handleAttack(damage) {
-        if (will > 0) {
-            health -= damage;
-            score += damage;
-            points += damage;
-            will--;
-            if (health <= 0) {
-                nextCharacter();
-            }
-            updateDisplay();
-            saveProgress();
         }
     }
 
     function nextCharacter() {
         characterIndex = (characterIndex + 1) % characters.length;
         level++;
-        maxHealth = characters[characterIndex].baseHealth * level;
+        maxHealth = characters[characterIndex].baseHealth + (level * 100); // Adjust health increment logic
         health = maxHealth;
         updateDisplay();
         saveProgress();
@@ -268,12 +260,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
         leaderboardElement.style.display = 'block';
-
-        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
     }
 
-    function showWallet() {
+    function showWallet(event) {
+        event.stopPropagation();
         walletPointsElement.textContent = points;
         riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
         riggedTokensElement.textContent = riggedTokens;
@@ -281,11 +271,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         walletScreen.style.display = 'block';
     }
 
-    function closeWallet() {
+    function closeWallet(event) {
+        event.stopPropagation();
         walletScreen.style.display = 'none';
     }
 
-    function saveWalletAddress() {
+    function saveWalletAddress(event) {
+        event.stopPropagation();
         baseWalletAddress = baseWalletAddressInput.value;
         if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
             walletAddressError.textContent = 'Wallet address saved successfully!';
@@ -297,7 +289,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         saveProgress();
     }
 
-    function claimRigged() {
+    function claimRigged(event) {
+        event.stopPropagation();
         if (baseWalletAddress) {
             points = 0;
             riggedTokens = 0;
@@ -310,7 +303,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function burnRigged() {
+    function burnRigged(event) {
+        event.stopPropagation();
         riggedTokens = 0;
         pointsAtLastBurn = points;
         showWallet();
@@ -319,8 +313,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Event listeners
     gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     replenishWillButton.addEventListener('click', replenishWill);
     increaseDamageButton.addEventListener('click', increaseDamage);
     showLeaderboardButton.addEventListener('click', showLeaderboard);
@@ -352,7 +344,3 @@ document.addEventListener('DOMContentLoaded', (event) => {
             alert("There was an error initializing the game. Please try again.");
         });
 });
-
-function handleLeaderboardTouch(e) {
-    e.preventDefault(); // Prevent scrolling
-}
