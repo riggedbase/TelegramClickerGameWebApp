@@ -2,14 +2,14 @@ console.log("Script loaded");
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
-  authDomain: "rigged-clicker-game-1.firebaseapp.com",
-  projectId: "rigged-clicker-game-1",
-  storageBucket: "rigged-clicker-game-1.appspot.com",
-  messagingSenderId: "492830453182",
-  appId: "1:492830453182:web:3050eafa48fea21e145def",
-  measurementId: "G-NNKC4YWY5R",
-  databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
+    authDomain: "rigged-clicker-game-1.firebaseapp.com",
+    projectId: "rigged-clicker-game-1",
+    storageBucket: "rigged-clicker-game-1.appspot.com",
+    messagingSenderId: "492830453182",
+    appId: "1:492830453182:web:3050eafa48fea21e145def",
+    measurementId: "G-NNKC4YWY5R",
+    databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
 };
 
 // Initialize Firebase
@@ -142,11 +142,19 @@ function loadProgress() {
     });
 }
 
+// Define updateDisplay function
+function updateDisplay() {
+    document.getElementById('score').textContent = `Score: ${score}`;
+    document.getElementById('points').textContent = `Points: ${points}`;
+    document.getElementById('will').textContent = `Will: ${will}`;
+    document.getElementById('rigged-tokens').textContent = `Rigged Tokens: ${riggedTokens}`;
+    document.getElementById('character').textContent = characters[characterIndex].emoji;
+}
+
 // Event listeners and other functions remain unchanged...
 
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM fully loaded");
-    // Initialize game elements and other game logic here...
     authenticateTelegramUser()
         .then(() => loadProgress())
         .then(() => {
