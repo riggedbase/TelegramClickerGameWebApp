@@ -220,6 +220,61 @@ function loadProgress() {
     });
 }
 
+// Add event listeners for clicks and touches
+function handleClick(event) {
+    console.log("Click detected on:", event.target);
+    // Prevent damage when clicking on buttons or other UI elements
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Click on button or leaderboard, returning");
+        return;
+    }
+    console.log("Handling attack");
+    handleAttack(damagePerClick);
+}
+
+function handleTouch(event) {
+    console.log("Touch detected");
+    // Prevent damage when touching on buttons or the leaderboard
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Touch on button or leaderboard, returning");
+        return;
+    }
+
+    event.preventDefault(); // Prevent default behavior such as scrolling
+    for (let i = 0; i < event.touches.length; i++) {
+        handleAttack(damagePerClick);
+    }
+}
+
+// Handle attacks
+function handleAttack(damage) {
+    console.log("Handling attack, damage:", damage);
+    if (will > 0) {
+        health -= damage;
+        score += damage;
+        points += damage;
+        will -= 1;
+
+        if (health <= 0) {
+            nextCharacter();
+        }
+
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+function nextCharacter() {
+    console.log("Moving to next character");
+    characterIndex = (characterIndex + 1) % characters.length;
+    if (characterIndex === 0) {
+        level++;
+    }
+    maxHealth = characters[characterIndex].baseHealth * level;
+    health = maxHealth;
+    saveProgress();
+}
+
 // Wait for the DOM to fully load before assigning DOM elements
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM Content Loaded event fired");
@@ -252,6 +307,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     burnRiggedButton = document.getElementById('burn-rigged');
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
+
+    // Add event listeners for clicks and touches
+    gameContainer.addEventListener('click', (event) => {
+        console.log("Click on game container");
+        handleClick(event);
+    });
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
