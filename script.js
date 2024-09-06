@@ -166,20 +166,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const walletAddressError = document.getElementById('wallet-address-error');
 
     // Game variables
-let score = 0;
-let points = 0;
-let will = 1000;
-let level = 1;
-let health = 100;        // Make sure health is defined
-let maxHealth = 100;     // Make sure maxHealth is defined
-let damagePerClick = 1;
-let replenishWillCost = 100;
-let increaseDamageCost = 200;
-let baseWalletAddress = '';
-let riggedTokens = 0;
-let pointsAtLastBurn = 0;
-let characterIndex = 0;
-
+    let score = 0;
+    let points = 0;
+    let will = 1000;
+    let level = 1;
+    let health = 100;
+    let maxHealth = 100;
+    let damagePerClick = 1;
+    let replenishWillCost = 100;
+    let increaseDamageCost = 200;
+    let baseWalletAddress = '';
+    let riggedTokens = 0;
+    let pointsAtLastBurn = 0;
+    let characterIndex = 0;
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -188,79 +187,77 @@ let characterIndex = 0;
         { emoji: '🐉', baseHealth: 400, name: 'Dragon' },
         { emoji: '🧙', baseHealth: 500, name: 'Wizard' }
     ];
-    let characterIndex = 0;
 
     function updateDisplay() {
-    console.log("Updating display");
-    characterElement.textContent = characters[characterIndex].emoji;
-    characterNameElement.textContent = characters[characterIndex].name;
-    currentHealthElement.textContent = health;
-    maxHealthElement.textContent = maxHealth;
-    healthFill.style.width = `${(health / maxHealth) * 100}%`;
-    scoreElement.textContent = score;
-    pointsElement.textContent = points;
-    willElement.textContent = will;
-    levelElement.textContent = level;
-    replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
-    increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+        console.log("Updating display");
+        characterElement.textContent = characters[characterIndex].emoji;
+        characterNameElement.textContent = characters[characterIndex].name;
+        currentHealthElement.textContent = health;
+        maxHealthElement.textContent = maxHealth;
+        healthFill.style.width = `${(health / maxHealth) * 100}%`;
+        scoreElement.textContent = score;
+        pointsElement.textContent = points;
+        willElement.textContent = will;
+        levelElement.textContent = level;
+        replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
+        increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
 
-    // Update username display if there's an element for it
-    const usernameElement = document.getElementById('username-display');
-    if (usernameElement) {
-        usernameElement.textContent = displayName || 'Anonymous';
+        // Update username display if there's an element for it
+        const usernameElement = document.getElementById('username-display');
+        if (usernameElement) {
+            usernameElement.textContent = displayName || 'Anonymous';
+        }
     }
-}
 
     function handleAttack(damage) {
-    console.log("Handling attack, damage:", damage);
-    if (will > 0) {
-        health -= damage;
-        score += damage;
-        points += damage;
-        will -= 1;
+        console.log("Handling attack, damage:", damage);
+        if (will > 0) {
+            health -= damage;
+            score += damage;
+            points += damage;
+            will -= 1;
 
-        if (health <= 0) {
-            nextCharacter();
+            if (health <= 0) {
+                nextCharacter();
+            }
+
+            updateDisplay();
+            saveProgress();
         }
-
-        updateDisplay();
-        saveProgress();
     }
-}
 
     function handleClick(event) {
-    console.log("Click detected on:", event.target);
-    // Prevent damage when clicking on buttons or other UI elements
-    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
-        console.log("Click on button or leaderboard, returning");
-        return;
-    }
-    console.log("Handling attack");
-    handleAttack(damagePerClick);
-}
-
-function handleTouch(event) {
-    console.log("Touch detected");
-    // Prevent damage when touching on buttons or the leaderboard
-    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
-        console.log("Touch on button or leaderboard, returning");
-        return;
-    }
-
-    event.preventDefault(); // Prevent default behavior such as scrolling
-    for (let i = 0; i < event.touches.length; i++) {
+        console.log("Click detected on:", event.target);
+        // Prevent damage when clicking on buttons or other UI elements
+        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+            console.log("Click on button or leaderboard, returning");
+            return;
+        }
+        console.log("Handling attack");
         handleAttack(damagePerClick);
     }
-}
 
-// Adding event listeners for clicks and touches
-gameContainer.addEventListener('click', (event) => {
-    console.log("Click on game container");
-    handleClick(event);
-});
-gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    function handleTouch(event) {
+        console.log("Touch detected");
+        // Prevent damage when touching on buttons or the leaderboard
+        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+            console.log("Touch on button or leaderboard, returning");
+            return;
+        }
 
+        event.preventDefault(); // Prevent default behavior such as scrolling
+        for (let i = 0; i < event.touches.length; i++) {
+            handleAttack(damagePerClick);
+        }
+    }
+
+    // Adding event listeners for clicks and touches
+    gameContainer.addEventListener('click', (event) => {
+        console.log("Click on game container");
+        handleClick(event);
+    });
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     function handleLeaderboardTouch(event) {
         // Allow default touch behavior (scrolling) within the leaderboard
@@ -303,32 +300,32 @@ gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive
     }
 
     function showLeaderboard(event) {
-    console.log("Showing leaderboard");
-    event.stopPropagation();
-    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-    database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-        const leaderboardData = snapshot.val();
-        if (leaderboardData) {
-            const sortedLeaderboard = Object.entries(leaderboardData)
-                .map(([id, data]) => ({ id, ...data }))
-                .sort((a, b) => b.score - a.score);
-            
-            sortedLeaderboard.forEach((entry) => {
-                const isCurrentUser = entry.id === telegramUserId;
-                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous') ;
-                leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
-            });
-        } else {
-            leaderboardElement.innerHTML += '<p>No scores yet</p>';
-        }
-        // Always show current user's score at the bottom
-        leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
-    });
-    leaderboardElement.style.display = 'block';
-    
-    leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-    leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
-}
+        console.log("Showing leaderboard");
+        event.stopPropagation();
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.entries(leaderboardData)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .sort((a, b) => b.score - a.score);
+                
+                sortedLeaderboard.forEach((entry) => {
+                    const isCurrentUser = entry.id === telegramUserId;
+                    const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous') ;
+                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+            // Always show current user's score at the bottom
+            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+        });
+        leaderboardElement.style.display = 'block';
+        
+        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
+    }
 
     function showWallet() {
         console.log("Showing wallet");
@@ -380,14 +377,6 @@ gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive
     }
 
     // Event listeners
-    gameContainer.addEventListener('click', (event) => {
-        console.log("Click on game container");
-        handleClick(event);
-    });
-    console.log("Game container element:", gameContainer);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-
     replenishWillButton.addEventListener('click', (event) => {
         console.log("Replenish Will button clicked");
         replenishWill(event);
@@ -405,16 +394,16 @@ gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive
         showWallet();
     });
     changeUsernameButton.addEventListener('click', (event) => {
-    console.log("Change Username button clicked");
-    const newUsername = prompt("Enter new username:");
-    if (newUsername && changeUsername(newUsername)) {
-        alert("Username changed successfully!");
-        updateDisplay(); // Ensure the display updates immediately
-        showLeaderboard(); // Force leaderboard to refresh with new name
-    } else {
-        alert("Invalid username. Please try again.");
-    }
-});
+        console.log("Change Username button clicked");
+        const newUsername = prompt("Enter new username:");
+        if (newUsername && changeUsername(newUsername)) {
+            alert("Username changed successfully!");
+            updateDisplay(); // Ensure the display updates immediately
+            showLeaderboard(); // Force leaderboard to refresh with new name
+        } else {
+            alert("Invalid username. Please try again.");
+        }
+    });
 
     closeWalletButton.addEventListener('click', closeWallet);
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
