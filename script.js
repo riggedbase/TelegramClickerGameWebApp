@@ -102,7 +102,11 @@ function saveProgress() {
     }
     if (typeof riggedTokens === 'undefined') {
         console.error("Rigged Tokens is undefined. Setting default value of 0.");
-        riggedTokens = 0; // Default value for riggedTokens
+        riggedTokens = 0;
+    }
+    if (typeof pointsAtLastBurn === 'undefined') {
+        console.error("Points At Last Burn is undefined. Setting default value of 0.");
+        pointsAtLastBurn = 0;  // Ensure pointsAtLastBurn is defined
     }
 
     if (telegramUserId) {
@@ -118,8 +122,8 @@ function saveProgress() {
             replenishWillCost: replenishWillCost,
             increaseDamageCost: increaseDamageCost,
             baseWalletAddress: baseWalletAddress,
-            riggedTokens: riggedTokens,  // Ensure riggedTokens is defined
-            pointsAtLastBurn: pointsAtLastBurn,
+            riggedTokens: riggedTokens,
+            pointsAtLastBurn: pointsAtLastBurn,  // Ensure pointsAtLastBurn is defined
             characterIndex: characterIndex
         };
         console.log("Data being saved:", dataToSave);
@@ -142,17 +146,31 @@ function loadProgress() {
                     points = data.points || 0;
                     will = data.will || 1000;
                     level = data.level || 1;
-                    health = data.health || 100;
-                    maxHealth = data.maxHealth || 100;
-                    damagePerClick = data.damagePerClick || 1;
-                    replenishWillCost = data.replenishWillCost || 100;
-                    increaseDamageCost = data.increaseDamageCost || 200;
-                    baseWalletAddress = data.baseWalletAddress || '';
-                    riggedTokens = data.riggedTokens || 0;
+                    health = data.health || 100;  // Ensure health is set
+                    maxHealth = data.maxHealth || 100;  // Ensure maxHealth is set
+                    damagePerClick = data.damagePerClick || 1;  // Ensure damagePerClick is set
+                    replenishWillCost = data.replenishWillCost || 100;  // Ensure replenishWillCost is set
+                    increaseDamageCost = data.increaseDamageCost || 200;  // Ensure increaseDamageCost is set
+                    baseWalletAddress = data.baseWalletAddress || '';  // Ensure baseWalletAddress is set
+                    riggedTokens = data.riggedTokens || 0;  // Ensure riggedTokens is set
                     pointsAtLastBurn = data.pointsAtLastBurn || 0;
                     characterIndex = data.characterIndex || 0;
                 } else {
+                    // If no data, initialize with default values
                     displayName = generateRandomUsername();
+                    score = 0;
+                    points = 0;
+                    will = 1000;
+                    level = 1;
+                    health = 100;  // Default value for health
+                    maxHealth = 100;  // Default value for maxHealth
+                    damagePerClick = 1;  // Default value for damagePerClick
+                    replenishWillCost = 100;  // Default value for replenishWillCost
+                    increaseDamageCost = 200;  // Default value for increaseDamageCost
+                    baseWalletAddress = '';  // Default value for baseWalletAddress
+                    riggedTokens = 0;  // Default value for riggedTokens
+                    pointsAtLastBurn = 0;
+                    characterIndex = 0;
                 }
                 console.log("Loaded progress:", { displayName, score, points, will, level, health, maxHealth });
                 updateDisplay();
