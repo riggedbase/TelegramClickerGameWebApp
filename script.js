@@ -252,119 +252,113 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function increaseDamage(event) {
-        event.stopPropagation(); // Prevent click from bubbling to game container
-        if (points >= increaseDamageCost) {
-            points -= increaseDamageCost;
-            damagePerClick *= 2;
-            increaseDamageCost *= 2;
-            updateDisplay();
-            saveProgress();
-        }
-    }
-
     function showLeaderboard(event) {
-        event.stopPropagation();
-        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-            const leaderboardData = snapshot.val();
-            if (leaderboardData) {
-                const sortedLeaderboard = Object.entries(leaderboardData)
-                    .map(([id, data]) => ({ id, ...data }))
-                    .sort((a, b) => b.score - a.score);
-                sortedLeaderboard.forEach((entry) => {
-                    const isCurrentUser = entry.id === telegramUserId;
-                    const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
-                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
-                });
-            } else {
-                leaderboardElement.innerHTML += '<p>No scores yet</p>';
-            }
-            // Always show current user's score
-            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
-        });
-        leaderboardElement.style.display = 'block';
-        
-        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
-    }
-
-    function showWallet() {
-        walletPointsElement.textContent = points;
-        riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
-        riggedTokensElement.textContent = riggedTokens;
-        baseWalletAddressInput.value = baseWalletAddress;
-        walletScreen.style.display = 'block';
-    }
-
-    function closeWallet() {
-        walletScreen.style.display = 'none';
-    }
-
-    function saveWalletAddress() {
-        baseWalletAddress = baseWalletAddressInput.value;
-        if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
-            walletAddressError.textContent = 'Wallet address saved successfully!';
-            walletAddressError.style.color = 'green';
+    event.stopPropagation();
+    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+    database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+        const leaderboardData = snapshot.val();
+        if (leaderboardData) {
+            const sortedLeaderboard = Object.entries(leaderboardData)
+                .map(([id, data]) => ({ id, ...data }))
+                .sort((a, b) => b.score - a.score);
+            sortedLeaderboard.forEach((entry) => {
+                const isCurrentUser = entry.id === telegramUserId;
+                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
+                leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
+            });
         } else {
-            walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
-            walletAddressError.style.color = 'red';
+            leaderboardElement.innerHTML += '<p>No scores yet</p>';
         }
-        saveProgress();
-    }
+        // Always show current user's score
+        leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+    });
+    leaderboardElement.style.display = 'block';
+    
+    leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+    leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
+}
 
-    function claimRigged() {
-        if (baseWalletAddress) {
-            points = 0;
-            riggedTokens = 0;
-            pointsAtLastBurn = 0;
-            updateDisplay();
-            showWallet();
-            saveProgress();
-        } else {
-            alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
-        }
-    }
+function showWallet() {
+    walletPointsElement.textContent = points;
+    riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
+    riggedTokensElement.textContent = riggedTokens;
+    baseWalletAddressInput.value = baseWalletAddress;
+    walletScreen.style.display = 'block';
+}
 
-    function burnRigged() {
+function closeWallet() {
+    walletScreen.style.display = 'none';
+}
+
+function saveWalletAddress() {
+    baseWalletAddress = baseWalletAddressInput.value;
+    if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
+        walletAddressError.textContent = 'Wallet address saved successfully!';
+        walletAddressError.style.color = 'green';
+    } else {
+        walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
+        walletAddressError.style.color = 'red';
+    }
+    saveProgress();
+}
+
+function claimRigged() {
+    if (baseWalletAddress) {
+        points = 0;
         riggedTokens = 0;
-        pointsAtLastBurn = points;
+        pointsAtLastBurn = 0;
+        updateDisplay();
         showWallet();
         saveProgress();
+    } else {
+        alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
     }
+}
 
-    // Event listeners
-    gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-    replenishWillButton.addEventListener('click', replenishWill);
-    increaseDamageButton.addEventListener('click', increaseDamage);
-    showLeaderboardButton.addEventListener('click', showLeaderboard);
-    showWalletButton.addEventListener('click', showWallet);
-    closeWalletButton.addEventListener('click', closeWallet);
-    saveWalletAddressButton.addEventListener('click', saveWalletAddress);
-    claimRiggedButton.addEventListener('click', claimRigged);
-    burnRiggedButton.addEventListener('click', burnRigged);
-    changeUsernameButton.addEventListener('click', () => {
-        const newUsername = prompt("Enter new username:");
-        if (newUsername && changeUsername(newUsername)) {
-            alert("Username changed successfully!");
-        } else {
-            alert("Invalid username. Please try again.");
-        }
+function burnRigged() {
+    riggedTokens = 0;
+    pointsAtLastBurn = points;
+    showWallet();
+    saveProgress();
+}
+
+// Event listeners
+gameContainer.addEventListener('click', handleClick);
+gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+replenishWillButton.addEventListener('click', replenishWill);
+increaseDamageButton.addEventListener('click', increaseDamage);
+showLeaderboardButton.addEventListener('click', showLeaderboard);
+showWalletButton.addEventListener('click', showWallet);
+closeWalletButton.addEventListener('click', closeWallet);
+saveWalletAddressButton.addEventListener('click', saveWalletAddress);
+claimRiggedButton.addEventListener('click', claimRigged);
+burnRiggedButton.addEventListener('click', burnRigged);
+changeUsernameButton.addEventListener('click', () => {
+    const newUsername = prompt("Enter new username:");
+    if (newUsername && changeUsername(newUsername)) {
+        alert("Username changed successfully!");
+    } else {
+        alert("Invalid username. Please try again.");
+    }
+});
+
+// Initialize game
+authenticateTelegramUser()
+    .then(() => loadProgress())
+    .then(() => {
+        updateDisplay();
+        // Add periodic saving (every 30 seconds)
+        setInterval(saveProgress, 30000);
+        console.log("Game initialized");
+    })
+    .catch((error) => {
+        console.error("Error initializing game:", error);
+        // Instead of showing an alert, we'll just log the error and continue
+        // with a new user session
+        telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+        displayName = generateRandomUsername();
+        updateDisplay();
+        setInterval(saveProgress, 30000);
+        console.log("Game initialized with new session due to error");
     });
-
-    // Initialize game
-    authenticateTelegramUser()
-        .then(() => loadProgress())
-        .then(() => {
-            updateDisplay();
-            // Add periodic saving (every 30 seconds)
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized");
-        })
-        .catch((error) => {
-            console.error("Error initializing game:", error);
-            // Instead of showing an alert, we'll just log the error and continue
-            // with a new user session
-            telegramUserId = 'error_' + Math.random().toString(36).substr(2,
