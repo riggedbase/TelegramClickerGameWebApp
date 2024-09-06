@@ -64,8 +64,8 @@ function changeUsername(newUsername) {
     console.log("Changing username to:", newUsername);
     if (!isProfanity(newUsername)) {
         displayName = newUsername;
+        updateDisplay();
         saveProgress();
-        updateDisplay(); // Add this line to update the display immediately
         return true;
     }
     return false;
@@ -75,7 +75,7 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Saving progress");
     if (telegramUserId) {
-        database.ref('users/' + telegramUserId).set({
+        const dataToSave = {
             displayName: displayName,
             score: score,
             points: points,
@@ -90,7 +90,11 @@ function saveProgress() {
             riggedTokens: riggedTokens,
             pointsAtLastBurn: pointsAtLastBurn,
             characterIndex: characterIndex
-        });
+        };
+        console.log("Data being saved:", dataToSave);
+        database.ref('users/' + telegramUserId).set(dataToSave);
+    } else {
+        console.log("No Telegram User ID available, progress not saved");
     }
 }
 
@@ -116,12 +120,12 @@ function loadProgress() {
                     riggedTokens = data.riggedTokens || 0;
                     pointsAtLastBurn = data.pointsAtLastBurn || 0;
                     characterIndex = data.characterIndex || 0;
-                    updateDisplay();
-                    resolve();
                 } else {
                     displayName = generateRandomUsername();
-                    resolve();
                 }
+                console.log("Loaded progress:", { displayName, score, points, will, level, health, maxHealth });
+                updateDisplay();
+                resolve();
             }).catch(reject);
         } else {
             reject("No Telegram User ID available");
