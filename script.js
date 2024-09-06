@@ -275,6 +275,29 @@ function nextCharacter() {
     saveProgress();
 }
 
+// Handle button clicks for game actions
+function handleReplenishWill() {
+    console.log("Replenishing will");
+    if (points >= replenishWillCost) {
+        points -= replenishWillCost;
+        will = 1000;
+        replenishWillCost = Math.floor(replenishWillCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+function handleIncreaseDamage() {
+    console.log("Increasing damage");
+    if (points >= increaseDamageCost) {
+        points -= increaseDamageCost;
+        damagePerClick++;
+        increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
 // Wait for the DOM to fully load before assigning DOM elements
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM Content Loaded event fired");
@@ -315,6 +338,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    // Button click handlers
+    replenishWillButton.addEventListener('click', handleReplenishWill);
+    increaseDamageButton.addEventListener('click', handleIncreaseDamage);
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
