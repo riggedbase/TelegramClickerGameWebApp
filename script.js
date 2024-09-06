@@ -139,7 +139,7 @@ function saveProgress() {
             increaseDamageCost: increaseDamageCost,
             baseWalletAddress: baseWalletAddress,
             riggedTokens: riggedTokens,
-            pointsAtLastBurn: pointsAtLastBurn,  // Ensure pointsAtLastBurn is defined
+            pointsAtLastBurn: pointsAtLastBurn,
             characterIndex: characterIndex
         };
         console.log("Data being saved:", dataToSave);
@@ -298,16 +298,23 @@ function handleIncreaseDamage() {
     }
 }
 
+// Function to calculate $RIGGED based on current points, ignoring pre-burn points
+function calculateRigged() {
+    const eligiblePoints = points - pointsAtLastBurn;
+    const newRigged = Math.floor(eligiblePoints / 100);
+    return newRigged;
+}
+
 function handleShowLeaderboard() {
     console.log("Showing leaderboard");
     leaderboardElement.style.display = 'block';  // Show the leaderboard
-    // Add any other logic you want for leaderboard display
 }
 
 function handleShowWallet() {
     console.log("Showing wallet");
-    walletScreen.style.display = 'block';  // Show the wallet screen
+    riggedTokens = calculateRigged();  // Update Rigged based on current points
     updateWalletDisplay();
+    walletScreen.style.display = 'block';  // Show the wallet screen
 }
 
 function handleChangeUsername() {
@@ -329,22 +336,22 @@ function handleCloseWallet() {
     walletScreen.style.display = 'none';
 }
 
-function handleClaimRigged() {
-    console.log("Claiming $RIGGED");
-    riggedTokens += 10;  // Example logic, adjust as necessary
+// Burn Rigged tokens, but keep points intact
+function handleBurnRigged() {
+    console.log("Burning $RIGGED");
+    riggedTokens = 0;
+    pointsAtLastBurn = points;  // Record current points as burned
     updateWalletDisplay();
     saveProgress();
 }
 
-function handleBurnRigged() {
-    console.log("Burning $RIGGED");
-    if (riggedTokens >= 10) {
-        riggedTokens -= 10;
-        updateWalletDisplay();
-        saveProgress();
-    } else {
-        console.log("Not enough $RIGGED to burn.");
-    }
+// Claim Rigged tokens and set points and Rigged to 0
+function handleClaimRigged() {
+    console.log("Claiming $RIGGED");
+    points = 0;
+    riggedTokens = 0;
+    updateWalletDisplay();
+    saveProgress();
 }
 
 // Wait for the DOM to fully load before assigning DOM elements
