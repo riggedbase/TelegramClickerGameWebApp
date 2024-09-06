@@ -74,6 +74,17 @@ function changeUsername(newUsername) {
 // Function to save progress to Firebase
 function saveProgress() {
     console.log("Saving progress");
+
+    // Ensure health and maxHealth are properly defined
+    if (typeof health === 'undefined') {
+        console.error("Health is undefined. Setting default value of 100.");
+        health = 100; // Default value for health
+    }
+    if (typeof maxHealth === 'undefined') {
+        console.error("Max Health is undefined. Setting default value of 100.");
+        maxHealth = 100; // Default value for max health
+    }
+
     if (telegramUserId) {
         const dataToSave = {
             displayName: displayName,
