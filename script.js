@@ -1,4 +1,4 @@
-console.log("Script loaded");
+console.log("Script starting to load");
 
 // Firebase configuration
 const firebaseConfig = {
@@ -14,6 +14,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+console.log("Firebase initialized");
 const database = firebase.database();
 
 let telegramUserId = null;
@@ -70,6 +71,7 @@ function changeUsername(newUsername) {
 
 // Function to save progress to Firebase
 function saveProgress() {
+    console.log("Saving progress");
     if (telegramUserId) {
         database.ref('users/' + telegramUserId).set({
             displayName: displayName,
@@ -92,6 +94,7 @@ function saveProgress() {
 
 // Function to load progress from Firebase
 function loadProgress() {
+    console.log("Loading progress");
     return new Promise((resolve, reject) => {
         if (telegramUserId) {
             database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
@@ -125,7 +128,7 @@ function loadProgress() {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM fully loaded");
+    console.log("DOM Content Loaded event fired");
 
     // Game elements
     const gameContainer = document.getElementById('game-container');
@@ -180,6 +183,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let characterIndex = 0;
 
     function updateDisplay() {
+        console.log("Updating display");
         characterElement.textContent = characters[characterIndex].emoji;
         characterNameElement.textContent = characters[characterIndex].name;
         currentHealthElement.textContent = health;
@@ -194,6 +198,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleAttack(damage) {
+        console.log("Handling attack, damage:", damage);
         if (will > 0) {
             health -= damage;
             score += damage;
@@ -210,15 +215,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleClick(event) {
+        console.log("Click detected on:", event.target);
         // Prevent damage when clicking on buttons
-        if (event.target.tagName === 'BUTTON') return;
-
+        if (event.target.tagName === 'BUTTON') {
+            console.log("Click on button, returning");
+            return;
+        }
+        console.log("Handling attack");
         handleAttack(damagePerClick);
     }
 
     function handleTouch(event) {
+        console.log("Touch detected");
         // Prevent damage when touching on buttons or the leaderboard
-        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) return;
+        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+            console.log("Touch on button or leaderboard, returning");
+            return;
+        }
 
         event.preventDefault(); // Prevent default behavior such as scrolling
         for (let i = 0; i < event.touches.length; i++) {
@@ -232,6 +245,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function nextCharacter() {
+        console.log("Moving to next character");
         characterIndex = (characterIndex + 1) % characters.length;
         if (characterIndex === 0) {
             level++;
@@ -242,123 +256,161 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function replenishWill(event) {
+        console.log("Replenishing will");
         event.stopPropagation(); // Prevent click from bubbling to game container
         if (points >= replenishWillCost) {
             points -= replenishWillCost;
             will = 1000;
-            replenishWillCost *= 2;
+            replenishWillCost = Math.floor(replenishWillCost * 1.5); // Increase cost by 50% instead of doubling
+            updateDisplay();
+            saveProgress();
+        }
+    }
+
+    function increaseDamage(event) {
+        console.log("Increasing damage");
+        event.stopPropagation(); // Prevent click from bubbling to game container
+        if (points >= increaseDamageCost) {
+            points -= increaseDamageCost;
+            damagePerClick++;
+            increaseDamageCost = Math.floor(increaseDamageCost * 1.5); // Increase cost by 50% instead of doubling
             updateDisplay();
             saveProgress();
         }
     }
 
     function showLeaderboard(event) {
-    event.stopPropagation();
-    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-    database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-        const leaderboardData = snapshot.val();
-        if (leaderboardData) {
-            const sortedLeaderboard = Object.entries(leaderboardData)
-                .map(([id, data]) => ({ id, ...data }))
-                .sort((a, b) => b.score - a.score);
-            sortedLeaderboard.forEach((entry) => {
-                const isCurrentUser = entry.id === telegramUserId;
-                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
-                leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
-            });
-        } else {
-            leaderboardElement.innerHTML += '<p>No scores yet</p>';
-        }
-        // Always show current user's score
-        leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
-    });
-    leaderboardElement.style.display = 'block';
-    
-    leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-    leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
-}
-
-function showWallet() {
-    walletPointsElement.textContent = points;
-    riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
-    riggedTokensElement.textContent = riggedTokens;
-    baseWalletAddressInput.value = baseWalletAddress;
-    walletScreen.style.display = 'block';
-}
-
-function closeWallet() {
-    walletScreen.style.display = 'none';
-}
-
-function saveWalletAddress() {
-    baseWalletAddress = baseWalletAddressInput.value;
-    if (baseWalletAddress.length === 42 || baseWalletAddress.endsWith('.eth')) {
-        walletAddressError.textContent = 'Wallet address saved successfully!';
-        walletAddressError.style.color = 'green';
-    } else {
-        walletAddressError.textContent = 'Address should be 42 characters long or an ENS name ending with .eth';
-        walletAddressError.style.color = 'red';
+        console.log("Showing leaderboard");
+        event.stopPropagation();
+        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const leaderboardData = snapshot.val();
+            if (leaderboardData) {
+                const sortedLeaderboard = Object.entries(leaderboardData)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .sort((a, b) => b.score - a.score);
+                sortedLeaderboard.forEach((entry) => {
+                    const isCurrentUser = entry.id === telegramUserId;
+                    const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
+                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
+                });
+            } else {
+                leaderboardElement.innerHTML += '<p>No scores yet</p>';
+            }
+            // Always show current user's score
+            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+        });
+        leaderboardElement.style.display = 'block';
+        
+        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
     }
-    saveProgress();
-}
 
-function claimRigged() {
-    if (baseWalletAddress) {
-        points = 0;
+    function showWallet() {
+        console.log("Showing wallet");
+        walletPointsElement.textContent = points;
+        riggedTokens = Math.floor((points - pointsAtLastBurn) / 100);
+        riggedTokensElement.textContent = riggedTokens;
+        baseWalletAddressInput.value = baseWalletAddress;
+        walletScreen.style.display = 'block';
+    }
+
+    function closeWallet() {
+        console.log("Closing wallet");
+        walletScreen.style.display = 'none';
+    }
+
+    function saveWalletAddress() {
+        console.log("Saving wallet address");
+        baseWalletAddress = baseWalletAddressInput.value;
+        if (baseWalletAddress.length === 42 && baseWalletAddress.startsWith('0x') || baseWalletAddress.endsWith('.eth')) {
+            walletAddressError.textContent = 'Wallet address saved successfully!';
+            walletAddressError.style.color = 'green';
+        } else {
+            walletAddressError.textContent = 'Address should be a valid Ethereum address or an ENS name ending with .eth';
+            walletAddressError.style.color = 'red';
+        }
+        saveProgress();
+    }
+
+    function claimRigged() {
+        console.log("Claiming RIGGED tokens");
+        if (baseWalletAddress) {
+            points = 0;
+            riggedTokens = 0;
+            pointsAtLastBurn = 0;
+            updateDisplay();
+            showWallet();
+            saveProgress();
+        } else {
+            alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
+        }
+    }
+
+    function burnRigged() {
+        console.log("Burning RIGGED tokens");
         riggedTokens = 0;
-        pointsAtLastBurn = 0;
-        updateDisplay();
+        pointsAtLastBurn = points;
         showWallet();
         saveProgress();
-    } else {
-        alert("Please provide a Base network compatible wallet address - DO NOT PROVIDE YOUR PRIVATE KEY");
     }
-}
 
-function burnRigged() {
-    riggedTokens = 0;
-    pointsAtLastBurn = points;
-    showWallet();
-    saveProgress();
-}
+    // Event listeners
+    gameContainer.addEventListener('click', (event) => {
+        console.log("Click on game container");
+        handleClick(event);
+    });
+    console.log("Game container element:", gameContainer);
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-// Event listeners
-gameContainer.addEventListener('click', handleClick);
-gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-replenishWillButton.addEventListener('click', replenishWill);
-increaseDamageButton.addEventListener('click', increaseDamage);
-showLeaderboardButton.addEventListener('click', showLeaderboard);
-showWalletButton.addEventListener('click', showWallet);
-closeWalletButton.addEventListener('click', closeWallet);
-saveWalletAddressButton.addEventListener('click', saveWalletAddress);
-claimRiggedButton.addEventListener('click', claimRigged);
-burnRiggedButton.addEventListener('click', burnRigged);
-changeUsernameButton.addEventListener('click', () => {
-    const newUsername = prompt("Enter new username:");
-    if (newUsername && changeUsername(newUsername)) {
-        alert("Username changed successfully!");
-    } else {
-        alert("Invalid username. Please try again.");
-    }
+    replenishWillButton.addEventListener('click', (event) => {
+        console.log("Replenish Will button clicked");
+        replenishWill(event);
+    });
+    increaseDamageButton.addEventListener('click', (event) => {
+        console.log("Increase Damage button clicked");
+        increaseDamage(event);
+    });
+    showLeaderboardButton.addEventListener('click', (event) => {
+        console.log("Show Leaderboard button clicked");
+        showLeaderboard(event);
+    });
+    showWalletButton.addEventListener('click', (event) => {
+        console.log("Show Wallet button clicked");
+        showWallet();
+    });
+    changeUsernameButton.addEventListener('click', (event) => {
+        console.log("Change Username button clicked");
+        const newUsername = prompt("Enter new username:");
+        if (newUsername && changeUsername(newUsername)) {
+            alert("Username changed successfully!");
+        } else {
+            alert("Invalid username. Please try again.");
+        }
+    });
+
+    closeWalletButton.addEventListener('click', closeWallet);
+    saveWalletAddressButton.addEventListener('click', saveWalletAddress);
+    claimRiggedButton.addEventListener('click', claimRigged);
+    burnRiggedButton.addEventListener('click', burnRigged);
+
+    // Initialize game
+    authenticateTelegramUser()
+        .then(() => loadProgress())
+        .then(() => {
+            updateDisplay();
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized");
+        })
+        .catch((error) => {
+            console.error("Error initializing game:", error);
+            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+            displayName = generateRandomUsername();
+            updateDisplay();
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized with new session due to error");
+        });
 });
 
-// Initialize game
-authenticateTelegramUser()
-    .then(() => loadProgress())
-    .then(() => {
-        updateDisplay();
-        // Add periodic saving (every 30 seconds)
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized");
-    })
-    .catch((error) => {
-        console.error("Error initializing game:", error);
-        // Instead of showing an alert, we'll just log the error and continue
-        // with a new user session
-        telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-        displayName = generateRandomUsername();
-        updateDisplay();
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized with new session due to error");
-    });
+console.log("Script loaded");
