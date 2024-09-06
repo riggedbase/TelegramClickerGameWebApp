@@ -324,6 +324,29 @@ function updateWalletDisplay() {
     riggedTokensElement.textContent = riggedTokens;
 }
 
+function handleCloseWallet() {
+    console.log("Closing wallet");
+    walletScreen.style.display = 'none';
+}
+
+function handleClaimRigged() {
+    console.log("Claiming $RIGGED");
+    riggedTokens += 10;  // Example logic, adjust as necessary
+    updateWalletDisplay();
+    saveProgress();
+}
+
+function handleBurnRigged() {
+    console.log("Burning $RIGGED");
+    if (riggedTokens >= 10) {
+        riggedTokens -= 10;
+        updateWalletDisplay();
+        saveProgress();
+    } else {
+        console.log("Not enough $RIGGED to burn.");
+    }
+}
+
 // Wait for the DOM to fully load before assigning DOM elements
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM Content Loaded event fired");
@@ -371,6 +394,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
     showWalletButton.addEventListener('click', handleShowWallet);
     changeUsernameButton.addEventListener('click', handleChangeUsername);
+    closeWalletButton.addEventListener('click', handleCloseWallet);
+    claimRiggedButton.addEventListener('click', handleClaimRigged);
+    burnRiggedButton.addEventListener('click', handleBurnRigged);
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
