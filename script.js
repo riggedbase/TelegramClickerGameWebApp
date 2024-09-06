@@ -301,15 +301,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const sortedLeaderboard = Object.entries(leaderboardData)
                 .map(([id, data]) => ({ id, ...data }))
                 .sort((a, b) => b.score - a.score);
+            
             sortedLeaderboard.forEach((entry) => {
                 const isCurrentUser = entry.id === telegramUserId;
-                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
+                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous') ;
                 leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
             });
         } else {
             leaderboardElement.innerHTML += '<p>No scores yet</p>';
         }
-        // Always show current user's score
+        // Always show current user's score at the bottom
         leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
     });
     leaderboardElement.style.display = 'block';
@@ -397,7 +398,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const newUsername = prompt("Enter new username:");
     if (newUsername && changeUsername(newUsername)) {
         alert("Username changed successfully!");
-        updateDisplay(); // Add this line to update the display immediately
+        updateDisplay(); // Ensure the display updates immediately
+        showLeaderboard(); // Force leaderboard to refresh with new name
     } else {
         alert("Invalid username. Please try again.");
     }
