@@ -75,7 +75,7 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Saving progress");
 
-    // Ensure health, maxHealth, and damagePerClick are properly defined
+    // Ensure health, maxHealth, damagePerClick, and replenishWillCost are properly defined
     if (typeof health === 'undefined') {
         console.error("Health is undefined. Setting default value of 100.");
         health = 100; // Default value for health
@@ -88,6 +88,10 @@ function saveProgress() {
         console.error("Damage Per Click is undefined. Setting default value of 1.");
         damagePerClick = 1; // Default value for damagePerClick
     }
+    if (typeof replenishWillCost === 'undefined') {
+        console.error("Replenish Will Cost is undefined. Setting default value of 100.");
+        replenishWillCost = 100; // Default value for replenishWillCost
+    }
 
     if (telegramUserId) {
         const dataToSave = {
@@ -98,8 +102,8 @@ function saveProgress() {
             level: level,
             health: health,
             maxHealth: maxHealth,
-            damagePerClick: damagePerClick,  // Ensure damagePerClick is defined
-            replenishWillCost: replenishWillCost,
+            damagePerClick: damagePerClick,
+            replenishWillCost: replenishWillCost,  // Ensure replenishWillCost is defined
             increaseDamageCost: increaseDamageCost,
             baseWalletAddress: baseWalletAddress,
             riggedTokens: riggedTokens,
@@ -188,7 +192,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let health = 100;
     let maxHealth = 100;
     let damagePerClick = 1; // Initialize this at the start of the game
-    let replenishWillCost = 100;
+    let replenishWillCost = 100; // Initialize this at the start of the game
     let increaseDamageCost = 200;
     let baseWalletAddress = '';
     let riggedTokens = 0;
