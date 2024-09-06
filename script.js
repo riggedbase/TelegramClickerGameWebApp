@@ -19,6 +19,7 @@ const database = firebase.database();
 
 let telegramUserId = null;
 let displayName = null;
+let isWalletValid = false; // Track wallet validation status
 
 // Declare game elements globally so they can be accessed by all functions
 let gameContainer, characterElement, characterNameElement, healthFill, currentHealthElement, maxHealthElement, 
@@ -220,6 +221,28 @@ function loadProgress() {
     });
 }
 
+// Function to validate the wallet address
+function validateWalletAddress(address) {
+    // Check if it's 42 characters (a valid Base wallet address) or a valid ENS (ends with .base)
+    return (address.length === 42 || address.endsWith('.base'));
+}
+
+// Save the wallet address
+function handleSaveWalletAddress() {
+    const walletAddress = baseWalletAddressInput.value.trim();
+    if (validateWalletAddress(walletAddress)) {
+        baseWalletAddress = walletAddress;
+        isWalletValid = true;
+        walletAddressError.textContent = "Wallet address saved successfully!";
+        walletAddressError.style.color = "green";
+        saveProgress(); // Save the valid wallet address
+    } else {
+        isWalletValid = false;
+        walletAddressError.textContent = "Invalid wallet address. Must be 42 characters or a Base ENS (.base).";
+        walletAddressError.style.color = "red";
+    }
+}
+
 // Add event listeners for clicks and touches
 function handleClick(event) {
     console.log("Click detected on:", event.target);
@@ -345,8 +368,13 @@ function handleBurnRigged() {
     saveProgress();
 }
 
-// Claim Rigged tokens and set points and Rigged to 0
+// Claim Rigged tokens and set points and Rigged to 0, only if a valid wallet is saved
 function handleClaimRigged() {
+    if (!isWalletValid) {
+        walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
+        walletAddressError.style.color = "red";
+        return;
+    }
     console.log("Claiming $RIGGED");
     points = 0;
     riggedTokens = 0;
@@ -404,6 +432,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     closeWalletButton.addEventListener('click', handleCloseWallet);
     claimRiggedButton.addEventListener('click', handleClaimRigged);
     burnRiggedButton.addEventListener('click', handleBurnRigged);
+    saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
