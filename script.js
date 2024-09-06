@@ -100,6 +100,10 @@ function saveProgress() {
         console.error("Base Wallet Address is undefined. Setting default value of an empty string.");
         baseWalletAddress = ''; // Default to empty string
     }
+    if (typeof riggedTokens === 'undefined') {
+        console.error("Rigged Tokens is undefined. Setting default value of 0.");
+        riggedTokens = 0; // Default value for riggedTokens
+    }
 
     if (telegramUserId) {
         const dataToSave = {
@@ -113,8 +117,8 @@ function saveProgress() {
             damagePerClick: damagePerClick,
             replenishWillCost: replenishWillCost,
             increaseDamageCost: increaseDamageCost,
-            baseWalletAddress: baseWalletAddress,  // Ensure baseWalletAddress is defined
-            riggedTokens: riggedTokens,
+            baseWalletAddress: baseWalletAddress,
+            riggedTokens: riggedTokens,  // Ensure riggedTokens is defined
             pointsAtLastBurn: pointsAtLastBurn,
             characterIndex: characterIndex
         };
