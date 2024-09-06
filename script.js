@@ -81,8 +81,8 @@ function saveProgress() {
             points: points,
             will: will,
             level: level,
-            health: health,
-            maxHealth: maxHealth,
+            health: health,  // Ensure health is defined
+            maxHealth: maxHealth,  // Ensure maxHealth is defined
             damagePerClick: damagePerClick,
             replenishWillCost: replenishWillCost,
             increaseDamageCost: increaseDamageCost,
@@ -166,18 +166,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const walletAddressError = document.getElementById('wallet-address-error');
 
     // Game variables
-    let score = 0;
-    let points = 0;
-    let will = 1000;
-    let level = 1;
-    let health = 100;
-    let maxHealth = 100;
-    let damagePerClick = 1;
-    let replenishWillCost = 100;
-    let increaseDamageCost = 200;
-    let baseWalletAddress = '';
-    let riggedTokens = 0;
-    let pointsAtLastBurn = 0;
+let score = 0;
+let points = 0;
+let will = 1000;
+let level = 1;
+let health = 100;        // Make sure health is defined
+let maxHealth = 100;     // Make sure maxHealth is defined
+let damagePerClick = 1;
+let replenishWillCost = 100;
+let increaseDamageCost = 200;
+let baseWalletAddress = '';
+let riggedTokens = 0;
+let pointsAtLastBurn = 0;
+let characterIndex = 0;
+
 
     const characters = [
         { emoji: '😈', baseHealth: 100, name: 'Demon' },
@@ -201,7 +203,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     levelElement.textContent = level;
     replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
     increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
-    
+
     // Update username display if there's an element for it
     const usernameElement = document.getElementById('username-display');
     if (usernameElement) {
