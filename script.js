@@ -229,29 +229,38 @@ let characterIndex = 0;
     }
 
     function handleClick(event) {
-        console.log("Click detected on:", event.target);
-        // Prevent damage when clicking on buttons
-        if (event.target.tagName === 'BUTTON') {
-            console.log("Click on button, returning");
-            return;
-        }
-        console.log("Handling attack");
+    console.log("Click detected on:", event.target);
+    // Prevent damage when clicking on buttons or other UI elements
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Click on button or leaderboard, returning");
+        return;
+    }
+    console.log("Handling attack");
+    handleAttack(damagePerClick);
+}
+
+function handleTouch(event) {
+    console.log("Touch detected");
+    // Prevent damage when touching on buttons or the leaderboard
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Touch on button or leaderboard, returning");
+        return;
+    }
+
+    event.preventDefault(); // Prevent default behavior such as scrolling
+    for (let i = 0; i < event.touches.length; i++) {
         handleAttack(damagePerClick);
     }
+}
 
-    function handleTouch(event) {
-        console.log("Touch detected");
-        // Prevent damage when touching on buttons or the leaderboard
-        if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
-            console.log("Touch on button or leaderboard, returning");
-            return;
-        }
+// Adding event listeners for clicks and touches
+gameContainer.addEventListener('click', (event) => {
+    console.log("Click on game container");
+    handleClick(event);
+});
+gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-        event.preventDefault(); // Prevent default behavior such as scrolling
-        for (let i = 0; i < event.touches.length; i++) {
-            handleAttack(damagePerClick);
-        }
-    }
 
     function handleLeaderboardTouch(event) {
         // Allow default touch behavior (scrolling) within the leaderboard
