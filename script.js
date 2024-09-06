@@ -75,7 +75,7 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Saving progress");
 
-    // Ensure all game variables are defined
+    // Ensure all game variables are properly defined
     if (typeof health === 'undefined') {
         console.error("Health is undefined. Setting default value of 100.");
         health = 100;
@@ -96,6 +96,10 @@ function saveProgress() {
         console.error("Increase Damage Cost is undefined. Setting default value of 200.");
         increaseDamageCost = 200;
     }
+    if (typeof baseWalletAddress === 'undefined') {
+        console.error("Base Wallet Address is undefined. Setting default value of an empty string.");
+        baseWalletAddress = ''; // Default to empty string
+    }
 
     if (telegramUserId) {
         const dataToSave = {
@@ -108,8 +112,8 @@ function saveProgress() {
             maxHealth: maxHealth,
             damagePerClick: damagePerClick,
             replenishWillCost: replenishWillCost,
-            increaseDamageCost: increaseDamageCost,  // Ensure increaseDamageCost is defined
-            baseWalletAddress: baseWalletAddress,
+            increaseDamageCost: increaseDamageCost,
+            baseWalletAddress: baseWalletAddress,  // Ensure baseWalletAddress is defined
             riggedTokens: riggedTokens,
             pointsAtLastBurn: pointsAtLastBurn,
             characterIndex: characterIndex
@@ -198,7 +202,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let damagePerClick = 1; // Initialize this at the start of the game
     let replenishWillCost = 100; // Initialize this at the start of the game
     let increaseDamageCost = 200; // Initialize this at the start of the game
-    let baseWalletAddress = '';
+    let baseWalletAddress = ''; // Initialize this at the start of the game with an empty string
     let riggedTokens = 0;
     let pointsAtLastBurn = 0;
     let characterIndex = 0;
