@@ -75,22 +75,26 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Saving progress");
 
-    // Ensure health, maxHealth, damagePerClick, and replenishWillCost are properly defined
+    // Ensure all game variables are defined
     if (typeof health === 'undefined') {
         console.error("Health is undefined. Setting default value of 100.");
-        health = 100; // Default value for health
+        health = 100;
     }
     if (typeof maxHealth === 'undefined') {
         console.error("Max Health is undefined. Setting default value of 100.");
-        maxHealth = 100; // Default value for max health
+        maxHealth = 100;
     }
     if (typeof damagePerClick === 'undefined') {
         console.error("Damage Per Click is undefined. Setting default value of 1.");
-        damagePerClick = 1; // Default value for damagePerClick
+        damagePerClick = 1;
     }
     if (typeof replenishWillCost === 'undefined') {
         console.error("Replenish Will Cost is undefined. Setting default value of 100.");
-        replenishWillCost = 100; // Default value for replenishWillCost
+        replenishWillCost = 100;
+    }
+    if (typeof increaseDamageCost === 'undefined') {
+        console.error("Increase Damage Cost is undefined. Setting default value of 200.");
+        increaseDamageCost = 200;
     }
 
     if (telegramUserId) {
@@ -103,8 +107,8 @@ function saveProgress() {
             health: health,
             maxHealth: maxHealth,
             damagePerClick: damagePerClick,
-            replenishWillCost: replenishWillCost,  // Ensure replenishWillCost is defined
-            increaseDamageCost: increaseDamageCost,
+            replenishWillCost: replenishWillCost,
+            increaseDamageCost: increaseDamageCost,  // Ensure increaseDamageCost is defined
             baseWalletAddress: baseWalletAddress,
             riggedTokens: riggedTokens,
             pointsAtLastBurn: pointsAtLastBurn,
@@ -193,7 +197,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let maxHealth = 100;
     let damagePerClick = 1; // Initialize this at the start of the game
     let replenishWillCost = 100; // Initialize this at the start of the game
-    let increaseDamageCost = 200;
+    let increaseDamageCost = 200; // Initialize this at the start of the game
     let baseWalletAddress = '';
     let riggedTokens = 0;
     let pointsAtLastBurn = 0;
