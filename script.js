@@ -328,9 +328,33 @@ function calculateRigged() {
     return newRigged;
 }
 
+// Function to show and populate the leaderboard
 function handleShowLeaderboard() {
     console.log("Showing leaderboard");
-    leaderboardElement.style.display = 'block';  // Show the leaderboard
+
+    // Populate leaderboard with sample data for now (replace with actual data as needed)
+    const leaderboardData = [
+        { username: 'Player1', score: 100 },
+        { username: 'Player2', score: 90 },
+        { username: 'Player3', score: 80 },
+        { username: displayName + ' (You)', score: score }
+    ];
+
+    // Clear any previous leaderboard content
+    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+
+    // Create a list of players and their scores
+    const leaderboardList = document.createElement('ul');
+    leaderboardData.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${player.username}: ${player.score} points`;
+        leaderboardList.appendChild(listItem);
+    });
+
+    leaderboardElement.appendChild(leaderboardList);
+
+    // Make leaderboard visible
+    leaderboardElement.style.display = 'block';
 }
 
 function handleShowWallet() {
