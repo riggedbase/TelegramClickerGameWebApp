@@ -61,9 +61,11 @@ function isProfanity(word) {
 
 // Function to change username
 function changeUsername(newUsername) {
+    console.log("Changing username to:", newUsername);
     if (!isProfanity(newUsername)) {
         displayName = newUsername;
         saveProgress();
+        updateDisplay(); // Add this line to update the display immediately
         return true;
     }
     return false;
@@ -183,19 +185,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let characterIndex = 0;
 
     function updateDisplay() {
-        console.log("Updating display");
-        characterElement.textContent = characters[characterIndex].emoji;
-        characterNameElement.textContent = characters[characterIndex].name;
-        currentHealthElement.textContent = health;
-        maxHealthElement.textContent = maxHealth;
-        healthFill.style.width = `${(health / maxHealth) * 100}%`;
-        scoreElement.textContent = score;
-        pointsElement.textContent = points;
-        willElement.textContent = will;
-        levelElement.textContent = level;
-        replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
-        increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+    console.log("Updating display");
+    characterElement.textContent = characters[characterIndex].emoji;
+    characterNameElement.textContent = characters[characterIndex].name;
+    currentHealthElement.textContent = health;
+    maxHealthElement.textContent = maxHealth;
+    healthFill.style.width = `${(health / maxHealth) * 100}%`;
+    scoreElement.textContent = score;
+    pointsElement.textContent = points;
+    willElement.textContent = will;
+    levelElement.textContent = level;
+    replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
+    increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+    
+    // Update username display if there's an element for it
+    const usernameElement = document.getElementById('username-display');
+    if (usernameElement) {
+        usernameElement.textContent = displayName || 'Anonymous';
     }
+}
 
     function handleAttack(damage) {
         console.log("Handling attack, damage:", damage);
@@ -280,31 +288,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function showLeaderboard(event) {
-        console.log("Showing leaderboard");
-        event.stopPropagation();
-        leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-        database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-            const leaderboardData = snapshot.val();
-            if (leaderboardData) {
-                const sortedLeaderboard = Object.entries(leaderboardData)
-                    .map(([id, data]) => ({ id, ...data }))
-                    .sort((a, b) => b.score - a.score);
-                sortedLeaderboard.forEach((entry) => {
-                    const isCurrentUser = entry.id === telegramUserId;
-                    const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
-                    leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
-                });
-            } else {
-                leaderboardElement.innerHTML += '<p>No scores yet</p>';
-            }
-            // Always show current user's score
-            leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
-        });
-        leaderboardElement.style.display = 'block';
-        
-        leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
-        leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
-    }
+    console.log("Showing leaderboard");
+    event.stopPropagation();
+    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+    database.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+        const leaderboardData = snapshot.val();
+        if (leaderboardData) {
+            const sortedLeaderboard = Object.entries(leaderboardData)
+                .map(([id, data]) => ({ id, ...data }))
+                .sort((a, b) => b.score - a.score);
+            sortedLeaderboard.forEach((entry) => {
+                const isCurrentUser = entry.id === telegramUserId;
+                const displayNameText = isCurrentUser ? `${entry.displayName || 'You'} (You)` : (entry.displayName || 'Anonymous');
+                leaderboardElement.innerHTML += `<p>${displayNameText}: ${entry.score}</p>`;
+            });
+        } else {
+            leaderboardElement.innerHTML += '<p>No scores yet</p>';
+        }
+        // Always show current user's score
+        leaderboardElement.innerHTML += `<p><strong>Your score: ${score}</strong></p>`;
+    });
+    leaderboardElement.style.display = 'block';
+    
+    leaderboardElement.addEventListener('touchstart', handleLeaderboardTouch, { passive: false });
+    leaderboardElement.addEventListener('touchmove', handleLeaderboardTouch, { passive: false });
+}
 
     function showWallet() {
         console.log("Showing wallet");
@@ -381,14 +389,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         showWallet();
     });
     changeUsernameButton.addEventListener('click', (event) => {
-        console.log("Change Username button clicked");
-        const newUsername = prompt("Enter new username:");
-        if (newUsername && changeUsername(newUsername)) {
-            alert("Username changed successfully!");
-        } else {
-            alert("Invalid username. Please try again.");
-        }
-    });
+    console.log("Change Username button clicked");
+    const newUsername = prompt("Enter new username:");
+    if (newUsername && changeUsername(newUsername)) {
+        alert("Username changed successfully!");
+        updateDisplay(); // Add this line to update the display immediately
+    } else {
+        alert("Invalid username. Please try again.");
+    }
+});
 
     closeWalletButton.addEventListener('click', closeWallet);
     saveWalletAddressButton.addEventListener('click', saveWalletAddress);
