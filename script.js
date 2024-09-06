@@ -212,21 +212,21 @@ let characterIndex = 0;
 }
 
     function handleAttack(damage) {
-        console.log("Handling attack, damage:", damage);
-        if (will > 0) {
-            health -= damage;
-            score += damage;
-            points += damage;
-            will -= 1;
+    console.log("Handling attack, damage:", damage);
+    if (will > 0) {
+        health -= damage;
+        score += damage;
+        points += damage;
+        will -= 1;
 
-            if (health <= 0) {
-                nextCharacter();
-            }
-
-            updateDisplay();
-            saveProgress();
+        if (health <= 0) {
+            nextCharacter();
         }
+
+        updateDisplay();
+        saveProgress();
     }
+}
 
     function handleClick(event) {
     console.log("Click detected on:", event.target);
