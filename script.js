@@ -298,6 +298,32 @@ function handleIncreaseDamage() {
     }
 }
 
+function handleShowLeaderboard() {
+    console.log("Showing leaderboard");
+    leaderboardElement.style.display = 'block';  // Show the leaderboard
+    // Add any other logic you want for leaderboard display
+}
+
+function handleShowWallet() {
+    console.log("Showing wallet");
+    walletScreen.style.display = 'block';  // Show the wallet screen
+    updateWalletDisplay();
+}
+
+function handleChangeUsername() {
+    const newUsername = prompt("Enter a new username:");
+    if (newUsername && !isProfanity(newUsername)) {
+        changeUsername(newUsername);
+    } else {
+        console.log("Invalid username or contains profanity.");
+    }
+}
+
+function updateWalletDisplay() {
+    walletPointsElement.textContent = points;
+    riggedTokensElement.textContent = riggedTokens;
+}
+
 // Wait for the DOM to fully load before assigning DOM elements
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM Content Loaded event fired");
@@ -342,6 +368,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Button click handlers
     replenishWillButton.addEventListener('click', handleReplenishWill);
     increaseDamageButton.addEventListener('click', handleIncreaseDamage);
+    showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
+    showWalletButton.addEventListener('click', handleShowWallet);
+    changeUsernameButton.addEventListener('click', handleChangeUsername);
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
