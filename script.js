@@ -180,21 +180,20 @@ function showDefeatMessage() {
 
     // Listener to hide defeat message and proceed to the next character
     function handleDefeatInteraction(event) {
-        if (!defeatMessage.contains(event.target)) {
-            defeatMessage.classList.add('hidden');  // Hide the defeat message immediately
-            nextCharacterAfterDefeat();
-            document.removeEventListener('click', handleDefeatInteraction);  // Remove the event listener for click
-            document.removeEventListener('touchstart', handleDefeatInteraction);  // Remove the event listener for touch
-        }
-        event.stopPropagation(); // Prevent event from bubbling up
+        defeatMessage.classList.add('hidden');  // Hide the defeat message immediately
+        nextCharacterAfterDefeat();
+        gameContainer.removeEventListener('click', handleDefeatInteraction);  // Remove click listener
+        gameContainer.removeEventListener('touchstart', handleDefeatInteraction);  // Remove touch listener
+        event.stopPropagation(); // Prevent the event from bubbling up
     }
 
-    // Prevent immediate closing by adding the event listener after a delay
+    // Add listener for the game container (entire screen area)
     setTimeout(() => {
-        document.addEventListener('click', handleDefeatInteraction);  // Add listener for clicks
-        document.addEventListener('touchstart', handleDefeatInteraction);  // Add listener for touch events
+        gameContainer.addEventListener('click', handleDefeatInteraction);  // Add listener for clicks
+        gameContainer.addEventListener('touchstart', handleDefeatInteraction);  // Add listener for touch events
     }, 0);
 
+    // Prevent interaction with the defeat message itself from closing it
     defeatMessage.addEventListener('click', (event) => event.stopPropagation());
     defeatMessage.addEventListener('touchstart', (event) => event.stopPropagation());
 }
