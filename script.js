@@ -232,7 +232,7 @@ function updateDisplay() {
     increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
 }
 
-// Amended handleShowLeaderboard function
+// Updated handleShowLeaderboard function
 function handleShowLeaderboard() {
     console.log("Showing leaderboard");
 
@@ -257,8 +257,31 @@ function handleShowLeaderboard() {
 
     leaderboardElement.appendChild(leaderboardList);
 
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close Leaderboard';
+    closeButton.addEventListener('click', closeLeaderboard);
+    leaderboardElement.appendChild(closeButton);
+
     // Make leaderboard visible
     leaderboardElement.style.display = 'block';
+
+    // Add event listener to close leaderboard when clicking outside
+    document.addEventListener('click', handleOutsideClick);
+}
+
+// New closeLeaderboard and handleOutsideClick functions
+function closeLeaderboard() {
+    console.log("Closing leaderboard");
+    leaderboardElement.style.display = 'none';
+    // Remove the event listener when the leaderboard is closed
+    document.removeEventListener('click', handleOutsideClick);
+}
+
+function handleOutsideClick(event) {
+    if (!leaderboardElement.contains(event.target) && event.target.id !== 'show-leaderboard-button') {
+        closeLeaderboard();
+    }
 }
 
 // Event listeners for game actions
@@ -384,6 +407,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
+    // Ensure wallet is hidden initially
+    walletScreen.style.display = 'none';
+
     gameContainer.addEventListener('click', (event) => {
         if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message')) {
             handleAttack(damagePerClick);
@@ -392,7 +418,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     replenishWillButton.addEventListener('click', handleReplenishWill);
     increaseDamageButton.addEventListener('click', handleIncreaseDamage);
-    showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
+    showLeaderboardButton.addEventListener('click', handleShowLeaderboard); // Updated event listener
     showWalletButton.addEventListener('click', handleShowWallet);
     changeUsernameButton.addEventListener('click', handleChangeUsername);
     closeWalletButton.addEventListener('click', handleCloseWallet);
