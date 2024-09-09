@@ -286,9 +286,14 @@ function handleClick(event) {
 
 // Function to handle touch events
 function handleTouch(event) {
-    // Prevent multiple attacks being processed at once
+    // Ignore touch events on buttons and UI elements
+    if (event.target.tagName === 'BUTTON' || event.target.closest('.ui-element')) {
+        return;  // Don't trigger attacks if touch is on a button or UI element
+    }
+
+    // Prevent multiple attacks if the character is already defeated
     if (health <= 0) {
-        return;  // Stop if the character is already defeated
+        return;
     }
 
     event.preventDefault();  // Prevent default touch behavior (like scrolling)
