@@ -28,6 +28,20 @@ let gameContainer, characterElement, characterNameElement, healthFill, currentHe
     walletScreen, walletPointsElement, riggedTokensElement, baseWalletAddressInput, 
     saveWalletAddressButton, claimRiggedButton, burnRiggedButton, closeWalletButton, walletAddressError;
 
+// Game variables
+let score = 0;
+let points = 0;
+let will = 1000;
+let level = 1;
+let health = 100;
+let maxHealth = 100;
+let damagePerClick = 1;
+let replenishWillCost = 100;
+let increaseDamageCost = 200;
+let characterIndex = 0;
+let riggedTokens = 0;
+let pointsAtLastBurn = 0;
+
 // Declare character information globally with updated defeat messages
 const characters = [
     { emoji: '😈', baseHealth: 100, name: 'Demon', defeatMessage: "You've banished the demon back to the underworld!" },
@@ -46,12 +60,10 @@ function authenticateTelegramUser() {
                 telegramUserId = initDataUnsafe.user.id.toString();
                 resolve(telegramUserId);
             } else {
-                // If running in Telegram but can't get user data, generate a random ID
                 telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
                 resolve(telegramUserId);
             }
         } else {
-            // If not running in Telegram, generate a random ID
             telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
             resolve(telegramUserId);
         }
@@ -91,65 +103,72 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Saving progress");
 
-    // Ensure all game variables are properly defined
-    if (typeof health === 'undefined') {
-        console.error("Health is undefined. Setting default value of 100.");
-        health = 100;
-    }
-    if (typeof maxHealth === 'undefined') {
-        console.error("Max Health is undefined. Setting default value of 100.");
-        maxHealth = 100;
-    }
-    if (typeof damagePerClick === 'undefined') {
-        console.error("Damage Per Click is undefined. Setting default value of 1.");
-        damagePerClick = 1;
-    }
-    if (typeof replenishWillCost === 'undefined') {
-        console.error("Replenish Will Cost is undefined. Setting default value of 100.");
-        replenishWillCost = 100;
-    }
-    if (typeof increaseDamageCost === 'undefined') {
-        console.error("Increase Damage Cost is undefined. Setting default value of 200.");
-        increaseDamageCost = 200;
-    }
-    if (typeof baseWalletAddress === 'undefined') {
-        console.error("Base Wallet Address is undefined. Setting default value of an empty string.");
-        baseWalletAddress = ''; // Default to empty string
-    }
-    if (typeof riggedTokens === 'undefined') {
-        console.error("Rigged Tokens is undefined. Setting default value of 0.");
-        riggedTokens = 0;
-    }
-    if (typeof pointsAtLastBurn === 'undefined') {
-        console.error("Points At Last Burn is undefined. Setting default value of 0.");
-        pointsAtLastBurn = 0;  // Ensure pointsAtLastBurn is defined
-    }
+    if (typeof health === 'undefined') health = 100;
+    if (typeof maxHealth === 'undefined') maxHealth = 100;
+    if (typeof damagePerClick === 'undefined') damagePerClick = 1;
+    if (typeof replenishWillCost === 'undefined') replenishWillCost = 100;
+    if (typeof increaseDamageCost === 'undefined') increaseDamageCost = 200;
+    if (typeof baseWalletAddress === 'undefined') baseWalletAddress = '';
+    if (typeof riggedTokens === 'undefined') riggedTokens = 0;
+    if (typeof pointsAtLastBurn === 'undefined') pointsAtLastBurn = 0;
 
     if (telegramUserId) {
         const dataToSave = {
-            displayName: displayName,
-            score: score,
-            points: points,
-            will: will,
-            level: level,
-            health: health,
-            maxHealth: maxHealth,
-            damagePerClick: damagePerClick,
-            replenishWillCost: replenishWillCost,
-            increaseDamageCost: increaseDamageCost,
-            baseWalletAddress: baseWalletAddress,
-            riggedTokens: riggedTokens,
-            pointsAtLastBurn: pointsAtLastBurn,
-            characterIndex: characterIndex
+            displayName, score, points, will, level, health, maxHealth,
+            damagePerClick, replenishWillCost, increaseDamageCost,
+            baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex
         };
-        console.log("Data being saved:", dataToSave);
         database.ref('users/' + telegramUserId).set(dataToSave);
     } else {
         console.log("No Telegram User ID available, progress not saved");
     }
 }
 
-// Function to handle attack and trigger animations
+// Function to load progress from Firebase
+function loadProgress() {
+    console.log("Loading progress");
+    return new Promise((resolve, reject) => {
+        if (telegramUserId) {
+            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    displayName = data.displayName || generateRandomUsername();
+                    score = data.score || 0;
+                    points = data.points || 0;
+                    will = data.will || 1000;
+                    level = data.level || 1;
+                    health = data.health || 100;
+                    maxHealth = data.maxHealth || 100;
+                    damagePerClick = data.damagePerClick || 1;
+                    replenishWillCost = data.replenishWillCost || 100;
+                    increaseDamageCost = data.increaseDamageCost || 200;
+                    baseWalletAddress = data.baseWalletAddress || '';
+                    riggedTokens = data.riggedTokens || 0;
+                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                    characterIndex = data.characterIndex || 0;
+                } else {
+                    displayName = generateRandomUsername();
+                }
+                updateDisplay();
+                resolve();
+            }).catch(reject);
+        } else {
+            reject("No Telegram User ID available");
+        }
+    });
+}
+
+// Function to move to the next character
+function nextCharacter() {
+    console.log("Moving to next character");
+    characterIndex = (characterIndex + 1) % characters.length;
+    if (characterIndex === 0) level++;
+    maxHealth = characters[characterIndex].baseHealth * level;
+    health = maxHealth;
+    saveProgress();
+}
+
+// Function to handle attack
 function handleAttack(damage) {
     console.log("Handling attack, damage:", damage);
     if (will > 0) {
@@ -158,7 +177,6 @@ function handleAttack(damage) {
         points += damage;
         will -= 1;
 
-        // Trigger pain animation
         const character = document.getElementById('character');
         const painOverlay = document.getElementById('pain-overlay');
         character.classList.add('pain');
@@ -178,14 +196,13 @@ function handleAttack(damage) {
     }
 }
 
-// Function to show defeat message and wait for next character
+// Function to show defeat message
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
     const defeatText = document.getElementById('defeat-text');
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Wait for user to click before moving to next character
     document.addEventListener('click', nextCharacterAfterDefeat, { once: true });
 }
 
@@ -197,14 +214,12 @@ function nextCharacterAfterDefeat() {
     saveProgress();
 }
 
-// Function to update display and adjust character size based on level
+// Function to update display
 function updateDisplay() {
-    // Update character display
     const character = document.getElementById('character');
     character.textContent = characters[characterIndex].emoji;
-    character.style.fontSize = `${100 + (characterIndex * 20)}px`; // Increase size for each character
+    character.style.fontSize = `${100 + (characterIndex * 20)}px`;
 
-    // Update other game elements
     characterNameElement.textContent = characters[characterIndex].name;
     currentHealthElement.textContent = health;
     maxHealthElement.textContent = maxHealth;
@@ -217,16 +232,132 @@ function updateDisplay() {
     increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
 }
 
-// Function to calculate $RIGGED based on current points, ignoring pre-burn points
-function calculateRigged() {
-    const eligiblePoints = points - pointsAtLastBurn;
-    const newRigged = Math.floor(eligiblePoints / 100);
-    return newRigged;
+// Amended handleShowLeaderboard function
+function handleShowLeaderboard() {
+    console.log("Showing leaderboard");
+
+    // Populate leaderboard with sample data for now (replace with actual data as needed)
+    const leaderboardData = [
+        { username: 'Player1', score: 100 },
+        { username: 'Player2', score: 90 },
+        { username: 'Player3', score: 80 },
+        { username: displayName + ' (You)', score: score }
+    ];
+
+    // Clear any previous leaderboard content
+    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
+
+    // Create a list of players and their scores
+    const leaderboardList = document.createElement('ul');
+    leaderboardData.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${player.username}: ${player.score} points`;
+        leaderboardList.appendChild(listItem);
+    });
+
+    leaderboardElement.appendChild(leaderboardList);
+
+    // Make leaderboard visible
+    leaderboardElement.style.display = 'block';
 }
 
-// Add event listeners for clicks and touches
+// Event listeners for game actions
+function handleReplenishWill() {
+    console.log("Replenishing will");
+    if (points >= replenishWillCost) {
+        points -= replenishWillCost;
+        will = 1000;
+        replenishWillCost = Math.floor(replenishWillCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+function handleIncreaseDamage() {
+    console.log("Increasing damage");
+    if (points >= increaseDamageCost) {
+        points -= increaseDamageCost;
+        damagePerClick++;
+        increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+function handleShowWallet() {
+    console.log("Showing wallet");
+    riggedTokens = calculateRigged();
+    updateWalletDisplay();
+    walletScreen.style.display = 'block';
+}
+
+function handleChangeUsername() {
+    const newUsername = prompt("Enter a new username:");
+    if (newUsername && !isProfanity(newUsername)) {
+        changeUsername(newUsername);
+    } else {
+        console.log("Invalid username or contains profanity.");
+    }
+}
+
+function handleCloseWallet() {
+    console.log("Closing wallet");
+    walletScreen.style.display = 'none';
+}
+
+function handleClaimRigged() {
+    if (!isWalletValid) {
+        walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
+        walletAddressError.style.color = "red";
+        return;
+    }
+    console.log("Claiming $RIGGED");
+    points = 0;
+    riggedTokens = 0;
+    updateWalletDisplay();
+    saveProgress();
+}
+
+function handleBurnRigged() {
+    console.log("Burning $RIGGED");
+    riggedTokens = 0;
+    pointsAtLastBurn = points;
+    updateWalletDisplay();
+    saveProgress();
+}
+
+function handleSaveWalletAddress() {
+    const walletAddress = baseWalletAddressInput.value.trim();
+    if (validateWalletAddress(walletAddress)) {
+        baseWalletAddress = walletAddress;
+        isWalletValid = true;
+        walletAddressError.textContent = "Wallet address saved successfully!";
+        walletAddressError.style.color = "green";
+        saveProgress();
+    } else {
+        isWalletValid = false;
+        walletAddressError.textContent = "Invalid wallet address. Must be 42 characters or a Base ENS (.base).";
+        walletAddressError.style.color = "red";
+    }
+}
+
+function updateWalletDisplay() {
+    walletPointsElement.textContent = points;
+    riggedTokensElement.textContent = riggedTokens;
+}
+
+function validateWalletAddress(address) {
+    return (address.length === 42 || address.endsWith('.base'));
+}
+
+// Function to calculate $RIGGED based on current points
+function calculateRigged() {
+    const eligiblePoints = points - pointsAtLastBurn;
+    return Math.floor(eligiblePoints / 100);
+}
+
+// Initialize game after DOM elements are loaded
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Initialize game elements here
     gameContainer = document.getElementById('game-container');
     characterElement = document.getElementById('character');
     characterNameElement = document.getElementById('character-name');
@@ -243,8 +374,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showWalletButton = document.getElementById('show-wallet-button');
     leaderboardElement = document.getElementById('leaderboard');
     changeUsernameButton = document.getElementById('change-username-button');
-
-    // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
     walletPointsElement = document.getElementById('wallet-points');
     riggedTokensElement = document.getElementById('rigged-tokens');
@@ -255,15 +384,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
-    // Add click event listener for the entire game container
     gameContainer.addEventListener('click', (event) => {
-        // Prevent clicks on UI elements from triggering attacks
         if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message')) {
             handleAttack(damagePerClick);
         }
     });
 
-    // Initialize game after DOM elements are loaded
+    replenishWillButton.addEventListener('click', handleReplenishWill);
+    increaseDamageButton.addEventListener('click', handleIncreaseDamage);
+    showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
+    showWalletButton.addEventListener('click', handleShowWallet);
+    changeUsernameButton.addEventListener('click', handleChangeUsername);
+    closeWalletButton.addEventListener('click', handleCloseWallet);
+    claimRiggedButton.addEventListener('click', handleClaimRigged);
+    burnRiggedButton.addEventListener('click', handleBurnRigged);
+    saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
+
     authenticateTelegramUser()
         .then(() => loadProgress())
         .then(() => {
