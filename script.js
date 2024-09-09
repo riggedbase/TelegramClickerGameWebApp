@@ -64,44 +64,26 @@ const characters = [
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
         console.log("Authenticating Telegram user...");
-        console.log("window.Telegram exists:", !!window.Telegram);
-        console.log("window.Telegram.WebApp exists:", !!(window.Telegram && window.Telegram.WebApp));
-        
         if (window.Telegram && window.Telegram.WebApp) {
             console.log("Telegram WebApp is available");
-            const initData = window.Telegram.WebApp.initData;
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
             
-            console.log("initData:", initData);
             console.log("initDataUnsafe:", JSON.stringify(initDataUnsafe));
 
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
                 console.log("Authenticated Telegram user ID:", telegramUserId);
-            } else if (initData) {
-                try {
-                    const parsedInitData = JSON.parse(decodeURIComponent(initData));
-                    console.log("Parsed initData:", parsedInitData);
-                    if (parsedInitData.user) {
-                        telegramUserId = parsedInitData.user.id.toString();
-                        console.log("Authenticated Telegram user ID from parsed initData:", telegramUserId);
-                    }
-                } catch (error) {
-                    console.error("Error parsing initData:", error);
-                }
-            }
-            
-            if (!telegramUserId) {
-                console.warn("Unable to retrieve Telegram user ID, using fallback");
+                resolve(telegramUserId);
+            } else {
+                console.log("Unable to retrieve Telegram user ID, using fallback");
                 telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
+                resolve(telegramUserId);
             }
         } else {
-            console.warn("Telegram WebApp not available, using web fallback");
+            console.log("Telegram WebApp not available, using web fallback");
             telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
+            resolve(telegramUserId);
         }
-        
-        console.log("Final telegramUserId:", telegramUserId);
-        resolve(telegramUserId);
     });
 }
 
@@ -547,7 +529,7 @@ function handleOutsideClick(event) {
 
 // Initialize game after DOM elements are loaded
 document.addEventListener('DOMContentLoaded', (event) => {
-    console.log("DOM Content Loaded");
+    console.log("DOM Content Loaded event fired");
 
     // Initialize game elements here
     gameContainer = document.getElementById('game-container');
@@ -597,33 +579,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
     burnRiggedButton.addEventListener('click', handleBurnRigged);
     saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
 
-    initializeWalletState(); // Initialize wallet state
-
     if (window.Telegram && window.Telegram.WebApp) {
-        console.log("Telegram WebApp detected, initializing...");
+        console.log("Initializing Telegram WebApp...");
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-    } else {
-        console.log("Telegram WebApp not detected, initializing as web version...");
     }
 
-    // Enhanced initialization code
+    // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
-        .then((userId) => {
-            console.log("Authentication complete, userId:", userId);
-            return loadProgress();
-        })
+        .then(() => loadProgress())
         .then(() => {
-            console.log("Progress loaded successfully");
             updateDisplay();
-            setInterval(saveProgress, 30000);
+            setInterval(saveProgress, 5000);
             console.log("Game initialized");
         })
         .catch((error) => {
             console.error("Error initializing game:", error);
-            if (!telegramUserId) {
-                telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-            }
+            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
             displayName = generateRandomUsername();
             updateDisplay();
             setInterval(saveProgress, 30000);
