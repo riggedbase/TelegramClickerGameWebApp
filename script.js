@@ -55,16 +55,34 @@ const characters = [
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
         if (window.Telegram && window.Telegram.WebApp) {
+            const initData = window.Telegram.WebApp.initData;
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+            
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
-            } else {
+                console.log("Authenticated Telegram user ID:", telegramUserId);
+            } else if (initData) {
+                // If initDataUnsafe is not available, try to parse initData
+                try {
+                    const parsedInitData = JSON.parse(decodeURIComponent(initData));
+                    if (parsedInitData.user) {
+                        telegramUserId = parsedInitData.user.id.toString();
+                        console.log("Authenticated Telegram user ID from parsed initData:", telegramUserId);
+                    }
+                } catch (error) {
+                    console.error("Error parsing initData:", error);
+                }
+            }
+            
+            if (!telegramUserId) {
+                console.warn("Unable to retrieve Telegram user ID, using fallback");
                 telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
             }
         } else {
+            console.warn("Telegram WebApp not available, using web fallback");
             telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
         }
-        console.log("Authenticated user ID:", telegramUserId);
+        
         resolve(telegramUserId);
     });
 }
@@ -545,15 +563,21 @@ function autoReplenishWill() {
 setInterval(autoReplenishWill, 2000);
 
     authenticateTelegramUser()
-        .then(() => loadProgress())
         .then(() => {
+            console.log("Authentication complete, telegramUserId:", telegramUserId);
+            return loadProgress();
+        })
+        .then(() => {
+            console.log("Progress loaded successfully");
             updateDisplay();
             setInterval(saveProgress, 30000);
             console.log("Game initialized");
         })
         .catch((error) => {
             console.error("Error initializing game:", error);
-            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+            if (!telegramUserId) {
+                telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+            }
             displayName = generateRandomUsername();
             updateDisplay();
             setInterval(saveProgress, 30000);
