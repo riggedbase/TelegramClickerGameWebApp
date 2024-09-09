@@ -180,11 +180,15 @@ function showDefeatMessage() {
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Listener to hide defeat message and proceed to the next character
+    // Stop any further attacks until the defeat message is closed
+    gameContainer.removeEventListener('click', handleAttack); // Disable attack clicks temporarily
+
+    // Listener to close defeat message and proceed to the next character
     function closeDefeatMessage() {
         defeatMessage.classList.add('hidden');
-        nextCharacterAfterDefeat();
-        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage); // Remove event listener
+        gameContainer.addEventListener('click', handleAttack); // Re-enable attack clicks
+        nextCharacterAfterDefeat(); // Load the next character only after closing defeat message
+        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage); // Remove listener
     }
 
     closeDefeatMessageButton.addEventListener('click', closeDefeatMessage); // Add event listener to the close button
