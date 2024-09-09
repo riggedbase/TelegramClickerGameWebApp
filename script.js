@@ -183,15 +183,35 @@ function showDefeatMessage() {
             nextCharacterAfterDefeat();
             document.removeEventListener('click', handleDefeatClick);
         }
+        event.stopPropagation(); // Prevent the click from bubbling up
     }
 
-    document.addEventListener('click', handleDefeatClick);
+    // Use setTimeout to add the event listener on the next tick
+    setTimeout(() => {
+        document.addEventListener('click', handleDefeatClick);
+    }, 0);
+
+    // Prevent immediate closing
+    defeatMessage.addEventListener('click', (event) => event.stopPropagation());
 }
 
 function nextCharacterAfterDefeat() {
     const defeatMessage = document.getElementById('defeat-message');
     defeatMessage.classList.add('hidden');
+    document.removeEventListener('click', handleDefeatClick); // Remove the event listener
     nextCharacter();
+    updateDisplay();
+    saveProgress();
+}
+
+// Updated nextCharacter function
+function nextCharacter() {
+    console.log("Moving to next character");
+    characterIndex = (characterIndex + 1) % characters.length;
+    if (characterIndex === 0) level++;
+    maxHealth = characters[characterIndex].baseHealth * level;
+    health = maxHealth; // Reset health to full
+    will = 1000; // Reset will to full
     updateDisplay();
     saveProgress();
 }
@@ -214,46 +234,7 @@ function updateDisplay() {
     increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
 }
 
-// Updated validateWalletAddress function
-function validateWalletAddress(address) {
-    return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
-}
-
-// Updated handleSaveWalletAddress function
-function handleSaveWalletAddress() {
-    const walletAddress = baseWalletAddressInput.value.trim();
-    if (validateWalletAddress(walletAddress)) {
-        try {
-            baseWalletAddress = walletAddress;
-            isWalletValid = true;
-            walletAddressError.textContent = "Wallet address saved successfully!";
-            walletAddressError.style.color = "green";
-            saveProgress();
-        } catch (error) {
-            console.error("Error saving wallet address:", error);
-            walletAddressError.textContent = "Error saving wallet address. Please try again.";
-            walletAddressError.style.color = "red";
-        }
-    } else {
-        isWalletValid = false;
-        walletAddressError.textContent = "Invalid wallet address. Must be a 42-character hexadecimal address starting with '0x' or a Base ENS name ending with '.base.eth'.";
-        walletAddressError.style.color = "red";
-    }
-}
-
-// Function to calculate Rigged tokens
-function calculateRigged() {
-    const eligiblePoints = points - pointsAtLastBurn;
-    return Math.floor(eligiblePoints / 100);
-}
-
-// Function to update wallet display
-function updateWalletDisplay() {
-    walletPointsElement.textContent = points;
-    riggedTokensElement.textContent = riggedTokens;
-}
-
-// Function to handle attack (with multiple touches)
+// Updated handleAttack function
 function handleAttack(damage) {
     console.log("Handling attack, damage:", damage);
     if (will > 0) {
@@ -278,6 +259,11 @@ function handleAttack(damage) {
             updateDisplay();
             saveProgress();
         }
+    }
+
+    // Check if health is zero or negative, move to next character if so
+    if (health <= 0) {
+        nextCharacter();
     }
 }
 
@@ -378,6 +364,39 @@ function handleBurnRigged() {
         console.error("Error burning $RIGGED:", error);
         alert("There was an error burning your $RIGGED tokens. Please try again later.");
     }
+}
+
+// Function to validate wallet address (added back)
+function validateWalletAddress(address) {
+    return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
+}
+
+// Function to save wallet address (newly added)
+function handleSaveWalletAddress() {
+    const walletAddress = baseWalletAddressInput.value.trim();
+    if (validateWalletAddress(walletAddress)) {
+        baseWalletAddress = walletAddress;
+        isWalletValid = true;
+        walletAddressError.textContent = "Wallet address saved successfully!";
+        walletAddressError.style.color = "green";
+        saveProgress();
+    } else {
+        isWalletValid = false;
+        walletAddressError.textContent = "Invalid wallet address. Must be a 42-character hexadecimal address starting with '0x' or a Base ENS name ending with '.base.eth'.";
+        walletAddressError.style.color = "red";
+    }
+}
+
+// Function to update wallet display
+function updateWalletDisplay() {
+    walletPointsElement.textContent = points;
+    riggedTokensElement.textContent = riggedTokens;
+}
+
+// Function to calculate Rigged tokens
+function calculateRigged() {
+    const eligiblePoints = points - pointsAtLastBurn;
+    return Math.floor(eligiblePoints / 100);
 }
 
 // Function to show leaderboard
