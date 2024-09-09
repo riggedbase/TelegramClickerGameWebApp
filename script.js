@@ -328,11 +328,17 @@ function handleClaimRigged() {
         walletAddressError.style.color = "red";
         return;
     }
+    
+    // Ensure that riggedTokens is zero or greater
+    if (riggedTokens < 0) {
+        riggedTokens = 0;
+    }
+    
     console.log("Claiming $RIGGED");
     try {
         const claimedAmount = riggedTokens;
-        points = 0;
-        riggedTokens = 0;
+        points = 0;  // Reset points after claiming
+        riggedTokens = 0;  // Reset $RIGGED tokens after claiming
         updateWalletDisplay();
         saveProgress();
         alert(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
@@ -345,10 +351,16 @@ function handleClaimRigged() {
 // Updated handleBurnRigged function
 function handleBurnRigged() {
     console.log("Burning $RIGGED");
+    
+    // Ensure that riggedTokens is zero or greater
+    if (riggedTokens < 0) {
+        riggedTokens = 0;
+    }
+    
     try {
         const burnedAmount = riggedTokens;
-        riggedTokens = 0;
-        pointsAtLastBurn = points;
+        riggedTokens = 0;  // Reset $RIGGED tokens after burning
+        pointsAtLastBurn = points;  // Update points at last burn
         updateWalletDisplay();
         saveProgress();
         alert(`Successfully burned ${burnedAmount} $RIGGED tokens!`);
@@ -388,7 +400,14 @@ function updateWalletDisplay() {
 // Function to calculate Rigged tokens
 function calculateRigged() {
     const eligiblePoints = points - pointsAtLastBurn;
-    return Math.floor(eligiblePoints / 100);
+    const riggedTokensEarned = Math.floor(eligiblePoints / 100);
+    
+    // Ensure that $RIGGED tokens can't be negative
+    if (riggedTokensEarned < 0) {
+        return 0;
+    }
+    
+    return riggedTokensEarned;
 }
 
 // Function to show leaderboard
