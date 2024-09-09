@@ -245,6 +245,7 @@ function updateDisplay() {
 // Updated handleAttack function
 function handleAttack(damage) {
     console.log("Handling attack, damage:", damage);
+    
     if (will > 0) {
         health -= damage;
         score += damage;
@@ -261,17 +262,13 @@ function handleAttack(damage) {
             painOverlay.style.opacity = '0';
         }, 500);
 
+        // Check if the character is defeated
         if (health <= 0) {
-            showDefeatMessage();
+            showDefeatMessage();  // Only show the defeat message here
         } else {
             updateDisplay();
             saveProgress();
         }
-    }
-
-    // Check if health is zero or negative, move to next character if so
-    if (health <= 0) {
-        nextCharacter();
     }
 }
 
