@@ -124,7 +124,8 @@ function changeUsername(newUsername) {
 
 // Updated saveProgress function
 function saveProgress() {
-    console.log("Saving progress");
+    console.log("Attempting to save progress...");
+    console.log("Current telegramUserId:", telegramUserId);
 
     if (typeof health === 'undefined') health = 100;
     if (typeof maxHealth === 'undefined') maxHealth = 100;
@@ -141,6 +142,7 @@ function saveProgress() {
             damagePerClick, replenishWillCost, increaseDamageCost,
             baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex
         };
+        console.log("Data being saved:", dataToSave);
         database.ref('users/' + telegramUserId).set(dataToSave)
             .then(() => console.log("Progress saved successfully"))
             .catch((error) => {
@@ -148,7 +150,7 @@ function saveProgress() {
                 alert("There was an error saving your progress. Please try again later.");
             });
     } else {
-        console.log("No Telegram User ID available, progress not saved");
+        console.error("No Telegram User ID available, progress not saved");
         alert("Unable to save progress. Please make sure you're logged in.");
     }
 }
@@ -195,6 +197,7 @@ function loadProgress() {
                     characterIndex = 0;
                 }
                 console.log("Game state after loading:", { displayName, score, points, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
+                initializeWalletState(); // Initialize wallet state after loading progress
                 updateDisplay();
                 resolve();
             }).catch((error) => {
@@ -365,12 +368,19 @@ function handleIncreaseDamage() {
     }
 }
 
+function initializeWalletState() {
+    console.log("Initializing wallet state");
+    walletScreen.style.display = 'none';
+    updateWalletDisplay();
+}
+
 // Function to handle Show Wallet
 function handleShowWallet() {
     console.log("Showing wallet");
     riggedTokens = calculateRigged();
     updateWalletDisplay();
     walletScreen.style.display = 'block';
+    saveProgress(); // Save the wallet state
 }
 
 // Function to change Username
@@ -387,6 +397,7 @@ function handleChangeUsername() {
 function handleCloseWallet() {
     console.log("Closing wallet");
     walletScreen.style.display = 'none';
+    saveProgress(); // Save the wallet state
 }
 
 // Updated handleClaimRigged function
@@ -573,6 +584,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     claimRiggedButton.addEventListener('click', handleClaimRigged);
     burnRiggedButton.addEventListener('click', handleBurnRigged);
     saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
+
+    initializeWalletState(); // Initialize wallet state
 
     // Enhanced initialization code
     authenticateTelegramUser()
