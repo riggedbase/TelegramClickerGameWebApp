@@ -587,6 +587,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     initializeWalletState(); // Initialize wallet state
 
+    if (window.Telegram && window.Telegram.WebApp) {
+        console.log("Telegram WebApp detected, initializing...");
+        window.Telegram.WebApp.ready();
+    } else {
+        console.log("Telegram WebApp not detected, initializing as web version...");
+    }
+
     // Enhanced initialization code
     authenticateTelegramUser()
         .then((userId) => {
