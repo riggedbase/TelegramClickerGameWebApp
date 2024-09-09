@@ -21,6 +21,15 @@ let telegramUserId = null;
 let displayName = null;
 let isWalletValid = false; // Track wallet validation status
 
+console.log("Checking for Telegram WebApp...");
+if (window.Telegram && window.Telegram.WebApp) {
+    console.log("Telegram WebApp found in global scope");
+    console.log("WebApp version:", window.Telegram.WebApp.version);
+    console.log("WebApp platform:", window.Telegram.WebApp.platform);
+} else {
+    console.log("Telegram WebApp not found in global scope");
+}
+
 // Declare game elements globally so they can be accessed by all functions
 let gameContainer, characterElement, characterNameElement, healthFill, currentHealthElement, maxHealthElement, 
     scoreElement, pointsElement, willElement, levelElement, replenishWillButton, increaseDamageButton, 
@@ -55,17 +64,35 @@ const characters = [
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
         console.log("Authenticating Telegram user...");
+        console.log("window.Telegram exists:", !!window.Telegram);
+        console.log("window.Telegram.WebApp exists:", !!(window.Telegram && window.Telegram.WebApp));
+        
         if (window.Telegram && window.Telegram.WebApp) {
             console.log("Telegram WebApp is available");
+            const initData = window.Telegram.WebApp.initData;
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
             
+            console.log("initData:", initData);
             console.log("initDataUnsafe:", JSON.stringify(initDataUnsafe));
 
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
                 console.log("Authenticated Telegram user ID:", telegramUserId);
-            } else {
-                console.warn("Unable to retrieve Telegram user ID from initDataUnsafe");
+            } else if (initData) {
+                try {
+                    const parsedInitData = JSON.parse(decodeURIComponent(initData));
+                    console.log("Parsed initData:", parsedInitData);
+                    if (parsedInitData.user) {
+                        telegramUserId = parsedInitData.user.id.toString();
+                        console.log("Authenticated Telegram user ID from parsed initData:", telegramUserId);
+                    }
+                } catch (error) {
+                    console.error("Error parsing initData:", error);
+                }
+            }
+            
+            if (!telegramUserId) {
+                console.warn("Unable to retrieve Telegram user ID, using fallback");
                 telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
             }
         } else {
