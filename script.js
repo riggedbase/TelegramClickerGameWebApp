@@ -203,7 +203,7 @@ function nextCharacter() {
     if (characterIndex === 0) level++;
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth; // Reset health to full
-    will = 1000; // Reset will to full
+    // Don't reset will here; keep it as it is
     updateDisplay();
     saveProgress();
 }
@@ -502,6 +502,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     claimRiggedButton.addEventListener('click', handleClaimRigged);
     burnRiggedButton.addEventListener('click', handleBurnRigged);
     saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
+
+function autoReplenishWill() {
+    if (will < 1000) {
+        will += 1;
+        updateDisplay();
+    }
+}
+
+// Set up auto-replenish every 2 seconds
+setInterval(autoReplenishWill, 2000);
 
     authenticateTelegramUser()
         .then(() => loadProgress())
