@@ -177,21 +177,29 @@ function showDefeatMessage() {
     const defeatText = document.getElementById('defeat-text');
     const closeDefeatMessageButton = document.getElementById('close-defeat-message-button');
 
+    // Display the defeat message with the defeat text of the current character
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Disable clicks to prevent skipping characters
-    gameContainer.removeEventListener('click', handleClick);
+    // Disable attack clicks temporarily
+    gameContainer.removeEventListener('click', handleClick);  
 
-    // Listener to close the defeat message and load the next character
+    // Listener to close defeat message and proceed to next character
     function closeDefeatMessage() {
         defeatMessage.classList.add('hidden');  // Hide the defeat message
-        nextCharacter();  // Only load the next character after the defeat message is closed
-        gameContainer.addEventListener('click', handleClick);  // Re-enable clicks
+
+        // Now move to the next character after the defeat message is closed
+        nextCharacter();  // Only load the next character after closing the defeat message
+
+        // Re-enable attack clicks after new character is loaded
+        setTimeout(() => {
+            gameContainer.addEventListener('click', handleClick);
+        }, 500);  // Small delay to avoid immediate attacks on the next character
+
         closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage);  // Remove listener
     }
 
-    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);  // Add event listener to the close button
+    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);  // Add event listener to close button
 }
 
 function nextCharacterAfterDefeat() {
@@ -202,18 +210,18 @@ function nextCharacterAfterDefeat() {
 
 // Updated nextCharacter function
 function nextCharacter() {
-    console.log("Moving to next character");
+    console.log("Loading next character");
     characterIndex = (characterIndex + 1) % characters.length;
 
     if (characterIndex === 0) {
-        level++;
+        level++;  // Increment level when you loop through all characters
     }
 
     maxHealth = characters[characterIndex].baseHealth * level;
-    health = maxHealth;  // Reset health to full
+    health = maxHealth;  // Reset the character's health to full
 
-    updateDisplay();
-    saveProgress();
+    updateDisplay();  // Update the UI with the new character
+    saveProgress();  // Save the progress after loading the new character
 }
 
 // Function to update display
