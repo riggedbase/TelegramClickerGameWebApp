@@ -24,10 +24,20 @@ let isWalletValid = false; // Track wallet validation status
 console.log("Checking for Telegram WebApp...");
 if (window.Telegram && window.Telegram.WebApp) {
     console.log("Telegram WebApp found in global scope");
-    console.log("WebApp version:", window.Telegram.WebApp.version);
-    console.log("WebApp platform:", window.Telegram.WebApp.platform);
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand(); // Expand the mini-app to full size
+    const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
+
+    if (initDataUnsafe && initDataUnsafe.user) {
+        telegramUserId = initDataUnsafe.user.id.toString();
+        console.log("Authenticated Telegram user ID:", telegramUserId);
+    } else {
+        console.log("Unable to retrieve Telegram user ID, using fallback");
+        telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
+    }
 } else {
-    console.log("Telegram WebApp not found in global scope");
+    console.log("Telegram WebApp not available, using web fallback");
+    telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
 }
 
 // Declare game elements globally so they can be accessed by all functions
