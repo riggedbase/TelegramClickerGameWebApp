@@ -175,27 +175,19 @@ function loadProgress() {
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
     const defeatText = document.getElementById('defeat-text');
+    const closeDefeatMessageButton = document.getElementById('close-defeat-message-button'); // New close button
+
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
     // Listener to hide defeat message and proceed to the next character
-    function handleDefeatInteraction(event) {
-        defeatMessage.classList.add('hidden');  // Hide the defeat message immediately
+    function closeDefeatMessage() {
+        defeatMessage.classList.add('hidden');
         nextCharacterAfterDefeat();
-        gameContainer.removeEventListener('click', handleDefeatInteraction);  // Remove click listener
-        gameContainer.removeEventListener('touchstart', handleDefeatInteraction);  // Remove touch listener
-        event.stopPropagation(); // Prevent the event from bubbling up
+        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage); // Remove event listener
     }
 
-    // Add listener for the game container (entire screen area)
-    setTimeout(() => {
-        gameContainer.addEventListener('click', handleDefeatInteraction);  // Add listener for clicks
-        gameContainer.addEventListener('touchstart', handleDefeatInteraction);  // Add listener for touch events
-    }, 0);
-
-    // Prevent interaction with the defeat message itself from closing it
-    defeatMessage.addEventListener('click', (event) => event.stopPropagation());
-    defeatMessage.addEventListener('touchstart', (event) => event.stopPropagation());
+    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage); // Add event listener to the close button
 }
 
 function nextCharacterAfterDefeat() {
