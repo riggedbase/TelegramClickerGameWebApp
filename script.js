@@ -179,21 +179,24 @@ function showDefeatMessage() {
     defeatMessage.classList.remove('hidden');
 
     // Listener to hide defeat message and proceed to the next character
-    function handleDefeatClick(event) {
+    function handleDefeatInteraction(event) {
         if (!defeatMessage.contains(event.target)) {
             defeatMessage.classList.add('hidden');  // Hide the defeat message immediately
             nextCharacterAfterDefeat();
-            document.removeEventListener('click', handleDefeatClick); // Ensure listener is removed
+            document.removeEventListener('click', handleDefeatInteraction);  // Remove the event listener for click
+            document.removeEventListener('touchstart', handleDefeatInteraction);  // Remove the event listener for touch
         }
-        event.stopPropagation(); // Prevent click from bubbling up
+        event.stopPropagation(); // Prevent event from bubbling up
     }
 
     // Prevent immediate closing by adding the event listener after a delay
     setTimeout(() => {
-        document.addEventListener('click', handleDefeatClick);
+        document.addEventListener('click', handleDefeatInteraction);  // Add listener for clicks
+        document.addEventListener('touchstart', handleDefeatInteraction);  // Add listener for touch events
     }, 0);
 
     defeatMessage.addEventListener('click', (event) => event.stopPropagation());
+    defeatMessage.addEventListener('touchstart', (event) => event.stopPropagation());
 }
 
 function nextCharacterAfterDefeat() {
