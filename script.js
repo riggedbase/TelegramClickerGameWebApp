@@ -175,30 +175,23 @@ function loadProgress() {
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
     const defeatText = document.getElementById('defeat-text');
-    const closeDefeatMessageButton = document.getElementById('close-defeat-message-button'); // New close button
+    const closeDefeatMessageButton = document.getElementById('close-defeat-message-button');
 
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Stop any further attacks until the defeat message is closed
-    gameContainer.removeEventListener('click', handleClick); // Disable attack clicks temporarily
+    // Disable clicks to prevent skipping characters
+    gameContainer.removeEventListener('click', handleClick);
 
-    // Listener to close defeat message and proceed to the next character
+    // Listener to close the defeat message and load the next character
     function closeDefeatMessage() {
-        defeatMessage.classList.add('hidden');
-
-        // Load next character AFTER the defeat message is closed
-        nextCharacterAfterDefeat(); // Load the next character only after closing defeat message
-
-        // Re-enable attack clicks after new character is loaded
-        setTimeout(() => {
-            gameContainer.addEventListener('click', handleClick);
-        }, 500);  // Small delay to ensure no auto-click happens during transition
-
-        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage); // Remove listener
+        defeatMessage.classList.add('hidden');  // Hide the defeat message
+        nextCharacter();  // Only load the next character after the defeat message is closed
+        gameContainer.addEventListener('click', handleClick);  // Re-enable clicks
+        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage);  // Remove listener
     }
 
-    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage); // Add event listener to the close button
+    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);  // Add event listener to the close button
 }
 
 function nextCharacterAfterDefeat() {
@@ -211,10 +204,14 @@ function nextCharacterAfterDefeat() {
 function nextCharacter() {
     console.log("Moving to next character");
     characterIndex = (characterIndex + 1) % characters.length;
-    if (characterIndex === 0) level++;
+
+    if (characterIndex === 0) {
+        level++;
+    }
+
     maxHealth = characters[characterIndex].baseHealth * level;
-    health = maxHealth; // Reset health to full
-    // Don't reset will here; keep it as it is
+    health = maxHealth;  // Reset health to full
+
     updateDisplay();
     saveProgress();
 }
