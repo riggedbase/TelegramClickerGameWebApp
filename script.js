@@ -178,25 +178,25 @@ function showDefeatMessage() {
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Ensure only one event listener is active at a time
+    // Listener to hide defeat message and proceed to the next character
     function handleDefeatClick(event) {
         if (!defeatMessage.contains(event.target)) {
+            defeatMessage.classList.add('hidden');  // Hide the defeat message immediately
             nextCharacterAfterDefeat();
+            document.removeEventListener('click', handleDefeatClick); // Ensure listener is removed
         }
-        event.stopPropagation(); // Prevent the click from bubbling up
+        event.stopPropagation(); // Prevent click from bubbling up
     }
 
-    // Prevent immediate closing and add click listener
+    // Prevent immediate closing by adding the event listener after a delay
     setTimeout(() => {
-        document.addEventListener('click', handleDefeatClick, { once: true });
+        document.addEventListener('click', handleDefeatClick);
     }, 0);
 
     defeatMessage.addEventListener('click', (event) => event.stopPropagation());
 }
 
 function nextCharacterAfterDefeat() {
-    const defeatMessage = document.getElementById('defeat-message');
-    defeatMessage.classList.add('hidden');
     nextCharacter();
     updateDisplay();
     saveProgress();
