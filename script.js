@@ -246,6 +246,11 @@ function updateDisplay() {
 function handleAttack(damage) {
     console.log("Handling attack, damage:", damage);
     
+    // Check if the character is already defeated to prevent multi-touch skips
+    if (health <= 0) {
+        return;  // Prevent further attacks once the character is defeated
+    }
+
     if (will > 0) {
         health -= damage;
         score += damage;
@@ -264,7 +269,7 @@ function handleAttack(damage) {
 
         // Check if the character is defeated
         if (health <= 0) {
-            showDefeatMessage();  // Only show the defeat message here
+            showDefeatMessage();  // Show the defeat message once the character is defeated
         } else {
             updateDisplay();
             saveProgress();
@@ -281,15 +286,16 @@ function handleClick(event) {
 
 // Function to handle touch events
 function handleTouch(event) {
-    console.log("Touch detected");
-    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
-        console.log("Touch on button or leaderboard, returning");
-        return;
+    // Prevent multiple attacks being processed at once
+    if (health <= 0) {
+        return;  // Stop if the character is already defeated
     }
 
-    event.preventDefault(); // Prevent default behavior such as scrolling
+    event.preventDefault();  // Prevent default touch behavior (like scrolling)
+
+    // Process attack for each touch
     for (let i = 0; i < event.touches.length; i++) {
-        handleAttack(damagePerClick);
+        handleAttack(damagePerClick);  // Trigger attack for each active touch point
     }
 }
 
