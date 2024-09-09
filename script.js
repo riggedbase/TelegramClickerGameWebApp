@@ -181,13 +181,20 @@ function showDefeatMessage() {
     defeatMessage.classList.remove('hidden');
 
     // Stop any further attacks until the defeat message is closed
-    gameContainer.removeEventListener('click', handleAttack); // Disable attack clicks temporarily
+    gameContainer.removeEventListener('click', handleClick); // Disable attack clicks temporarily
 
     // Listener to close defeat message and proceed to the next character
     function closeDefeatMessage() {
         defeatMessage.classList.add('hidden');
-        gameContainer.addEventListener('click', handleAttack); // Re-enable attack clicks
+
+        // Load next character AFTER the defeat message is closed
         nextCharacterAfterDefeat(); // Load the next character only after closing defeat message
+
+        // Re-enable attack clicks after new character is loaded
+        setTimeout(() => {
+            gameContainer.addEventListener('click', handleClick);
+        }, 500);  // Small delay to ensure no auto-click happens during transition
+
         closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage); // Remove listener
     }
 
@@ -260,6 +267,13 @@ function handleAttack(damage) {
     // Check if health is zero or negative, move to next character if so
     if (health <= 0) {
         nextCharacter();
+    }
+}
+
+function handleClick(event) {
+    // Prevent clicks on buttons or messages from triggering attacks
+    if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message')) {
+        handleAttack(damagePerClick);  // Trigger attack logic only if the click is not on a button or the defeat message
     }
 }
 
