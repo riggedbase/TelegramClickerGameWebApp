@@ -51,22 +51,21 @@ const characters = [
     { emoji: '🧙', baseHealth: 500, name: 'Wizard', defeatMessage: "The wizard's magic fades. Your strength prevails!" }
 ];
 
-// Function to authenticate Telegram user
+// Updated authenticateTelegramUser function
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
         if (window.Telegram && window.Telegram.WebApp) {
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
-                resolve(telegramUserId);
             } else {
                 telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
-                resolve(telegramUserId);
             }
         } else {
             telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
-            resolve(telegramUserId);
         }
+        console.log("Authenticated user ID:", telegramUserId);
+        resolve(telegramUserId);
     });
 }
 
@@ -172,6 +171,31 @@ function loadProgress() {
     });
 }
 
+// Updated showDefeatMessage function
+function showDefeatMessage() {
+    const defeatMessage = document.getElementById('defeat-message');
+    const defeatText = document.getElementById('defeat-text');
+    defeatText.textContent = characters[characterIndex].defeatMessage;
+    defeatMessage.classList.remove('hidden');
+
+    function handleDefeatClick(event) {
+        if (!defeatMessage.contains(event.target)) {
+            nextCharacterAfterDefeat();
+            document.removeEventListener('click', handleDefeatClick);
+        }
+    }
+
+    document.addEventListener('click', handleDefeatClick);
+}
+
+function nextCharacterAfterDefeat() {
+    const defeatMessage = document.getElementById('defeat-message');
+    defeatMessage.classList.add('hidden');
+    nextCharacter();
+    updateDisplay();
+    saveProgress();
+}
+
 // Function to update display
 function updateDisplay() {
     const character = document.getElementById('character');
@@ -188,6 +212,87 @@ function updateDisplay() {
     levelElement.textContent = level;
     replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
     increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+}
+
+// Updated validateWalletAddress function
+function validateWalletAddress(address) {
+    return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
+}
+
+// Updated handleSaveWalletAddress function
+function handleSaveWalletAddress() {
+    const walletAddress = baseWalletAddressInput.value.trim();
+    if (validateWalletAddress(walletAddress)) {
+        try {
+            baseWalletAddress = walletAddress;
+            isWalletValid = true;
+            walletAddressError.textContent = "Wallet address saved successfully!";
+            walletAddressError.style.color = "green";
+            saveProgress();
+        } catch (error) {
+            console.error("Error saving wallet address:", error);
+            walletAddressError.textContent = "Error saving wallet address. Please try again.";
+            walletAddressError.style.color = "red";
+        }
+    } else {
+        isWalletValid = false;
+        walletAddressError.textContent = "Invalid wallet address. Must be a 42-character hexadecimal address starting with '0x' or a Base ENS name ending with '.base.eth'.";
+        walletAddressError.style.color = "red";
+    }
+}
+
+// Function to calculate Rigged tokens
+function calculateRigged() {
+    const eligiblePoints = points - pointsAtLastBurn;
+    return Math.floor(eligiblePoints / 100);
+}
+
+// Function to update wallet display
+function updateWalletDisplay() {
+    walletPointsElement.textContent = points;
+    riggedTokensElement.textContent = riggedTokens;
+}
+
+// Function to handle attack (with multiple touches)
+function handleAttack(damage) {
+    console.log("Handling attack, damage:", damage);
+    if (will > 0) {
+        health -= damage;
+        score += damage;
+        points += damage;
+        will -= 1;
+
+        const character = document.getElementById('character');
+        const painOverlay = document.getElementById('pain-overlay');
+        character.classList.add('pain');
+        painOverlay.style.opacity = '0.5';
+
+        setTimeout(() => {
+            character.classList.remove('pain');
+            painOverlay.style.opacity = '0';
+        }, 500);
+
+        if (health <= 0) {
+            showDefeatMessage();
+        } else {
+            updateDisplay();
+            saveProgress();
+        }
+    }
+}
+
+// Function to handle touch events
+function handleTouch(event) {
+    console.log("Touch detected");
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Touch on button or leaderboard, returning");
+        return;
+    }
+
+    event.preventDefault(); // Prevent default behavior such as scrolling
+    for (let i = 0; i < event.touches.length; i++) {
+        handleAttack(damagePerClick);
+    }
 }
 
 // Function to handle Replenish Will
@@ -273,115 +378,6 @@ function handleBurnRigged() {
         console.error("Error burning $RIGGED:", error);
         alert("There was an error burning your $RIGGED tokens. Please try again later.");
     }
-}
-
-// Updated handleSaveWalletAddress function
-function handleSaveWalletAddress() {
-    const walletAddress = baseWalletAddressInput.value.trim();
-    if (validateWalletAddress(walletAddress)) {
-        try {
-            baseWalletAddress = walletAddress;
-            isWalletValid = true;
-            walletAddressError.textContent = "Wallet address saved successfully!";
-            walletAddressError.style.color = "green";
-            saveProgress();
-        } catch (error) {
-            console.error("Error saving wallet address:", error);
-            walletAddressError.textContent = "Error saving wallet address. Please try again.";
-            walletAddressError.style.color = "red";
-        }
-    } else {
-        isWalletValid = false;
-        walletAddressError.textContent = "Invalid wallet address. Must be 42 characters or a Base ENS (.base).";
-        walletAddressError.style.color = "red";
-    }
-}
-
-// Function to calculate Rigged tokens
-function calculateRigged() {
-    const eligiblePoints = points - pointsAtLastBurn;
-    return Math.floor(eligiblePoints / 100);
-}
-
-// Function to validate wallet address
-function validateWalletAddress(address) {
-    return (address.length === 42 || address.endsWith('.base'));
-}
-
-// Function to update wallet display
-function updateWalletDisplay() {
-    walletPointsElement.textContent = points;
-    riggedTokensElement.textContent = riggedTokens;
-}
-
-// Function to handle attack (with multiple touches)
-function handleAttack(damage) {
-    console.log("Handling attack, damage:", damage);
-    if (will > 0) {
-        health -= damage;
-        score += damage;
-        points += damage;
-        will -= 1;
-
-        const character = document.getElementById('character');
-        const painOverlay = document.getElementById('pain-overlay');
-        character.classList.add('pain');
-        painOverlay.style.opacity = '0.5';
-
-        setTimeout(() => {
-            character.classList.remove('pain');
-            painOverlay.style.opacity = '0';
-        }, 500);
-
-        if (health <= 0) {
-            showDefeatMessage();
-        } else {
-            updateDisplay();
-            saveProgress();
-        }
-    }
-}
-
-// Function to handle touch events
-function handleTouch(event) {
-    console.log("Touch detected");
-    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
-        console.log("Touch on button or leaderboard, returning");
-        return;
-    }
-
-    event.preventDefault(); // Prevent default behavior such as scrolling
-    for (let i = 0; i < event.touches.length; i++) {
-        handleAttack(damagePerClick);
-    }
-}
-
-// Function to show defeat message
-function showDefeatMessage() {
-    const defeatMessage = document.getElementById('defeat-message');
-    const defeatText = document.getElementById('defeat-text');
-    defeatText.textContent = characters[characterIndex].defeatMessage;
-    defeatMessage.classList.remove('hidden');
-
-    document.addEventListener('click', nextCharacterAfterDefeat, { once: true });
-}
-
-function nextCharacterAfterDefeat() {
-    const defeatMessage = document.getElementById('defeat-message');
-    defeatMessage.classList.add('hidden');
-    nextCharacter();
-    updateDisplay();
-    saveProgress();
-}
-
-// Function to move to the next character
-function nextCharacter() {
-    console.log("Moving to next character");
-    characterIndex = (characterIndex + 1) % characters.length;
-    if (characterIndex === 0) level++;
-    maxHealth = characters[characterIndex].baseHealth * level;
-    health = maxHealth;
-    saveProgress();
 }
 
 // Function to show leaderboard
