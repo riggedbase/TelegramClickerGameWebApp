@@ -1,76 +1,145 @@
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+body, html {
     margin: 0;
-    background-color: #f0f0f0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
 }
 
 #game-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-#character {
-    width: 100px;
-    height: 100px;
-    margin: 20px auto;
-}
-
-#health-bar {
+    position: relative;
     width: 100%;
-    height: 20px;
-    background-color: #ddd;
-    border-radius: 10px;
-    margin: 10px 0;
+    height: 100vh;
     overflow: hidden;
 }
 
-#health-fill {
+#background {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    background-image: url('path-to-your-background-image.jpg'); /* Replace with your background image */
+    background-size: cover;
+    background-position: center;
+}
+
+#character-container {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#character {
+    font-size: 100px;
+    transition: all 0.3s ease;
+}
+
+#pain-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.pain {
+    animation: shake 0.5s;
+}
+
+#defeat-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 24px;
+    text-align: center;
+    z-index: 10;
+}
+
+#game-ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#health-bar {
+    width: 200px;
+    height: 20px;
+    background-color: #ddd;
+    margin: 10px 0;
+}
+
+#health-fill {
+    height: 100%;
     background-color: #4CAF50;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.3s ease;
 }
 
 button {
-    padding: 10px 20px;
+    margin: 5px;
+    padding: 10px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    margin: 5px;
-}
-
-#stats {
-    display: flex;
-    justify-content: space-around;
-    margin: 20px 0;
-}
-
-#actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
 }
 
 #leaderboard {
-    margin-top: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 10;
 }
 
-#leaderboard-list {
-    list-style-type: none;
-    padding: 0;
+#wallet-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
 }
 
-#player-name-input {
-    margin: 10px 0;
-    padding: 5px;
+#wallet-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 100%;
+}
+
+.hidden {
+    display: none;
 }
