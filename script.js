@@ -54,17 +54,22 @@ const characters = [
 // Updated authenticateTelegramUser function
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
+        console.log("Authenticating Telegram user...");
         if (window.Telegram && window.Telegram.WebApp) {
+            console.log("Telegram WebApp is available");
             const initData = window.Telegram.WebApp.initData;
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
             
+            console.log("initData:", initData);
+            console.log("initDataUnsafe:", JSON.stringify(initDataUnsafe));
+
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
-                console.log("Authenticated Telegram user ID:", telegramUserId);
+                console.log("Authenticated Telegram user ID from initDataUnsafe:", telegramUserId);
             } else if (initData) {
-                // If initDataUnsafe is not available, try to parse initData
                 try {
                     const parsedInitData = JSON.parse(decodeURIComponent(initData));
+                    console.log("Parsed initData:", parsedInitData);
                     if (parsedInitData.user) {
                         telegramUserId = parsedInitData.user.id.toString();
                         console.log("Authenticated Telegram user ID from parsed initData:", telegramUserId);
@@ -83,6 +88,7 @@ function authenticateTelegramUser() {
             telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
         }
         
+        console.log("Final telegramUserId:", telegramUserId);
         resolve(telegramUserId);
     });
 }
@@ -149,41 +155,54 @@ function saveProgress() {
 
 // Updated loadProgress function
 function loadProgress() {
-    console.log("Loading progress");
+    console.log("Loading progress for user:", telegramUserId);
     return new Promise((resolve, reject) => {
         if (telegramUserId) {
-            database.ref('users/' + telegramUserId).once('value')
-                .then((snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        displayName = data.displayName || generateRandomUsername();
-                        score = data.score || 0;
-                        points = data.points || 0;
-                        will = data.will || 1000;
-                        level = data.level || 1;
-                        health = data.health || 100;
-                        maxHealth = data.maxHealth || 100;
-                        damagePerClick = data.damagePerClick || 1;
-                        replenishWillCost = data.replenishWillCost || 100;
-                        increaseDamageCost = data.increaseDamageCost || 200;
-                        baseWalletAddress = data.baseWalletAddress || '';
-                        riggedTokens = data.riggedTokens || 0;
-                        pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                        characterIndex = data.characterIndex || 0;
-                    } else {
-                        displayName = generateRandomUsername();
-                    }
-                    updateDisplay();
-                    resolve();
-                })
-                .catch((error) => {
-                    console.error("Error loading progress:", error);
-                    alert("There was an error loading your progress. Starting a new game.");
+            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                console.log("Loaded data from Firebase:", data);
+                if (data) {
+                    displayName = data.displayName || generateRandomUsername();
+                    score = data.score || 0;
+                    points = data.points || 0;
+                    will = data.will || 1000;
+                    level = data.level || 1;
+                    health = data.health || 100;
+                    maxHealth = data.maxHealth || 100;
+                    damagePerClick = data.damagePerClick || 1;
+                    replenishWillCost = data.replenishWillCost || 100;
+                    increaseDamageCost = data.increaseDamageCost || 200;
+                    baseWalletAddress = data.baseWalletAddress || '';
+                    riggedTokens = data.riggedTokens || 0;
+                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                    characterIndex = data.characterIndex || 0;
+                    console.log("Progress loaded successfully");
+                } else {
+                    console.log("No existing data found, initializing with default values");
                     displayName = generateRandomUsername();
-                    updateDisplay();
-                    resolve();
-                });
+                    score = 0;
+                    points = 0;
+                    will = 1000;
+                    level = 1;
+                    health = 100;
+                    maxHealth = 100;
+                    damagePerClick = 1;
+                    replenishWillCost = 100;
+                    increaseDamageCost = 200;
+                    baseWalletAddress = '';
+                    riggedTokens = 0;
+                    pointsAtLastBurn = 0;
+                    characterIndex = 0;
+                }
+                console.log("Game state after loading:", { displayName, score, points, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
+                updateDisplay();
+                resolve();
+            }).catch((error) => {
+                console.error("Error loading progress:", error);
+                reject(error);
+            });
         } else {
+            console.error("No Telegram User ID available");
             reject("No Telegram User ID available");
         }
     });
@@ -505,6 +524,9 @@ function handleOutsideClick(event) {
 
 // Initialize game after DOM elements are loaded
 document.addEventListener('DOMContentLoaded', (event) => {
+    console.log("DOM Content Loaded");
+
+    // Initialize game elements here
     gameContainer = document.getElementById('game-container');
     characterElement = document.getElementById('character');
     characterNameElement = document.getElementById('character-name');
@@ -521,6 +543,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showWalletButton = document.getElementById('show-wallet-button');
     leaderboardElement = document.getElementById('leaderboard');
     changeUsernameButton = document.getElementById('change-username-button');
+
+    // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
     walletPointsElement = document.getElementById('wallet-points');
     riggedTokensElement = document.getElementById('rigged-tokens');
@@ -531,17 +555,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
-    walletScreen.style.display = 'none';
-
+    // Add event listeners for clicks and touches
     gameContainer.addEventListener('click', (event) => {
-        if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message')) {
-            handleAttack(damagePerClick);
-        }
+        console.log("Click on game container");
+        handleClick(event);
     });
-
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
+    // Button click handlers
     replenishWillButton.addEventListener('click', handleReplenishWill);
     increaseDamageButton.addEventListener('click', handleIncreaseDamage);
     showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
@@ -552,37 +574,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
     burnRiggedButton.addEventListener('click', handleBurnRigged);
     saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
 
-function autoReplenishWill() {
-    if (will < 1000) {
-        will += 1;
-        updateDisplay();
-    }
-}
-
-// Set up auto-replenish every 2 seconds
-setInterval(autoReplenishWill, 2000);
-
+    // Enhanced initialization code
     authenticateTelegramUser()
-    .then(() => {
-        console.log("Authentication complete, telegramUserId:", telegramUserId);
-        return loadProgress();
-    })
-    .then(() => {
-        console.log("Progress loaded successfully");
-        updateDisplay();
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized");
-    })
-    .catch((error) => {
-        console.error("Error initializing game:", error);
-        if (!telegramUserId) {
-            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-        }
-        displayName = generateRandomUsername();
-        updateDisplay();
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized with new session due to error");
-    });
+        .then((userId) => {
+            console.log("Authentication complete, userId:", userId);
+            return loadProgress();
+        })
+        .then(() => {
+            console.log("Progress loaded successfully");
+            updateDisplay();
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized");
+        })
+        .catch((error) => {
+            console.error("Error initializing game:", error);
+            if (!telegramUserId) {
+                telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+            }
+            displayName = generateRandomUsername();
+            updateDisplay();
+            setInterval(saveProgress, 30000);
+            console.log("Game initialized with new session due to error");
+        });
 });
 
 console.log("Script loaded");
