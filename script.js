@@ -99,7 +99,7 @@ function changeUsername(newUsername) {
     return false;
 }
 
-// Function to save progress to Firebase
+// Updated saveProgress function
 function saveProgress() {
     console.log("Saving progress");
 
@@ -118,57 +118,203 @@ function saveProgress() {
             damagePerClick, replenishWillCost, increaseDamageCost,
             baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex
         };
-        database.ref('users/' + telegramUserId).set(dataToSave);
+        database.ref('users/' + telegramUserId).set(dataToSave)
+            .then(() => console.log("Progress saved successfully"))
+            .catch((error) => {
+                console.error("Error saving progress:", error);
+                alert("There was an error saving your progress. Please try again later.");
+            });
     } else {
         console.log("No Telegram User ID available, progress not saved");
+        alert("Unable to save progress. Please make sure you're logged in.");
     }
 }
 
-// Function to load progress from Firebase
+// Updated loadProgress function
 function loadProgress() {
     console.log("Loading progress");
     return new Promise((resolve, reject) => {
         if (telegramUserId) {
-            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    displayName = data.displayName || generateRandomUsername();
-                    score = data.score || 0;
-                    points = data.points || 0;
-                    will = data.will || 1000;
-                    level = data.level || 1;
-                    health = data.health || 100;
-                    maxHealth = data.maxHealth || 100;
-                    damagePerClick = data.damagePerClick || 1;
-                    replenishWillCost = data.replenishWillCost || 100;
-                    increaseDamageCost = data.increaseDamageCost || 200;
-                    baseWalletAddress = data.baseWalletAddress || '';
-                    riggedTokens = data.riggedTokens || 0;
-                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                    characterIndex = data.characterIndex || 0;
-                } else {
+            database.ref('users/' + telegramUserId).once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        displayName = data.displayName || generateRandomUsername();
+                        score = data.score || 0;
+                        points = data.points || 0;
+                        will = data.will || 1000;
+                        level = data.level || 1;
+                        health = data.health || 100;
+                        maxHealth = data.maxHealth || 100;
+                        damagePerClick = data.damagePerClick || 1;
+                        replenishWillCost = data.replenishWillCost || 100;
+                        increaseDamageCost = data.increaseDamageCost || 200;
+                        baseWalletAddress = data.baseWalletAddress || '';
+                        riggedTokens = data.riggedTokens || 0;
+                        pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                        characterIndex = data.characterIndex || 0;
+                    } else {
+                        displayName = generateRandomUsername();
+                    }
+                    updateDisplay();
+                    resolve();
+                })
+                .catch((error) => {
+                    console.error("Error loading progress:", error);
+                    alert("There was an error loading your progress. Starting a new game.");
                     displayName = generateRandomUsername();
-                }
-                updateDisplay();
-                resolve();
-            }).catch(reject);
+                    updateDisplay();
+                    resolve();
+                });
         } else {
             reject("No Telegram User ID available");
         }
     });
 }
 
-// Function to move to the next character
-function nextCharacter() {
-    console.log("Moving to next character");
-    characterIndex = (characterIndex + 1) % characters.length;
-    if (characterIndex === 0) level++;
-    maxHealth = characters[characterIndex].baseHealth * level;
-    health = maxHealth;
-    saveProgress();
+// Function to update display
+function updateDisplay() {
+    const character = document.getElementById('character');
+    character.textContent = characters[characterIndex].emoji;
+    character.style.fontSize = `${100 + (characterIndex * 20)}px`;
+
+    characterNameElement.textContent = characters[characterIndex].name;
+    currentHealthElement.textContent = health;
+    maxHealthElement.textContent = maxHealth;
+    healthFill.style.width = `${(health / maxHealth) * 100}%`;
+    scoreElement.textContent = score;
+    pointsElement.textContent = points;
+    willElement.textContent = will;
+    levelElement.textContent = level;
+    replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
+    increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
 }
 
-// Function to handle attack
+// Function to handle Replenish Will
+function handleReplenishWill() {
+    console.log("Replenishing will");
+    if (points >= replenishWillCost) {
+        points -= replenishWillCost;
+        will = 1000;
+        replenishWillCost = Math.floor(replenishWillCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+// Function to handle Increase Damage
+function handleIncreaseDamage() {
+    console.log("Increasing damage");
+    if (points >= increaseDamageCost) {
+        points -= increaseDamageCost;
+        damagePerClick++;
+        increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
+        updateDisplay();
+        saveProgress();
+    }
+}
+
+// Function to handle Show Wallet
+function handleShowWallet() {
+    console.log("Showing wallet");
+    riggedTokens = calculateRigged();
+    updateWalletDisplay();
+    walletScreen.style.display = 'block';
+}
+
+// Function to change Username
+function handleChangeUsername() {
+    const newUsername = prompt("Enter a new username:");
+    if (newUsername && !isProfanity(newUsername)) {
+        changeUsername(newUsername);
+    } else {
+        console.log("Invalid username or contains profanity.");
+    }
+}
+
+// Function to close Wallet
+function handleCloseWallet() {
+    console.log("Closing wallet");
+    walletScreen.style.display = 'none';
+}
+
+// Updated handleClaimRigged function
+function handleClaimRigged() {
+    if (!isWalletValid) {
+        walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
+        walletAddressError.style.color = "red";
+        return;
+    }
+    console.log("Claiming $RIGGED");
+    try {
+        const claimedAmount = riggedTokens;
+        points = 0;
+        riggedTokens = 0;
+        updateWalletDisplay();
+        saveProgress();
+        alert(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
+    } catch (error) {
+        console.error("Error claiming $RIGGED:", error);
+        alert("There was an error claiming your $RIGGED tokens. Please try again later.");
+    }
+}
+
+// Updated handleBurnRigged function
+function handleBurnRigged() {
+    console.log("Burning $RIGGED");
+    try {
+        const burnedAmount = riggedTokens;
+        riggedTokens = 0;
+        pointsAtLastBurn = points;
+        updateWalletDisplay();
+        saveProgress();
+        alert(`Successfully burned ${burnedAmount} $RIGGED tokens!`);
+    } catch (error) {
+        console.error("Error burning $RIGGED:", error);
+        alert("There was an error burning your $RIGGED tokens. Please try again later.");
+    }
+}
+
+// Updated handleSaveWalletAddress function
+function handleSaveWalletAddress() {
+    const walletAddress = baseWalletAddressInput.value.trim();
+    if (validateWalletAddress(walletAddress)) {
+        try {
+            baseWalletAddress = walletAddress;
+            isWalletValid = true;
+            walletAddressError.textContent = "Wallet address saved successfully!";
+            walletAddressError.style.color = "green";
+            saveProgress();
+        } catch (error) {
+            console.error("Error saving wallet address:", error);
+            walletAddressError.textContent = "Error saving wallet address. Please try again.";
+            walletAddressError.style.color = "red";
+        }
+    } else {
+        isWalletValid = false;
+        walletAddressError.textContent = "Invalid wallet address. Must be 42 characters or a Base ENS (.base).";
+        walletAddressError.style.color = "red";
+    }
+}
+
+// Function to calculate Rigged tokens
+function calculateRigged() {
+    const eligiblePoints = points - pointsAtLastBurn;
+    return Math.floor(eligiblePoints / 100);
+}
+
+// Function to validate wallet address
+function validateWalletAddress(address) {
+    return (address.length === 42 || address.endsWith('.base'));
+}
+
+// Function to update wallet display
+function updateWalletDisplay() {
+    walletPointsElement.textContent = points;
+    riggedTokensElement.textContent = riggedTokens;
+}
+
+// Function to handle attack (with multiple touches)
 function handleAttack(damage) {
     console.log("Handling attack, damage:", damage);
     if (will > 0) {
@@ -196,6 +342,20 @@ function handleAttack(damage) {
     }
 }
 
+// Function to handle touch events
+function handleTouch(event) {
+    console.log("Touch detected");
+    if (event.target.tagName === 'BUTTON' || event.target.closest('#leaderboard')) {
+        console.log("Touch on button or leaderboard, returning");
+        return;
+    }
+
+    event.preventDefault(); // Prevent default behavior such as scrolling
+    for (let i = 0; i < event.touches.length; i++) {
+        handleAttack(damagePerClick);
+    }
+}
+
 // Function to show defeat message
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
@@ -214,29 +374,20 @@ function nextCharacterAfterDefeat() {
     saveProgress();
 }
 
-// Function to update display
-function updateDisplay() {
-    const character = document.getElementById('character');
-    character.textContent = characters[characterIndex].emoji;
-    character.style.fontSize = `${100 + (characterIndex * 20)}px`;
-
-    characterNameElement.textContent = characters[characterIndex].name;
-    currentHealthElement.textContent = health;
-    maxHealthElement.textContent = maxHealth;
-    healthFill.style.width = `${(health / maxHealth) * 100}%`;
-    scoreElement.textContent = score;
-    pointsElement.textContent = points;
-    willElement.textContent = will;
-    levelElement.textContent = level;
-    replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
-    increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+// Function to move to the next character
+function nextCharacter() {
+    console.log("Moving to next character");
+    characterIndex = (characterIndex + 1) % characters.length;
+    if (characterIndex === 0) level++;
+    maxHealth = characters[characterIndex].baseHealth * level;
+    health = maxHealth;
+    saveProgress();
 }
 
-// Updated handleShowLeaderboard function
+// Function to show leaderboard
 function handleShowLeaderboard() {
     console.log("Showing leaderboard");
 
-    // Populate leaderboard with sample data for now (replace with actual data as needed)
     const leaderboardData = [
         { username: 'Player1', score: 100 },
         { username: 'Player2', score: 90 },
@@ -244,10 +395,8 @@ function handleShowLeaderboard() {
         { username: displayName + ' (You)', score: score }
     ];
 
-    // Clear any previous leaderboard content
     leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
 
-    // Create a list of players and their scores
     const leaderboardList = document.createElement('ul');
     leaderboardData.forEach(player => {
         const listItem = document.createElement('li');
@@ -257,126 +406,26 @@ function handleShowLeaderboard() {
 
     leaderboardElement.appendChild(leaderboardList);
 
-    // Add close button
     const closeButton = document.createElement('button');
     closeButton.textContent = 'Close Leaderboard';
     closeButton.addEventListener('click', closeLeaderboard);
     leaderboardElement.appendChild(closeButton);
 
-    // Make leaderboard visible
     leaderboardElement.style.display = 'block';
 
-    // Add event listener to close leaderboard when clicking outside
     document.addEventListener('click', handleOutsideClick);
 }
 
-// New closeLeaderboard and handleOutsideClick functions
+// Function to close leaderboard
 function closeLeaderboard() {
-    console.log("Closing leaderboard");
     leaderboardElement.style.display = 'none';
-    // Remove the event listener when the leaderboard is closed
-    document.removeEventListener('click', handleOutsideClick);
 }
 
+// Function to close leaderboard when clicking outside
 function handleOutsideClick(event) {
     if (!leaderboardElement.contains(event.target) && event.target.id !== 'show-leaderboard-button') {
         closeLeaderboard();
     }
-}
-
-// Event listeners for game actions
-function handleReplenishWill() {
-    console.log("Replenishing will");
-    if (points >= replenishWillCost) {
-        points -= replenishWillCost;
-        will = 1000;
-        replenishWillCost = Math.floor(replenishWillCost * 1.5);
-        updateDisplay();
-        saveProgress();
-    }
-}
-
-function handleIncreaseDamage() {
-    console.log("Increasing damage");
-    if (points >= increaseDamageCost) {
-        points -= increaseDamageCost;
-        damagePerClick++;
-        increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
-        updateDisplay();
-        saveProgress();
-    }
-}
-
-function handleShowWallet() {
-    console.log("Showing wallet");
-    riggedTokens = calculateRigged();
-    updateWalletDisplay();
-    walletScreen.style.display = 'block';
-}
-
-function handleChangeUsername() {
-    const newUsername = prompt("Enter a new username:");
-    if (newUsername && !isProfanity(newUsername)) {
-        changeUsername(newUsername);
-    } else {
-        console.log("Invalid username or contains profanity.");
-    }
-}
-
-function handleCloseWallet() {
-    console.log("Closing wallet");
-    walletScreen.style.display = 'none';
-}
-
-function handleClaimRigged() {
-    if (!isWalletValid) {
-        walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
-        walletAddressError.style.color = "red";
-        return;
-    }
-    console.log("Claiming $RIGGED");
-    points = 0;
-    riggedTokens = 0;
-    updateWalletDisplay();
-    saveProgress();
-}
-
-function handleBurnRigged() {
-    console.log("Burning $RIGGED");
-    riggedTokens = 0;
-    pointsAtLastBurn = points;
-    updateWalletDisplay();
-    saveProgress();
-}
-
-function handleSaveWalletAddress() {
-    const walletAddress = baseWalletAddressInput.value.trim();
-    if (validateWalletAddress(walletAddress)) {
-        baseWalletAddress = walletAddress;
-        isWalletValid = true;
-        walletAddressError.textContent = "Wallet address saved successfully!";
-        walletAddressError.style.color = "green";
-        saveProgress();
-    } else {
-        isWalletValid = false;
-        walletAddressError.textContent = "Invalid wallet address. Must be 42 characters or a Base ENS (.base).";
-        walletAddressError.style.color = "red";
-    }
-}
-
-function updateWalletDisplay() {
-    walletPointsElement.textContent = points;
-    riggedTokensElement.textContent = riggedTokens;
-}
-
-function validateWalletAddress(address) {
-    return (address.length === 42 || address.endsWith('.base'));
-}
-
-// Function to calculate $RIGGED based on current points
-function calculateRigged() {
-    const eligiblePoints = points - pointsAtLastBurn;
-    return Math.floor(eligiblePoints / 100);
 }
 
 // Initialize game after DOM elements are loaded
@@ -407,7 +456,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
-    // Ensure wallet is hidden initially
     walletScreen.style.display = 'none';
 
     gameContainer.addEventListener('click', (event) => {
@@ -416,9 +464,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
     replenishWillButton.addEventListener('click', handleReplenishWill);
     increaseDamageButton.addEventListener('click', handleIncreaseDamage);
-    showLeaderboardButton.addEventListener('click', handleShowLeaderboard); // Updated event listener
+    showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
     showWalletButton.addEventListener('click', handleShowWallet);
     changeUsernameButton.addEventListener('click', handleChangeUsername);
     closeWalletButton.addEventListener('click', handleCloseWallet);
