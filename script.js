@@ -563,26 +563,26 @@ function autoReplenishWill() {
 setInterval(autoReplenishWill, 2000);
 
     authenticateTelegramUser()
-        .then(() => {
-            console.log("Authentication complete, telegramUserId:", telegramUserId);
-            return loadProgress();
-        })
-        .then(() => {
-            console.log("Progress loaded successfully");
-            updateDisplay();
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized");
-        })
-        .catch((error) => {
-            console.error("Error initializing game:", error);
-            if (!telegramUserId) {
-                telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-            }
-            displayName = generateRandomUsername();
-            updateDisplay();
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized with new session due to error");
-        });
+    .then(() => {
+        console.log("Authentication complete, telegramUserId:", telegramUserId);
+        return loadProgress();
+    })
+    .then(() => {
+        console.log("Progress loaded successfully");
+        updateDisplay();
+        setInterval(saveProgress, 30000);
+        console.log("Game initialized");
+    })
+    .catch((error) => {
+        console.error("Error initializing game:", error);
+        if (!telegramUserId) {
+            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+        }
+        displayName = generateRandomUsername();
+        updateDisplay();
+        setInterval(saveProgress, 30000);
+        console.log("Game initialized with new session due to error");
+    });
 });
 
 console.log("Script loaded");
