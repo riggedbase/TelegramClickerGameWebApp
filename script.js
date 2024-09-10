@@ -131,15 +131,6 @@ function saveProgress() {
     console.log("Attempting to save progress...");
     console.log("Current telegramUserId:", telegramUserId);
 
-    if (typeof health === 'undefined') health = 100;
-    if (typeof maxHealth === 'undefined') maxHealth = 100;
-    if (typeof damagePerClick === 'undefined') damagePerClick = 1;
-    if (typeof replenishWillCost === 'undefined') replenishWillCost = 100;
-    if (typeof increaseDamageCost === 'undefined') increaseDamageCost = 200;
-    if (typeof baseWalletAddress === 'undefined') baseWalletAddress = '';
-    if (typeof riggedTokens === 'undefined') riggedTokens = 0;
-    if (typeof pointsAtLastBurn === 'undefined') pointsAtLastBurn = 0;
-
     if (telegramUserId) {
         const dataToSave = {
             displayName, score, points, will, level, health, maxHealth,
@@ -201,8 +192,6 @@ function loadProgress() {
                     characterIndex = 0;
                 }
                 console.log("Game state after loading:", { displayName, score, points, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
-                initializeWalletState(); // Initialize wallet state after loading progress
-                updateDisplay();
                 resolve();
             }).catch((error) => {
                 console.error("Error loading progress:", error);
