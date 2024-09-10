@@ -13,9 +13,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-console.log("Firebase initialized");
-const database = firebase.database();
+try {
+    firebase.initializeApp(firebaseConfig);
+    console.log("Firebase initialized successfully");
+} catch (error) {
+    console.error("Error initializing Firebase:", error);
+    alert("There was an error initializing the game. Please try refreshing the page.");
+}
 
 let telegramUserId = null;
 let displayName = null;
@@ -25,19 +29,22 @@ console.log("Checking for Telegram WebApp...");
 if (window.Telegram && window.Telegram.WebApp) {
     console.log("Telegram WebApp found in global scope");
     window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand(); // Expand the mini-app to full size
-    const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-
-    if (initDataUnsafe && initDataUnsafe.user) {
-        telegramUserId = initDataUnsafe.user.id.toString();
-        console.log("Authenticated Telegram user ID:", telegramUserId);
-    } else {
-        console.log("Unable to retrieve Telegram user ID, using fallback");
-        telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
-    }
+    window.Telegram.WebApp.expand();
 } else {
-    console.log("Telegram WebApp not available, using web fallback");
-    telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
+    console.log("Telegram WebApp not found in global scope, checking URL parameters...");
+    const urlParams = new URLSearchParams(window.location.hash.slice(1));
+    const tgWebAppData = urlParams.get('tgWebAppData');
+    if (tgWebAppData) {
+        console.log("Telegram WebApp data found in URL");
+        const tgWebAppUser = JSON.parse(decodeURIComponent(new URLSearchParams(tgWebAppData).get('user')));
+        if (tgWebAppUser && tgWebAppUser.id) {
+            telegramUserId = tgWebAppUser.id.toString();
+            console.log("Telegram user ID extracted from URL:", telegramUserId);
+        }
+    } else {
+        console.log("No Telegram WebApp data found, using web fallback");
+        telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
+    }
 }
 
 // Declare game elements globally so they can be accessed by all functions
@@ -70,16 +77,23 @@ const characters = [
     { emoji: '🧙', baseHealth: 500, name: 'Wizard', defeatMessage: "The wizard's magic fades. Your strength prevails!" }
 ];
 
+function closeWalletScreen() {
+    const walletScreen = document.getElementById('wallet-screen');
+    if (walletScreen) {
+        walletScreen.style.display = 'none';
+    }
+}
+
 // Updated authenticateTelegramUser function
 function authenticateTelegramUser() {
     return new Promise((resolve) => {
         console.log("Authenticating Telegram user...");
-        if (window.Telegram && window.Telegram.WebApp) {
-            console.log("Telegram WebApp is available");
+        if (telegramUserId) {
+            console.log("Using existing Telegram user ID:", telegramUserId);
+            resolve(telegramUserId);
+        } else if (window.Telegram && window.Telegram.WebApp) {
             const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe;
-            
             console.log("initDataUnsafe:", JSON.stringify(initDataUnsafe));
-
             if (initDataUnsafe && initDataUnsafe.user) {
                 telegramUserId = initDataUnsafe.user.id.toString();
                 console.log("Authenticated Telegram user ID:", telegramUserId);
@@ -389,7 +403,7 @@ function handleChangeUsername() {
 // Function to close Wallet
 function handleCloseWallet() {
     console.log("Closing wallet");
-    walletScreen.style.display = 'none';
+    closeWalletScreen();
     saveProgress(); // Save the wallet state
 }
 
@@ -558,6 +572,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     burnRiggedButton = document.getElementById('burn-rigged');
     closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
+
+    // Close the wallet screen on game load
+    closeWalletScreen();
 
     // Add event listeners for clicks and touches
     gameContainer.addEventListener('click', (event) => {
