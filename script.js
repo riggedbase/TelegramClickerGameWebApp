@@ -12,9 +12,12 @@ const firebaseConfig = {
     databaseURL: "https://rigged-clicker-game-1-default-rtdb.firebaseio.com"
 };
 
+let database;
+
 // Initialize Firebase
 try {
     firebase.initializeApp(firebaseConfig);
+    database = firebase.database();
     console.log("Firebase initialized successfully");
 } catch (error) {
     console.error("Error initializing Firebase:", error);
@@ -121,6 +124,23 @@ function generateRandomUsername() {
     return `${adj}${noun}${number}`;
 }
 
+function initializeDefaultValues() {
+    displayName = generateRandomUsername();
+    score = 0;
+    points = 0;
+    will = 1000;
+    level = 1;
+    health = 100;
+    maxHealth = 100;
+    damagePerClick = 1;
+    replenishWillCost = 100;
+    increaseDamageCost = 200;
+    baseWalletAddress = '';
+    riggedTokens = 0;
+    pointsAtLastBurn = 0;
+    characterIndex = 0;
+}
+
 // Simple profanity filter (expand this list as needed)
 const profanityList = ['badword1', 'badword2', 'badword3'];
 
@@ -145,6 +165,12 @@ function saveProgress() {
     console.log("Attempting to save progress...");
     console.log("Current telegramUserId:", telegramUserId);
 
+    if (!database) {
+        console.error("Firebase database not initialized");
+        alert("Unable to save progress. Please try refreshing the page.");
+        return;
+    }
+
     if (telegramUserId) {
         const dataToSave = {
             displayName, score, points, will, level, health, maxHealth,
@@ -168,6 +194,12 @@ function saveProgress() {
 function loadProgress() {
     console.log("Loading progress for user:", telegramUserId);
     return new Promise((resolve, reject) => {
+        if (!database) {
+            console.error("Firebase database not initialized");
+            reject("Firebase database not initialized");
+            return;
+        }
+        
         if (telegramUserId) {
             database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
                 const data = snapshot.val();
@@ -190,29 +222,18 @@ function loadProgress() {
                     console.log("Progress loaded successfully");
                 } else {
                     console.log("No existing data found, initializing with default values");
-                    displayName = generateRandomUsername();
-                    score = 0;
-                    points = 0;
-                    will = 1000;
-                    level = 1;
-                    health = 100;
-                    maxHealth = 100;
-                    damagePerClick = 1;
-                    replenishWillCost = 100;
-                    increaseDamageCost = 200;
-                    baseWalletAddress = '';
-                    riggedTokens = 0;
-                    pointsAtLastBurn = 0;
-                    characterIndex = 0;
+                    initializeDefaultValues();
                 }
                 console.log("Game state after loading:", { displayName, score, points, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
                 resolve();
             }).catch((error) => {
                 console.error("Error loading progress:", error);
+                initializeDefaultValues();
                 reject(error);
             });
         } else {
             console.error("No Telegram User ID available");
+            initializeDefaultValues();
             reject("No Telegram User ID available");
         }
     });
