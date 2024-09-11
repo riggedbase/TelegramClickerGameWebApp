@@ -9,52 +9,69 @@
 <body>
     <div id="game-container">
         <div id="background"></div>
-        <div id="character-container">
-            <div id="character"></div>
-            <div id="pain-overlay"></div>
-        </div>
-        <div id="defeat-message" class="hidden">
-    <p id="defeat-text"></p>
-    <button id="close-defeat-message-button">Close</button> <!-- New Close Button -->
-</div>
+        
         <div id="game-ui">
             <h1>Clicker Game</h1>
-            <div id="character-name"></div>
-            <div id="health-bar">
-                <div id="health-fill"></div>
+            
+            <div id="character-info">
+                <div id="character-name"></div>
+                <div id="character-container">
+                    <div id="character"></div>
+                    <div id="pain-overlay"></div>
+                </div>
+                <div id="health-bar">
+                    <div id="health-fill"></div>
+                </div>
+                <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
             </div>
-            <div>Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
-            <div>Score: <span id="score">0</span></div>
-            <div>Points: <span id="points">0</span></div>
-            <div>Will: <span id="will">1000</span></div>
-            <div>Level: <span id="level">1</span></div>
-            <button id="replenish-will-button">Replenish Will (100 points)</button>
-            <button id="increase-damage-button">Increase Damage (200 points)</button>
-            <button id="show-leaderboard-button">Show Leaderboard</button>
-            <button id="show-wallet-button">Wallet</button>
-            <button id="change-username-button">Change Username</button>
+            
+            <div id="stats">
+                <div>Score: <span id="score">0</span></div>
+                <div>Points: <span id="points">0</span></div>
+                <div>Will: <span id="will">1000</span></div>
+                <div>Level: <span id="level">1</span></div>
+            </div>
+            
+            <div id="actions">
+                <button id="replenish-will-button">Replenish Will (100 points)</button>
+                <button id="increase-damage-button">Increase Damage (200 points)</button>
+            </div>
+            
+            <div id="menu-buttons">
+                <button id="show-leaderboard-button">Show Leaderboard</button>
+                <button id="show-wallet-button">Wallet</button>
+                <button id="change-username-button">Change Username</button>
+            </div>
         </div>
-        <div id="leaderboard" class="hidden">
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-list"></ul>
-            <button id="close-leaderboard-button">Close Leaderboard</button>
-        </div>
-    </div>
 
-    <div id="wallet-screen" class="hidden">
-        <div id="wallet-content">
-            <h2>Wallet</h2>
-            <div>Current Points: <span id="wallet-points">0</span></div>
-            <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
+        <div id="defeat-message" class="hidden">
+            <p id="defeat-text"></p>
+            <button id="close-defeat-message-button">Close</button>
+        </div>
+
+        <div id="leaderboard" class="hidden">
             <div>
-                <label for="base-wallet-address">Base Wallet Address:</label>
-                <input type="text" id="base-wallet-address">
-                <button id="save-wallet-address">Save Address</button>
-                <div id="wallet-address-error" style="color: red;"></div>
+                <h2>Leaderboard</h2>
+                <ul id="leaderboard-list"></ul>
+                <button id="close-leaderboard-button">Close Leaderboard</button>
             </div>
-            <button id="claim-rigged">Claim $RIGGED</button>
-            <button id="burn-rigged">Burn $RIGGED</button>
-            <button id="close-wallet">Close Wallet</button>
+        </div>
+
+        <div id="wallet-screen" class="hidden">
+            <div id="wallet-content">
+                <h2>Wallet</h2>
+                <div>Current Points: <span id="wallet-points">0</span></div>
+                <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
+                <div>
+                    <label for="base-wallet-address">Base Wallet Address:</label>
+                    <input type="text" id="base-wallet-address">
+                    <button id="save-wallet-address">Save Address</button>
+                    <div id="wallet-address-error"></div>
+                </div>
+                <button id="claim-rigged">Claim $RIGGED</button>
+                <button id="burn-rigged">Burn $RIGGED</button>
+                <button id="close-wallet">Close Wallet</button>
+            </div>
         </div>
     </div>
 

@@ -245,29 +245,21 @@ function showDefeatMessage() {
     const defeatText = document.getElementById('defeat-text');
     const closeDefeatMessageButton = document.getElementById('close-defeat-message-button');
 
-    // Display the defeat message with the defeat text of the current character
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
-    // Disable attack clicks temporarily
-    gameContainer.removeEventListener('click', handleClick);  
+    gameContainer.removeEventListener('click', handleClick);
 
-    // Listener to close defeat message and proceed to next character
     function closeDefeatMessage() {
-        defeatMessage.classList.add('hidden');  // Hide the defeat message
-
-        // Now move to the next character after the defeat message is closed
-        nextCharacter();  // Only load the next character after closing the defeat message
-
-        // Re-enable attack clicks after new character is loaded
+        defeatMessage.classList.add('hidden');
+        nextCharacter();
         setTimeout(() => {
             gameContainer.addEventListener('click', handleClick);
-        }, 500);  // Small delay to avoid immediate attacks on the next character
-
-        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage);  // Remove listener
+        }, 500);
+        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage);
     }
 
-    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);  // Add event listener to close button
+    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);
 }
 
 function nextCharacterAfterDefeat() {
@@ -296,18 +288,18 @@ function nextCharacter() {
 function updateDisplay() {
     const character = document.getElementById('character');
     character.textContent = characters[characterIndex].emoji;
-    character.style.fontSize = `${100 + (characterIndex * 20)}px`;
+    character.style.fontSize = `${60 + (characterIndex * 10)}px`; // Adjusted size
 
-    characterNameElement.textContent = characters[characterIndex].name;
-    currentHealthElement.textContent = health;
-    maxHealthElement.textContent = maxHealth;
-    healthFill.style.width = `${(health / maxHealth) * 100}%`;
-    scoreElement.textContent = score;
-    pointsElement.textContent = points;
-    willElement.textContent = will;
-    levelElement.textContent = level;
-    replenishWillButton.textContent = `Replenish Will (${replenishWillCost} points)`;
-    increaseDamageButton.textContent = `Increase Damage (${increaseDamageCost} points)`;
+    document.getElementById('character-name').textContent = characters[characterIndex].name;
+    document.getElementById('current-health').textContent = health;
+    document.getElementById('max-health').textContent = maxHealth;
+    document.getElementById('health-fill').style.width = `${(health / maxHealth) * 100}%`;
+    document.getElementById('score').textContent = score;
+    document.getElementById('points').textContent = points;
+    document.getElementById('will').textContent = will;
+    document.getElementById('level').textContent = level;
+    document.getElementById('replenish-will-button').textContent = `Replenish Will (${replenishWillCost} points)`;
+    document.getElementById('increase-damage-button').textContent = `Increase Damage (${increaseDamageCost} points)`;
 }
 
 // Updated handleAttack function
@@ -500,8 +492,8 @@ function handleSaveWalletAddress() {
 
 // Function to update wallet display
 function updateWalletDisplay() {
-    walletPointsElement.textContent = points;
-    riggedTokensElement.textContent = riggedTokens;
+    document.getElementById('wallet-points').textContent = points;
+    document.getElementById('rigged-tokens').textContent = riggedTokens;
 }
 
 // Function to calculate Rigged tokens
@@ -528,30 +520,20 @@ function handleShowLeaderboard() {
         { username: displayName + ' (You)', score: score }
     ];
 
-    leaderboardElement.innerHTML = '<h2>Leaderboard</h2>';
-
-    const leaderboardList = document.createElement('ul');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    leaderboardList.innerHTML = '';
     leaderboardData.forEach(player => {
         const listItem = document.createElement('li');
         listItem.textContent = `${player.username}: ${player.score} points`;
         leaderboardList.appendChild(listItem);
     });
 
-    leaderboardElement.appendChild(leaderboardList);
-
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close Leaderboard';
-    closeButton.addEventListener('click', closeLeaderboard);
-    leaderboardElement.appendChild(closeButton);
-
-    leaderboardElement.style.display = 'block';
-
-    document.addEventListener('click', handleOutsideClick);
+    document.getElementById('leaderboard').classList.remove('hidden');
 }
 
 // Function to close leaderboard
 function closeLeaderboard() {
-    leaderboardElement.style.display = 'none';
+    document.getElementById('leaderboard').classList.add('hidden');
 }
 
 // Function to close leaderboard when clicking outside
@@ -606,15 +588,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     // Button click handlers
-    replenishWillButton.addEventListener('click', handleReplenishWill);
-    increaseDamageButton.addEventListener('click', handleIncreaseDamage);
-    showLeaderboardButton.addEventListener('click', handleShowLeaderboard);
-    showWalletButton.addEventListener('click', handleShowWallet);
-    changeUsernameButton.addEventListener('click', handleChangeUsername);
-    closeWalletButton.addEventListener('click', handleCloseWallet);
-    claimRiggedButton.addEventListener('click', handleClaimRigged);
-    burnRiggedButton.addEventListener('click', handleBurnRigged);
-    saveWalletAddressButton.addEventListener('click', handleSaveWalletAddress);
+    document.getElementById('replenish-will-button').addEventListener('click', handleReplenishWill);
+document.getElementById('increase-damage-button').addEventListener('click', handleIncreaseDamage);
+document.getElementById('show-leaderboard-button').addEventListener('click', handleShowLeaderboard);
+document.getElementById('show-wallet-button').addEventListener('click', handleShowWallet);
+document.getElementById('change-username-button').addEventListener('click', handleChangeUsername);
+document.getElementById('close-wallet-button').addEventListener('click', handleCloseWallet);
+document.getElementById('claim-rigged').addEventListener('click', handleClaimRigged);
+document.getElementById('burn-rigged').addEventListener('click', handleBurnRigged);
+document.getElementById('save-wallet-address').addEventListener('click', handleSaveWalletAddress);
+document.getElementById('close-leaderboard-button').addEventListener('click', closeLeaderboard);
 
     if (window.Telegram && window.Telegram.WebApp) {
         console.log("Initializing Telegram WebApp...");
