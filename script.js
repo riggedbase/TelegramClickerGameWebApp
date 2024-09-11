@@ -611,6 +611,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showWalletButton = document.getElementById('show-wallet-button');
     leaderboardElement = document.getElementById('leaderboard');
     changeUsernameButton = document.getElementById('change-username-button');
+    closeWalletButton = document.getElementById('close-wallet-button'); // Fix for wallet close button
 
     // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
@@ -620,7 +621,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveWalletAddressButton = document.getElementById('save-wallet-address');
     claimRiggedButton = document.getElementById('claim-rigged');
     burnRiggedButton = document.getElementById('burn-rigged');
-    closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
     // Close the wallet screen on game load
@@ -628,7 +628,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Add event listeners for clicks and touches
     gameContainer.addEventListener('click', (event) => {
-        // Only trigger an attack if clicking on the game area, not on buttons or other UI elements
         if (!event.target.closest('button') && !event.target.closest('#defeat-message') &&
             !event.target.closest('#leaderboard') && !event.target.closest('#wallet-screen')) {
             console.log("Handling click for attack");
@@ -646,7 +645,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'show-leaderboard-button': handleShowLeaderboard,
         'show-wallet-button': handleShowWallet,
         'change-username-button': handleChangeUsername,
-        'close-wallet-button': handleCloseWallet,
+        'close-wallet-button': handleCloseWallet,  // Fix wallet close button handler
         'claim-rigged': handleClaimRigged,
         'burn-rigged': handleBurnRigged,
         'save-wallet-address': handleSaveWalletAddress,
@@ -656,10 +655,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     Object.entries(buttonHandlers).forEach(([id, handler]) => {
         const button = document.getElementById(id);
         if (button) {
-            // Ensure the click doesn't propagate beyond the button
             button.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent event from reaching game container
-                handler(event);  // Call the respective handler
+                event.stopPropagation();
+                handler(event);
                 console.log(`Button clicked: ${id}`);
             });
             console.log(`Event listener added for button: ${id}`);
@@ -668,17 +666,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    // Ensure the wallet close button is initialized
+    if (closeWalletButton) {
+        closeWalletButton.addEventListener('click', handleCloseWallet);
+        console.log('Event listener added for close-wallet-button');
+    } else {
+        console.error("Button with id 'close-wallet-button' not found");
+    }
+
     if (window.Telegram && window.Telegram.WebApp) {
         console.log("Initializing Telegram WebApp...");
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
     }
 
+    // Will auto-replenish by 1 every 2 seconds
+    setInterval(autoReplenishWill, 2000);
+
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
     .then(() => loadProgress())
     .then(() => {
-        updateDisplay(); // Make sure this is called
+        updateDisplay();
         setInterval(saveProgress, 5000);
         console.log("Game initialized");
     })
@@ -686,10 +695,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.error("Error initializing game:", error);
         telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
         displayName = generateRandomUsername();
-        updateDisplay(); // And here as well
+        updateDisplay();
         setInterval(saveProgress, 30000);
         console.log("Game initialized with new session due to error");
     });
 });
+
+// Auto-replenish will function
+function autoReplenishWill() {
+    if (will < 1000) {  // Assuming the maximum Will is 1000
+        will += 1;
+        updateDisplay();  // Update the display to show the new Will value
+    }
+}
 
 console.log("Script loaded");
