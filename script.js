@@ -248,9 +248,6 @@ function autoReplenishWill() {
     }
 }
 
-// Call this function to auto-replenish Will every 2 seconds
-setInterval(autoReplenishWill, 2000);
-
 // Updated showDefeatMessage function
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
