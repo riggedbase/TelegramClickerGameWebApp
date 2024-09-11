@@ -48,11 +48,13 @@ h1 {
     position: relative;
     height: 100px;
     margin: 10px 0;
+    cursor: pointer;
 }
 
 #character {
     font-size: 60px;
     transition: all 0.3s ease;
+    user-select: none;
 }
 
 #pain-overlay {
@@ -64,6 +66,7 @@ h1 {
     background-color: red;
     opacity: 0;
     transition: opacity 0.2s ease;
+    pointer-events: none;
 }
 
 #health-bar {

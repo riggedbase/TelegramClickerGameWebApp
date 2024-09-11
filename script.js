@@ -290,7 +290,7 @@ function nextCharacter() {
 function updateDisplay() {
     const character = document.getElementById('character');
     character.textContent = characters[characterIndex].emoji;
-    character.style.fontSize = `${60 + (characterIndex * 10)}px`; // Adjusted size
+    character.style.fontSize = `${60 + (characterIndex * 10)}px`;
 
     document.getElementById('character-name').textContent = characters[characterIndex].name;
     document.getElementById('current-health').textContent = health;
@@ -302,6 +302,12 @@ function updateDisplay() {
     document.getElementById('level').textContent = level;
     document.getElementById('replenish-will-button').textContent = `Replenish Will (${replenishWillCost} points)`;
     document.getElementById('increase-damage-button').textContent = `Increase Damage (${increaseDamageCost} points)`;
+
+    // Update wallet display if wallet screen is open
+    if (!document.getElementById('wallet-screen').classList.contains('hidden')) {
+        document.getElementById('wallet-points').textContent = points;
+        document.getElementById('rigged-tokens').textContent = riggedTokens;
+    }
 }
 
 // Updated handleAttack function
@@ -332,8 +338,9 @@ function handleAttack(damage) {
 
 function handleClick(event) {
     // Prevent clicks on buttons or messages from triggering attacks
-    if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message')) {
-        handleAttack(damagePerClick);  // Trigger attack logic only if the click is not on a button or the defeat message
+    if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message') && !event.target.closest('#leaderboard') && !event.target.closest('#wallet-screen')) {
+        console.log("Handling click for attack");
+        handleAttack(damagePerClick);
     }
 }
 
@@ -503,7 +510,7 @@ function calculateRigged() {
 }
 
 // Function to show leaderboard
-unction handleShowLeaderboard() {
+function handleShowLeaderboard() {
     console.log("Showing leaderboard");
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
@@ -513,6 +520,7 @@ unction handleShowLeaderboard() {
         return;
     }
 
+    // Sample leaderboard data - replace with actual data fetching logic
     const leaderboardData = [
         { username: 'Player1', score: 100 },
         { username: 'Player2', score: 90 },
@@ -520,27 +528,27 @@ unction handleShowLeaderboard() {
         { username: displayName + ' (You)', score: score }
     ];
 
+    // Clear existing leaderboard entries
     leaderboardList.innerHTML = '';
+
+    // Populate leaderboard
     leaderboardData.forEach(player => {
         const listItem = document.createElement('li');
         listItem.textContent = `${player.username}: ${player.score} points`;
         leaderboardList.appendChild(listItem);
     });
 
+    // Show the leaderboard
     leaderboard.classList.remove('hidden');
-}
 
-// Function to close leaderboard
-function closeLeaderboard() {
-    console.log("Closing leaderboard");
-    const leaderboard = document.getElementById('leaderboard');
-    
-    if (!leaderboard) {
-        console.error("Leaderboard element not found");
-        return;
+    // Add event listener to close button if it doesn't exist
+    const closeButton = document.getElementById('close-leaderboard-button');
+    if (closeButton && !closeButton.hasEventListener) {
+        closeButton.addEventListener('click', () => {
+            leaderboard.classList.add('hidden');
+        });
+        closeButton.hasEventListener = true;
     }
-
-    leaderboard.classList.add('hidden');
 }
 
 // Function to close leaderboard when clicking outside
@@ -593,7 +601,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-    document.getElementById('close-leaderboard-button').addEventListener('click', closeLeaderboard);
 
     // Button click handlers
     const buttonHandlers = {
