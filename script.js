@@ -646,7 +646,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     Object.entries(buttonHandlers).forEach(([id, handler]) => {
         const button = document.getElementById(id);
         if (button) {
-            button.addEventListener('click', handler);
+            // Ensure the click doesn't propagate beyond the button
+            button.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent event from reaching game container
+                handler(event);  // Call the respective handler
+                console.log(`Button clicked: ${id}`);
+            });
             console.log(`Event listener added for button: ${id}`);
         } else {
             console.error(`Button with id '${id}' not found`);
