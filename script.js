@@ -289,8 +289,19 @@ function nextCharacter() {
 // Function to update display
 function updateDisplay() {
     const character = document.getElementById('character');
-    character.textContent = characters[characterIndex].emoji;
-    character.style.fontSize = `${60 + (characterIndex * 10)}px`;
+    if (character) {
+        character.textContent = characters[characterIndex].emoji;
+        character.style.fontSize = `${60 + (characterIndex * 10)}px`;
+    } else {
+        console.error("Character element not found");
+    }
+
+    const characterName = document.getElementById('character-name');
+    if (characterName) {
+        characterName.textContent = characters[characterIndex].name;
+    } else {
+        console.error("Character name element not found");
+    }
 
     document.getElementById('character-name').textContent = characters[characterIndex].name;
     document.getElementById('current-health').textContent = health;
@@ -308,6 +319,8 @@ function updateDisplay() {
         document.getElementById('wallet-points').textContent = points;
         document.getElementById('rigged-tokens').textContent = riggedTokens;
     }
+
+    console.log("Display updated");
 }
 
 // Updated handleAttack function
@@ -366,6 +379,7 @@ function handleTouch(event) {
 
 // Function to handle Replenish Will
 function handleReplenishWill() {
+    console.log("Replenish Will button clicked");
     console.log("Replenishing will");
     if (points >= replenishWillCost) {
         points -= replenishWillCost;
@@ -378,6 +392,7 @@ function handleReplenishWill() {
 
 // Function to handle Increase Damage
 function handleIncreaseDamage() {
+    console.log("Increase Damage button clicked");
     console.log("Increasing damage");
     if (points >= increaseDamageCost) {
         points -= increaseDamageCost;
@@ -396,6 +411,7 @@ function initializeWalletState() {
 
 // Function to handle Show Wallet
 function handleShowWallet() {
+    console.log("Wallet button clicked");
     console.log("Showing wallet");
     riggedTokens = calculateRigged();
     updateWalletDisplay();
@@ -405,6 +421,7 @@ function handleShowWallet() {
 
 // Function to change Username
 function handleChangeUsername() {
+    console.log("Change Username button clicked");
     const newUsername = prompt("Enter a new username:");
     if (newUsername && !isProfanity(newUsername)) {
         changeUsername(newUsername);
@@ -415,6 +432,7 @@ function handleChangeUsername() {
 
 // Function to close Wallet
 function handleCloseWallet() {
+    console.log("Close Wallet button clicked");
     console.log("Closing wallet");
     closeWalletScreen();
     saveProgress(); // Save the wallet state
@@ -511,6 +529,7 @@ function calculateRigged() {
 
 // Function to show leaderboard
 function handleShowLeaderboard() {
+    console.log("Show Leaderboard button clicked");
     console.log("Showing leaderboard");
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
@@ -620,6 +639,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const button = document.getElementById(id);
         if (button) {
             button.addEventListener('click', handler);
+            console.log(`Event listener added for button: ${id}`);
         } else {
             console.error(`Button with id '${id}' not found`);
         }
@@ -633,20 +653,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
-        .then(() => loadProgress())
-        .then(() => {
-            updateDisplay();
-            setInterval(saveProgress, 5000);
-            console.log("Game initialized");
-        })
-        .catch((error) => {
-            console.error("Error initializing game:", error);
-            telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-            displayName = generateRandomUsername();
-            updateDisplay();
-            setInterval(saveProgress, 30000);
-            console.log("Game initialized with new session due to error");
-        });
+    .then(() => loadProgress())
+    .then(() => {
+        updateDisplay(); // Make sure this is called
+        setInterval(saveProgress, 5000);
+        console.log("Game initialized");
+    })
+    .catch((error) => {
+        console.error("Error initializing game:", error);
+        telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
+        displayName = generateRandomUsername();
+        updateDisplay(); // And here as well
+        setInterval(saveProgress, 30000);
+        console.log("Game initialized with new session due to error");
+    });
 });
 
 console.log("Script loaded");
