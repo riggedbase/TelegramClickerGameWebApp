@@ -1,82 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clicker Game</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="game-container">
-        <div id="background"></div>
-        
-        <div id="game-ui">
-            <h1>Clicker Game</h1>
-            
-            <div id="character-info">
-                <div id="character-name"></div>
-                <div id="character-container">
-                    <div id="character"></div>
-                    <div id="pain-overlay"></div>
-                </div>
-                <div id="health-bar">
-                    <div id="health-fill"></div>
-                </div>
-                <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
-            </div>
-            
-            <div id="stats">
-                <div>Score: <span id="score">0</span></div>
-                <div>Points: <span id="points">0</span></div>
-                <div>Will: <span id="will">1000</span></div>
-                <div>Level: <span id="level">1</span></div>
-            </div>
-            
-            <div id="actions">
-                <button id="replenish-will-button">Replenish Will (100 points)</button>
-                <button id="increase-damage-button">Increase Damage (200 points)</button>
-            </div>
-            
-            <div id="menu-buttons">
-                <button id="show-leaderboard-button">Show Leaderboard</button>
-                <button id="show-wallet-button">Wallet</button>
-                <button id="change-username-button">Change Username</button>
-            </div>
-        </div>
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+    font-size: 14px;
+}
 
-        <div id="defeat-message" class="hidden">
-            <p id="defeat-text"></p>
-            <button id="close-defeat-message-button">Close</button>
-        </div>
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
 
-        <div id="leaderboard" class="hidden">
-            <div>
-                <h2>Leaderboard</h2>
-                <ul id="leaderboard-list"></ul>
-                <button id="close-leaderboard-button">Close Leaderboard</button>
-            </div>
-        </div>
+#background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('path-to-your-background-image.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+}
 
-        <div id="wallet-screen" class="hidden">
-            <div id="wallet-content">
-                <h2>Wallet</h2>
-                <div>Current Points: <span id="wallet-points">0</span></div>
-                <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
-                <div>
-                    <label for="base-wallet-address">Base Wallet Address:</label>
-                    <input type="text" id="base-wallet-address">
-                    <button id="save-wallet-address">Save Address</button>
-                    <div id="wallet-address-error"></div>
-                </div>
-                <button id="claim-rigged">Claim $RIGGED</button>
-                <button id="burn-rigged">Burn $RIGGED</button>
-                <button id="close-wallet">Close Wallet</button>
-            </div>
-        </div>
-    </div>
+#game-ui {
+    position: relative;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#character-info {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#character-container {
+    position: relative;
+    height: 100px;
+    margin: 10px 0;
+}
+
+#character {
+    font-size: 60px;
+    transition: all 0.3s ease;
+}
+
+#pain-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+#health-bar {
+    width: 100%;
+    height: 10px;
+    background-color: #ddd;
+    margin: 5px 0;
+}
+
+#health-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+#stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+#actions, #menu-buttons {
+    display: flex;
+    flex-direction: column;
+}
+
+button {
+    margin: 5px 0;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#defeat-message, #leaderboard, #wallet-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#defeat-message > p, #leaderboard > div, #wallet-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 80%;
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.pain {
+    animation: shake 0.5s;
+}
+
+#leaderboard-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboard-list li {
+    margin-bottom: 5px;
+}
+
+#wallet-content input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+#wallet-address-error {
+    color: red;
+    margin-bottom: 10px;
+}

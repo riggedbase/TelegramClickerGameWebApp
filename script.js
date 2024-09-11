@@ -243,23 +243,25 @@ function loadProgress() {
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
     const defeatText = document.getElementById('defeat-text');
-    const closeDefeatMessageButton = document.getElementById('close-defeat-message-button');
 
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
     gameContainer.removeEventListener('click', handleClick);
-
-    function closeDefeatMessage() {
-        defeatMessage.classList.add('hidden');
-        nextCharacter();
-        setTimeout(() => {
-            gameContainer.addEventListener('click', handleClick);
-        }, 500);
-        closeDefeatMessageButton.removeEventListener('click', closeDefeatMessage);
+    
+    function closeDefeatMessage(event) {
+        if (event.target === defeatMessage || defeatMessage.contains(event.target)) {
+            defeatMessage.classList.add('hidden');
+            nextCharacter();
+            updateDisplay();
+            gameContainer.removeEventListener('click', closeDefeatMessage);
+            setTimeout(() => {
+                gameContainer.addEventListener('click', handleClick);
+            }, 500);
+        }
     }
 
-    closeDefeatMessageButton.addEventListener('click', closeDefeatMessage);
+    gameContainer.addEventListener('click', closeDefeatMessage);
 }
 
 function nextCharacterAfterDefeat() {
@@ -274,14 +276,14 @@ function nextCharacter() {
     characterIndex = (characterIndex + 1) % characters.length;
 
     if (characterIndex === 0) {
-        level++;  // Increment level when you loop through all characters
+        level++;
     }
 
     maxHealth = characters[characterIndex].baseHealth * level;
-    health = maxHealth;  // Reset the character's health to full
+    health = maxHealth;
 
-    updateDisplay();  // Update the UI with the new character
-    saveProgress();  // Save the progress after loading the new character
+    updateDisplay();
+    saveProgress();
 }
 
 // Function to update display
@@ -304,36 +306,27 @@ function updateDisplay() {
 
 // Updated handleAttack function
 function handleAttack(damage) {
-    console.log("Handling attack, damage:", damage);
-    
-    // Check if the character is already defeated to prevent multi-touch skips
+    if (health <= 0 || will <= 0) return;
+
+    health -= damage;
+    score += damage;
+    points += damage;
+    will -= 1;
+
+    const character = document.getElementById('character');
+    const painOverlay = document.getElementById('pain-overlay');
+    character.classList.add('pain');
+    painOverlay.style.opacity = '0.5';
+
+    setTimeout(() => {
+        character.classList.remove('pain');
+        painOverlay.style.opacity = '0';
+    }, 500);
+
     if (health <= 0) {
-        return;  // Prevent further attacks once the character is defeated
-    }
-
-    if (will > 0) {
-        health -= damage;
-        score += damage;
-        points += damage;
-        will -= 1;
-
-        const character = document.getElementById('character');
-        const painOverlay = document.getElementById('pain-overlay');
-        character.classList.add('pain');
-        painOverlay.style.opacity = '0.5';
-
-        setTimeout(() => {
-            character.classList.remove('pain');
-            painOverlay.style.opacity = '0';
-        }, 500);
-
-        // Check if the character is defeated
-        if (health <= 0) {
-            showDefeatMessage();  // Show the defeat message once the character is defeated
-        } else {
-            updateDisplay();
-            saveProgress();
-        }
+        showDefeatMessage();
+    } else {
+        updateDisplay();
     }
 }
 
@@ -510,7 +503,7 @@ function calculateRigged() {
 }
 
 // Function to show leaderboard
-function handleShowLeaderboard() {
+unction handleShowLeaderboard() {
     console.log("Showing leaderboard");
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
@@ -600,6 +593,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    document.getElementById('close-leaderboard-button').addEventListener('click', closeLeaderboard);
 
     // Button click handlers
     const buttonHandlers = {
