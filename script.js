@@ -580,6 +580,16 @@ function handleOutsideClick(event) {
     }
 }
 
+// Define the closeLeaderboard function to prevent the error
+function closeLeaderboard() {
+    const leaderboard = document.getElementById('leaderboard');
+    if (leaderboard) {
+        leaderboard.classList.add('hidden'); // Hide the leaderboard
+    } else {
+        console.error("Leaderboard element not found");
+    }
+}
+
 // Initialize game after DOM elements are loaded
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log("DOM Content Loaded event fired");
