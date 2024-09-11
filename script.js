@@ -70,6 +70,7 @@ let increaseDamageCost = 200;
 let characterIndex = 0;
 let riggedTokens = 0;
 let pointsAtLastBurn = 0;
+let baseWalletAddress = '';  // Initialize baseWalletAddress
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -238,6 +239,17 @@ function loadProgress() {
         }
     });
 }
+
+// Function to auto-replenish Will every 2 seconds
+function autoReplenishWill() {
+    if (will < 1000) {  // Assuming the maximum Will is 1000
+        will += 1;
+        updateDisplay();  // Update the display to show the new Will value
+    }
+}
+
+// Call this function to auto-replenish Will every 2 seconds
+setInterval(autoReplenishWill, 2000);
 
 // Updated showDefeatMessage function
 function showDefeatMessage() {
