@@ -427,10 +427,18 @@ function initializeWalletState() {
 // Function to handle Show Wallet
 function handleShowWallet() {
     console.log("Wallet button clicked");
-    console.log("Showing wallet");
     riggedTokens = calculateRigged();
     updateWalletDisplay();
-    walletScreen.style.display = 'block';
+
+    // Ensure the wallet screen element is present
+    const walletScreen = document.getElementById('wallet-screen');
+    if (walletScreen) {
+        walletScreen.classList.remove('hidden');  // Show the wallet screen
+        console.log("Wallet screen is now visible");
+    } else {
+        console.error("Wallet screen element not found");
+    }
+
     saveProgress(); // Save the wallet state
 }
 
