@@ -351,7 +351,10 @@ function handleAttack(damage) {
 
 function handleClick(event) {
     // Prevent clicks on buttons or messages from triggering attacks
-    if (event.target.tagName !== 'BUTTON' && !event.target.closest('#defeat-message') && !event.target.closest('#leaderboard') && !event.target.closest('#wallet-screen')) {
+    if (event.target.tagName !== 'BUTTON' && 
+        !event.target.closest('#defeat-message') && 
+        !event.target.closest('#leaderboard') && 
+        !event.target.closest('#wallet-screen')) {
         console.log("Handling click for attack");
         handleAttack(damagePerClick);
     }
@@ -615,9 +618,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Add event listeners for clicks and touches
     gameContainer.addEventListener('click', (event) => {
-        console.log("Click on game container");
-        handleClick(event);
+        // Only trigger an attack if clicking on the game area, not on buttons or other UI elements
+        if (!event.target.closest('button') && !event.target.closest('#defeat-message') &&
+            !event.target.closest('#leaderboard') && !event.target.closest('#wallet-screen')) {
+            console.log("Handling click for attack");
+            handleAttack(damagePerClick);
+        }
     });
+
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
