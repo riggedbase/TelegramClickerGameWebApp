@@ -611,8 +611,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showWalletButton = document.getElementById('show-wallet-button');
     leaderboardElement = document.getElementById('leaderboard');
     changeUsernameButton = document.getElementById('change-username-button');
-    closeWalletButton = document.getElementById('close-wallet-button'); // Fix for wallet close button
-
+    
     // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
     walletPointsElement = document.getElementById('wallet-points');
@@ -621,6 +620,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveWalletAddressButton = document.getElementById('save-wallet-address');
     claimRiggedButton = document.getElementById('claim-rigged');
     burnRiggedButton = document.getElementById('burn-rigged');
+    closeWalletButton = document.getElementById('close-wallet'); // Fixed ID here
     walletAddressError = document.getElementById('wallet-address-error');
 
     // Close the wallet screen on game load
@@ -645,7 +645,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'show-leaderboard-button': handleShowLeaderboard,
         'show-wallet-button': handleShowWallet,
         'change-username-button': handleChangeUsername,
-        'close-wallet-button': handleCloseWallet,  // Fix wallet close button handler
+        'close-wallet': handleCloseWallet,  // Fix wallet close button handler
         'claim-rigged': handleClaimRigged,
         'burn-rigged': handleBurnRigged,
         'save-wallet-address': handleSaveWalletAddress,
@@ -666,12 +666,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // Ensure the wallet close button is initialized
     if (closeWalletButton) {
-        closeWalletButton.addEventListener('click', handleCloseWallet);
-        console.log('Event listener added for close-wallet-button');
+        closeWalletButton.addEventListener('click', handleCloseWallet); // Correct ID
+        console.log('Event listener added for close-wallet');
     } else {
-        console.error("Button with id 'close-wallet-button' not found");
+        console.error("Button with id 'close-wallet' not found");
     }
 
     if (window.Telegram && window.Telegram.WebApp) {
@@ -700,13 +699,5 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log("Game initialized with new session due to error");
     });
 });
-
-// Auto-replenish will function
-function autoReplenishWill() {
-    if (will < 1000) {  // Assuming the maximum Will is 1000
-        will += 1;
-        updateDisplay();  // Update the display to show the new Will value
-    }
-}
 
 console.log("Script loaded");
