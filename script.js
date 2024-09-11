@@ -426,20 +426,23 @@ function initializeWalletState() {
 
 // Function to handle Show Wallet
 function handleShowWallet() {
-    console.log("Wallet button clicked");
-    riggedTokens = calculateRigged();
-    updateWalletDisplay();
+    console.log("Wallet button clicked - function triggered");  // Confirm the function is triggered
+    
+    riggedTokens = calculateRigged();  // Assuming this calculates the rigged tokens
+    updateWalletDisplay();  // Updates the wallet display
 
-    // Ensure the wallet screen element is present
     const walletScreen = document.getElementById('wallet-screen');
+    console.log(walletScreen);  // Log the element to confirm it's found
+
     if (walletScreen) {
-        walletScreen.classList.remove('hidden');  // Show the wallet screen
+        walletScreen.classList.remove('hidden');  // Remove the 'hidden' class
+        walletScreen.style.display = 'block';  // Force display for testing purposes
         console.log("Wallet screen is now visible");
     } else {
         console.error("Wallet screen element not found");
     }
 
-    saveProgress(); // Save the wallet state
+    saveProgress();  // Save the wallet state
 }
 
 // Function to change Username
