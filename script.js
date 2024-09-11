@@ -512,6 +512,13 @@ function calculateRigged() {
 // Function to show leaderboard
 function handleShowLeaderboard() {
     console.log("Showing leaderboard");
+    const leaderboard = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    
+    if (!leaderboard || !leaderboardList) {
+        console.error("Leaderboard elements not found");
+        return;
+    }
 
     const leaderboardData = [
         { username: 'Player1', score: 100 },
@@ -520,7 +527,6 @@ function handleShowLeaderboard() {
         { username: displayName + ' (You)', score: score }
     ];
 
-    const leaderboardList = document.getElementById('leaderboard-list');
     leaderboardList.innerHTML = '';
     leaderboardData.forEach(player => {
         const listItem = document.createElement('li');
@@ -528,12 +534,20 @@ function handleShowLeaderboard() {
         leaderboardList.appendChild(listItem);
     });
 
-    document.getElementById('leaderboard').classList.remove('hidden');
+    leaderboard.classList.remove('hidden');
 }
 
 // Function to close leaderboard
 function closeLeaderboard() {
-    document.getElementById('leaderboard').classList.add('hidden');
+    console.log("Closing leaderboard");
+    const leaderboard = document.getElementById('leaderboard');
+    
+    if (!leaderboard) {
+        console.error("Leaderboard element not found");
+        return;
+    }
+
+    leaderboard.classList.add('hidden');
 }
 
 // Function to close leaderboard when clicking outside
@@ -588,16 +602,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
     // Button click handlers
-    document.getElementById('replenish-will-button').addEventListener('click', handleReplenishWill);
-document.getElementById('increase-damage-button').addEventListener('click', handleIncreaseDamage);
-document.getElementById('show-leaderboard-button').addEventListener('click', handleShowLeaderboard);
-document.getElementById('show-wallet-button').addEventListener('click', handleShowWallet);
-document.getElementById('change-username-button').addEventListener('click', handleChangeUsername);
-document.getElementById('close-wallet-button').addEventListener('click', handleCloseWallet);
-document.getElementById('claim-rigged').addEventListener('click', handleClaimRigged);
-document.getElementById('burn-rigged').addEventListener('click', handleBurnRigged);
-document.getElementById('save-wallet-address').addEventListener('click', handleSaveWalletAddress);
-document.getElementById('close-leaderboard-button').addEventListener('click', closeLeaderboard);
+    const buttonHandlers = {
+        'replenish-will-button': handleReplenishWill,
+        'increase-damage-button': handleIncreaseDamage,
+        'show-leaderboard-button': handleShowLeaderboard,
+        'show-wallet-button': handleShowWallet,
+        'change-username-button': handleChangeUsername,
+        'close-wallet-button': handleCloseWallet,
+        'claim-rigged': handleClaimRigged,
+        'burn-rigged': handleBurnRigged,
+        'save-wallet-address': handleSaveWalletAddress,
+        'close-leaderboard-button': closeLeaderboard
+    };
+
+    Object.entries(buttonHandlers).forEach(([id, handler]) => {
+        const button = document.getElementById(id);
+        if (button) {
+            button.addEventListener('click', handler);
+        } else {
+            console.error(`Button with id '${id}' not found`);
+        }
+    });
 
     if (window.Telegram && window.Telegram.WebApp) {
         console.log("Initializing Telegram WebApp...");
