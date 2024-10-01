@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clicker Game</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -15,14 +18,19 @@
 
             <div id="character-info">
                 <div id="character-name"></div>
+
                 <div id="character-container">
                     <div id="character"></div>
                     <div id="pain-overlay"></div>
                 </div>
+
                 <div id="health-bar">
                     <div id="health-fill"></div>
                 </div>
-                <div id="health-text">Health: <span id="current-health">100</span> / <span id="max-health">100</span></div>
+
+                <div id="health-text">
+                    Health: <span id="current-health">100</span> / <span id="max-health">100</span>
+                </div>
             </div>
 
             <div id="stats">
@@ -30,15 +38,20 @@
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints.png?alt=media" alt="Score Icon" class="stat-icon">
                     Score: <span id="score">0</span>
                 </div>
+
                 <div>
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Points Icon" class="stat-icon">
                     Points: <span id="points">0</span>
                 </div>
+
                 <div>
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FWill.png?alt=media" alt="Will Icon" class="stat-icon">
                     Will: <span id="will">1000</span>
                 </div>
-                <div>Level: <span id="level">1</span></div>
+
+                <div>
+                    Level: <span id="level">1</span>
+                </div>
             </div>
 
             <div id="actions">
@@ -53,14 +66,11 @@
             </div>
         </div>
 
-        <div id="defeat-message" class="hidden">
-            <p id="defeat-text"></p>
-        </div>
+        <div id="defeat-message" class="hidden"></div>
 
         <div id="leaderboard" class="hidden">
             <div>
                 <h2>Leaderboard</h2>
-                <ul id="leaderboard-list"></ul>
                 <button id="close-leaderboard-button">Close Leaderboard</button>
             </div>
         </div>
@@ -68,10 +78,14 @@
         <div id="wallet-screen" class="hidden">
             <div id="wallet-content">
                 <h2>Wallet</h2>
-                <div>Current Points: <span id="wallet-points">0</span></div>
-                <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
                 <div>
-                    <label for="base-wallet-address">Base Wallet Address:</label>
+                    Current Points: <span id="wallet-points">0</span>
+                </div>
+                <div>
+                    $RIGGED Tokens: <span id="rigged-tokens">0</span>
+                </div>
+                <div>
+                    Base Wallet Address:
                     <input type="text" id="base-wallet-address">
                     <button id="save-wallet-address">Save Address</button>
                     <div id="wallet-address-error"></div>
