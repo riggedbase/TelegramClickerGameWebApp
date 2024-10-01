@@ -286,12 +286,14 @@ function nextCharacter() {
 
     if (characterIndex === 0) {
         level++;
+        console.log(`Level increased to: ${level}`);
     }
 
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
 
-    console.log(`Current damage per click: ${damagePerClick}`);  // Log current damage per click here
+    // Ensure damagePerClick doesn't change unintentionally
+    console.log(`Next character loaded. Current damage per click: ${damagePerClick}`);
 
     updateDisplay();
     saveProgress();
@@ -338,6 +340,8 @@ function updateDisplay() {
 function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
 
+    console.log(`Dealing ${damage} damage. Expected damage per click: ${damagePerClick}`);
+    
     health -= damage;
     score += damage;
     points += damage;
@@ -359,7 +363,7 @@ function handleAttack(damage) {
         updateDisplay();
     }
 
-    console.log(`Attack dealt: ${damage}, Current damage per click: ${damagePerClick}`);  // Log current damage per click here
+    console.log(`Attack dealt: ${damage}, Current damage per click: ${damagePerClick}`);
 }
 
 function handleClick(event) {
