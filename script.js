@@ -472,17 +472,72 @@ function handleShowWallet() {
 // Function to change Username
 function handleChangeUsername() {
     console.log("Change Username button clicked");
-    const newUsername = prompt("Enter a new username:");
+    showUsernameChangeModal();
+}
+
+// Function to show the custom username change modal
+function showUsernameChangeModal() {
+    // Check if modal already exists to prevent multiple modals
+    if (document.getElementById('username-change-modal')) {
+        console.log("Username change modal already open");
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'username-change-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Change Username</h2>
+            <input type="text" id="new-username-input" placeholder="Enter new username">
+            <div class="modal-buttons">
+                <button id="confirm-username-change">Change</button>
+                <button id="cancel-username-change">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const confirmButton = document.getElementById('confirm-username-change');
+    const cancelButton = document.getElementById('cancel-username-change');
+    const inputField = document.getElementById('new-username-input');
+
+    if (confirmButton && cancelButton && inputField) {
+        confirmButton.addEventListener('click', confirmUsernameChange);
+        cancelButton.addEventListener('click', closeUsernameChangeModal);
+        // Focus on the input field
+        setTimeout(() => inputField.focus(), 100);
+    } else {
+        console.error("Could not find all necessary elements for the username change modal");
+        closeUsernameChangeModal(); // Close the modal if there was an error
+    }
+}
+
+// Function to close the username change modal
+function closeUsernameChangeModal() {
+    const modal = document.getElementById('username-change-modal');
+    if (modal) {
+        document.body.removeChild(modal);
+    }
+}
+
+// Function to confirm username change
+function confirmUsernameChange() {
+    const newUsername = document.getElementById('new-username-input').value.trim();
     if (newUsername && !isProfanity(newUsername)) {
         if (changeUsername(newUsername)) {
-            // Show a confirmation message
-            alert("Username successfully changed to: " + newUsername);
-            // Close the leaderboard after successful username change
-            closeLeaderboard();
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.showAlert("Username successfully changed to: " + newUsername);
+            } else {
+                alert("Username successfully changed to: " + newUsername);
+            }
+            closeUsernameChangeModal();
         }
     } else {
-        console.log("Invalid username or contains profanity.");
-        alert("Invalid username. Please try again with a different name.");
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.showAlert("Invalid username. Please try again with a different name.");
+        } else {
+            alert("Invalid username. Please try again with a different name.");
+        }
     }
 }
 
