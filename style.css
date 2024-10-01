@@ -22,7 +22,7 @@ body, html {
     background-image: url('https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Container%20Background%2FIMG_1972.PNG?alt=media');
     background-size: cover;
     background-position: center;
-    opacity: 0.5;
+    opacity: 0.1;
 }
 
 #game-ui {
