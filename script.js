@@ -531,6 +531,7 @@ function confirmUsernameChange() {
                 alert("Username successfully changed to: " + newUsername);
             }
             closeUsernameChangeModal();
+            closeLeaderboard(); // Add this line to close the leaderboard
         }
     } else {
         if (window.Telegram && window.Telegram.WebApp) {
