@@ -256,21 +256,23 @@ function showDefeatMessage() {
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
+    // Remove the click event listener from the game container
     gameContainer.removeEventListener('click', handleClick);
     
-    function closeDefeatMessage(event) {
-        if (event.target === defeatMessage || defeatMessage.contains(event.target)) {
-            defeatMessage.classList.add('hidden');
-            nextCharacter();
-            updateDisplay();
-            gameContainer.removeEventListener('click', closeDefeatMessage);
-            setTimeout(() => {
-                gameContainer.addEventListener('click', handleClick);
-            }, 500);
-        }
-    }
+    // Add a one-time click event listener to the defeat message
+    defeatMessage.addEventListener('click', function closeDefeatMessage() {
+        defeatMessage.classList.add('hidden');
+        nextCharacter();
+        updateDisplay();
+        // Remove this event listener
+        defeatMessage.removeEventListener('click', closeDefeatMessage);
+        // Re-add the click event listener to the game container after a short delay
+        setTimeout(() => {
+            gameContainer.addEventListener('click', handleClick);
+        }, 500);
+    }, { once: true });
 
-    gameContainer.addEventListener('click', closeDefeatMessage);
+    console.log("Defeat message shown, waiting for user to click to continue");
 }
 
 function nextCharacterAfterDefeat() {
@@ -283,6 +285,7 @@ function nextCharacterAfterDefeat() {
 function nextCharacter() {
     console.log("Loading next character");
     console.log(`Current character index: ${characterIndex}`);
+    console.log(`Current character: ${characters[characterIndex].name}`);
     console.log(`Current damage per click before transition: ${damagePerClick}`);
     
     characterIndex = (characterIndex + 1) % characters.length;
@@ -298,7 +301,8 @@ function nextCharacter() {
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
 
-    console.log(`Next character loaded. Current damage per click after transition: ${damagePerClick}`);
+    console.log(`Next character loaded. Max Health: ${maxHealth}, Current Health: ${health}`);
+    console.log(`Current damage per click after transition: ${damagePerClick}`);
 
     updateDisplay();
     saveProgress();
@@ -339,6 +343,17 @@ function updateDisplay() {
     }
 
     console.log("Display updated");
+}
+
+function handleClick(event) {
+    // Prevent clicks on buttons or messages from triggering attacks
+    if (event.target.tagName !== 'BUTTON' && 
+        !event.target.closest('#defeat-message') && 
+        !event.target.closest('#leaderboard') && 
+        !event.target.closest('#wallet-screen')) {
+        console.log("Handling click for attack");
+        handleAttack(damagePerClick);
+    }
 }
 
 // Updated handleAttack function
@@ -652,21 +667,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     saveWalletAddressButton = document.getElementById('save-wallet-address');
     claimRiggedButton = document.getElementById('claim-rigged');
     burnRiggedButton = document.getElementById('burn-rigged');
-    closeWalletButton = document.getElementById('close-wallet'); // Fixed ID here
+    closeWalletButton = document.getElementById('close-wallet');
     walletAddressError = document.getElementById('wallet-address-error');
 
     // Close the wallet screen on game load
     closeWalletScreen();
 
     // Add event listeners for clicks and touches
-    gameContainer.addEventListener('click', (event) => {
-        if (!event.target.closest('button') && !event.target.closest('#defeat-message') &&
-            !event.target.closest('#leaderboard') && !event.target.closest('#wallet-screen')) {
-            console.log("Handling click for attack");
-            handleAttack(damagePerClick);
-        }
-    });
-
+    gameContainer.addEventListener('click', handleClick);
     gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
     gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
@@ -677,7 +685,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'show-leaderboard-button': handleShowLeaderboard,
         'show-wallet-button': handleShowWallet,
         'change-username-button': handleChangeUsername,
-        'close-wallet': handleCloseWallet,  // Fix wallet close button handler
+        'close-wallet': handleCloseWallet,
         'claim-rigged': handleClaimRigged,
         'burn-rigged': handleBurnRigged,
         'save-wallet-address': handleSaveWalletAddress,
@@ -699,7 +707,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     if (closeWalletButton) {
-        closeWalletButton.addEventListener('click', handleCloseWallet); // Correct ID
+        closeWalletButton.addEventListener('click', handleCloseWallet);
         console.log('Event listener added for close-wallet');
     } else {
         console.error("Button with id 'close-wallet' not found");
