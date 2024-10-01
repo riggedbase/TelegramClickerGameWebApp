@@ -580,7 +580,6 @@ function calculateRigged() {
 // Function to show leaderboard
 function handleShowLeaderboard() {
     console.log("Show Leaderboard button clicked");
-    console.log("Showing leaderboard");
     const leaderboard = document.getElementById('leaderboard');
     const leaderboardList = document.getElementById('leaderboard-list');
     
@@ -588,6 +587,8 @@ function handleShowLeaderboard() {
         console.error("Leaderboard elements not found");
         return;
     }
+
+    console.log("Showing leaderboard");
 
     // Sample leaderboard data - replace with actual data fetching logic
     const leaderboardData = [
@@ -610,20 +611,18 @@ function handleShowLeaderboard() {
     // Show the leaderboard
     leaderboard.classList.remove('hidden');
 
-    // Add event listener to close button if it doesn't exist
+    // Add event listener to close button
     const closeButton = document.getElementById('close-leaderboard-button');
-    if (closeButton && !closeButton.hasEventListener) {
-        closeButton.addEventListener('click', () => {
+    if (closeButton) {
+        closeButton.onclick = () => {
             leaderboard.classList.add('hidden');
-        });
-        closeButton.hasEventListener = true;
+        };
     }
 
     // Add event listener to change username button
     const changeUsernameButton = document.getElementById('change-username-button');
-    if (changeUsernameButton && !changeUsernameButton.hasEventListener) {
-        changeUsernameButton.addEventListener('click', handleChangeUsername);
-        changeUsernameButton.hasEventListener = true;
+    if (changeUsernameButton) {
+        changeUsernameButton.onclick = handleChangeUsername;
     }
 }
 
@@ -716,6 +715,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log('Event listener added for close-wallet');
     } else {
         console.error("Button with id 'close-wallet' not found");
+    }
+
+    // Add event listener for change username button
+    const changeUsernameButton = document.getElementById('change-username-button');
+    if (changeUsernameButton) {
+        changeUsernameButton.addEventListener('click', handleChangeUsername);
+        console.log('Event listener added for change-username-button');
+    } else {
+        console.error("Button with id 'change-username-button' not found");
     }
 
     if (window.Telegram && window.Telegram.WebApp) {
