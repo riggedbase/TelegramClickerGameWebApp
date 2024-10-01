@@ -474,9 +474,15 @@ function handleChangeUsername() {
     console.log("Change Username button clicked");
     const newUsername = prompt("Enter a new username:");
     if (newUsername && !isProfanity(newUsername)) {
-        changeUsername(newUsername);
+        if (changeUsername(newUsername)) {
+            // Show a confirmation message
+            alert("Username successfully changed to: " + newUsername);
+            // Close the leaderboard after successful username change
+            closeLeaderboard();
+        }
     } else {
         console.log("Invalid username or contains profanity.");
+        alert("Invalid username. Please try again with a different name.");
     }
 }
 
