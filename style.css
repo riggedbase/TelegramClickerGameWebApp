@@ -31,6 +31,9 @@ body, html {
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 h1 {
@@ -38,14 +41,28 @@ h1 {
     margin-bottom: 10px;
 }
 
+#stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
 #character-info {
-    text-align: center;
-    margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 #character-container {
     position: relative;
+    width: 100px;
     height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 10px 0;
     cursor: pointer;
 }
@@ -69,20 +86,20 @@ h1 {
 }
 
 .stat-icon {
-    width: 24px;              /* Icon size */
+    width: 24px;
     height: auto;
-    margin-right: 5px;         /* Space between icon and text */
-    vertical-align: middle;    /* Align icon with the text */
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 #stats div {
     display: flex;
-    align-items: center;       /* Ensure text and icons are aligned */
-    margin-bottom: 10px;       /* Add some space between stat rows */
+    align-items: center;
+    margin-bottom: 10px;
 }
 
 #health-bar {
-    width: 100%;
+    width: 80%;
     height: 10px;
     background-color: #ddd;
     margin: 5px 0;
@@ -94,15 +111,11 @@ h1 {
     transition: width 0.3s ease;
 }
 
-#stats {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-
 #actions, #menu-buttons {
+    width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 button {
