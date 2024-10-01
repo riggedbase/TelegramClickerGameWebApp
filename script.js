@@ -53,7 +53,7 @@ if (window.Telegram && window.Telegram.WebApp) {
 // Declare game elements globally so they can be accessed by all functions
 let gameContainer, characterElement, characterNameElement, healthFill, currentHealthElement, maxHealthElement, 
     scoreElement, pointsElement, willElement, levelElement, replenishWillButton, increaseDamageButton, 
-    showLeaderboardButton, showWalletButton, leaderboardElement, changeUsernameButton,
+    showLeaderboardButton, showWalletButton, leaderboardElement,
     walletScreen, walletPointsElement, riggedTokensElement, baseWalletAddressInput, 
     saveWalletAddressButton, claimRiggedButton, burnRiggedButton, closeWalletButton, walletAddressError;
 
@@ -618,6 +618,13 @@ function handleShowLeaderboard() {
         });
         closeButton.hasEventListener = true;
     }
+
+    // Add event listener to change username button
+    const changeUsernameButton = document.getElementById('change-username-button');
+    if (changeUsernameButton && !changeUsernameButton.hasEventListener) {
+        changeUsernameButton.addEventListener('click', handleChangeUsername);
+        changeUsernameButton.hasEventListener = true;
+    }
 }
 
 // Function to close leaderboard when clicking outside
@@ -657,7 +664,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     showLeaderboardButton = document.getElementById('show-leaderboard-button');
     showWalletButton = document.getElementById('show-wallet-button');
     leaderboardElement = document.getElementById('leaderboard');
-    changeUsernameButton = document.getElementById('change-username-button');
     
     // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
@@ -684,7 +690,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'increase-damage-button': handleIncreaseDamage,
         'show-leaderboard-button': handleShowLeaderboard,
         'show-wallet-button': handleShowWallet,
-        'change-username-button': handleChangeUsername,
         'close-wallet': handleCloseWallet,
         'claim-rigged': handleClaimRigged,
         'burn-rigged': handleBurnRigged,
