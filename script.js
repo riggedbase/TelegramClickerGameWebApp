@@ -282,7 +282,13 @@ function nextCharacterAfterDefeat() {
 // Updated nextCharacter function
 function nextCharacter() {
     console.log("Loading next character");
+    console.log(`Current character index: ${characterIndex}`);
+    console.log(`Current damage per click before transition: ${damagePerClick}`);
+    
     characterIndex = (characterIndex + 1) % characters.length;
+
+    console.log(`New character index: ${characterIndex}`);
+    console.log(`New character: ${characters[characterIndex].name}`);
 
     if (characterIndex === 0) {
         level++;
@@ -292,8 +298,7 @@ function nextCharacter() {
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
 
-    // Ensure damagePerClick doesn't change unintentionally
-    console.log(`Next character loaded. Current damage per click: ${damagePerClick}`);
+    console.log(`Next character loaded. Current damage per click after transition: ${damagePerClick}`);
 
     updateDisplay();
     saveProgress();
@@ -340,12 +345,21 @@ function updateDisplay() {
 function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
 
+    console.log(`Attacking character: ${characters[characterIndex].name}`);
     console.log(`Dealing ${damage} damage. Expected damage per click: ${damagePerClick}`);
+    console.log(`Current health before attack: ${health}`);
     
+    if (damage !== damagePerClick) {
+        console.warn(`Damage mismatch! Expected ${damagePerClick}, but dealing ${damage}`);
+    }
+
     health -= damage;
     score += damage;
     points += damage;
     will -= 1;
+
+    console.log(`Health after attack: ${health}`);
+    console.log(`Score: ${score}, Points: ${points}, Will: ${will}`);
 
     const character = document.getElementById('character');
     const painOverlay = document.getElementById('pain-overlay');
@@ -358,23 +372,13 @@ function handleAttack(damage) {
     }, 500);
 
     if (health <= 0) {
+        console.log("Character defeated, transitioning to next character");
         showDefeatMessage();
     } else {
         updateDisplay();
     }
 
-    console.log(`Attack dealt: ${damage}, Current damage per click: ${damagePerClick}`);
-}
-
-function handleClick(event) {
-    // Prevent clicks on buttons or messages from triggering attacks
-    if (event.target.tagName !== 'BUTTON' && 
-        !event.target.closest('#defeat-message') && 
-        !event.target.closest('#leaderboard') && 
-        !event.target.closest('#wallet-screen')) {
-        console.log("Handling click for attack");
-        handleAttack(damagePerClick);
-    }
+    console.log(`Attack dealt: ${damage}, Current damage per click after attack: ${damagePerClick}`);
 }
 
 // Function to handle touch events
