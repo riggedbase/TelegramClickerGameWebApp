@@ -225,7 +225,7 @@ function loadProgress() {
                     console.log("No existing data found, initializing with default values");
                     initializeDefaultValues();
                 }
-                console.log("Game state after loading:", { displayName, score, points, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
+                console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
                 resolve();
             }).catch((error) => {
                 console.error("Error loading progress:", error);
@@ -251,22 +251,21 @@ function autoReplenishWill() {
 // Updated showDefeatMessage function
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
-    const defeatText = document.getElementById('defeat-text');
-    const closeButton = document.getElementById('close-defeat-message');
+    const defeatContent = defeatMessage.querySelector('.defeat-content');
 
-    if (!defeatMessage || !defeatText || !closeButton) {
+    if (!defeatMessage || !defeatContent) {
         console.error("Defeat message elements not found");
         return;
     }
 
-    defeatText.textContent = characters[characterIndex].defeatMessage;
+    defeatContent.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
     // Remove the click event listener from the game container
     gameContainer.removeEventListener('click', handleClick);
     
-    // Add a one-time click event listener to the close button
-    closeButton.addEventListener('click', function closeDefeatMessage() {
+    // Add a one-time click event listener to the defeat message
+    defeatMessage.addEventListener('click', function closeDefeatMessage() {
         defeatMessage.classList.add('hidden');
         nextCharacter();
         updateDisplay();
@@ -276,7 +275,7 @@ function showDefeatMessage() {
         }, 500);
     }, { once: true });
 
-    console.log("Defeat message shown, waiting for user to click close button to continue");
+    console.log("Defeat message shown, waiting for user to click to continue");
 }
 
 // Updated nextCharacter function
@@ -644,9 +643,9 @@ function calculateRigged() {
 function handleShowLeaderboard() {
     console.log("Show Leaderboard button clicked");
     const leaderboard = document.getElementById('leaderboard');
-    const leaderboardList = document.getElementById('leaderboard-list');
+    const leaderboardContent = document.getElementById('leaderboard-content');
     
-    if (!leaderboard || !leaderboardList) {
+    if (!leaderboard || !leaderboardContent) {
         console.error("Leaderboard elements not found");
         return;
     }
@@ -662,38 +661,34 @@ function handleShowLeaderboard() {
     ];
 
     // Clear existing leaderboard entries
-    leaderboardList.innerHTML = '';
+    leaderboardContent.innerHTML = '<h2>Leaderboard</h2>';
 
     // Populate leaderboard
+    const leaderboardList = document.createElement('ul');
+    leaderboardList.id = 'leaderboard-list';
     leaderboardData.forEach(player => {
         const listItem = document.createElement('li');
         listItem.textContent = `${player.username}: ${player.score} points`;
         leaderboardList.appendChild(listItem);
     });
+    leaderboardContent.appendChild(leaderboardList);
+
+    // Add change username button
+    const changeUsernameButton = document.createElement('button');
+    changeUsernameButton.textContent = 'Change Username';
+    changeUsernameButton.id = 'change-username-button';
+    changeUsernameButton.onclick = handleChangeUsername;
+    leaderboardContent.appendChild(changeUsernameButton);
+
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close Leaderboard';
+    closeButton.id = 'close-leaderboard-button';
+    closeButton.onclick = closeLeaderboard;
+    leaderboardContent.appendChild(closeButton);
 
     // Show the leaderboard
     leaderboard.classList.remove('hidden');
-
-    // Add event listener to close button
-    const closeButton = document.getElementById('close-leaderboard-button');
-    if (closeButton) {
-        closeButton.onclick = () => {
-            leaderboard.classList.add('hidden');
-        };
-    }
-
-    // Add event listener to change username button
-    const changeUsernameButton = document.getElementById('change-username-button');
-    if (changeUsernameButton) {
-        changeUsernameButton.onclick = handleChangeUsername;
-    }
-}
-
-// Function to close leaderboard when clicking outside
-function handleOutsideClick(event) {
-    if (!leaderboardElement.contains(event.target) && event.target.id !== 'show-leaderboard-button') {
-        closeLeaderboard();
-    }
 }
 
 // Define the closeLeaderboard function to prevent the error
