@@ -13,6 +13,8 @@ body, html {
     position: relative;
     width: 100%;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -33,12 +35,11 @@ body, html {
 #game-ui {
     position: relative;
     padding: 10px;
-    min-height: 100%;
-    box-sizing: border-box;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
+    min-height: 100%;
     z-index: 1;
 }
 
@@ -59,34 +60,25 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-grow: 1;
 }
 
 #character-container {
-    position: relative;
-    width: 80vw;
-    height: 40vh;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 200px;
+    width: 100%;
     margin: 10px 0;
     cursor: pointer;
 }
 
 #character {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-    user-select: none;
-}
-
-#character img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    transition: all 0.3s ease;
+    user-select: none;
 }
 
 #pain-overlay {
@@ -128,12 +120,11 @@ h1 {
 }
 
 #actions {
-    width: 100%;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    margin-top: 10px;
-    padding-bottom: 20px;
+    align-items: flex-end;
+    padding: 10px 0;
+    width: 100%;
     z-index: 2;
 }
 
@@ -141,15 +132,14 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 10px;
-    width: 70px;
+    margin: 0 5px;
     z-index: 3;
     position: relative;
 }
 
 .action-button img {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     cursor: pointer;
     pointer-events: auto;
 }
@@ -158,13 +148,13 @@ h1 {
     display: flex;
     align-items: center;
     font-size: 12px;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 
 .action-cost img {
-    width: 20px;
-    height: 20px;
-    margin-right: 3px;
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
 }
 
 #defeat-message, #leaderboard, #wallet-screen {
@@ -329,16 +319,32 @@ h1 {
 
 @media (max-height: 600px) {
     #character-container {
-        height: 35vh;
+        min-height: 150px;
     }
-    
+
     .action-button img {
         width: 40px;
         height: 40px;
     }
-    
+
     .action-cost img {
         width: 14px;
         height: 14px;
+    }
+}
+
+@media (max-width: 400px) {
+    .action-button img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .action-cost img {
+        width: 12px;
+        height: 12px;
+    }
+
+    .action-cost {
+        font-size: 10px;
     }
 }
