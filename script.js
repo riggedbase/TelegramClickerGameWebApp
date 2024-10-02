@@ -71,6 +71,9 @@ let characterIndex = 0;
 let riggedTokens = 0;
 let pointsAtLastBurn = 0;
 let baseWalletAddress = '';  // Initialize baseWalletAddress
+let touchStartY = 0;
+let touchEndY = 0;
+const scrollThreshold = 10; // Adjust this value as needed
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -361,17 +364,6 @@ function updateDisplay() {
     console.log("Display updated");
 }
 
-function handleClick(event) {
-    // Prevent clicks on buttons or messages from triggering attacks
-    if (event.target.tagName !== 'BUTTON' && 
-        !event.target.closest('#defeat-message') && 
-        !event.target.closest('#leaderboard') && 
-        !event.target.closest('#wallet-screen')) {
-        console.log("Handling click for attack");
-        handleAttack(damagePerClick);
-    }
-}
-
 // Updated handleAttack function
 function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
@@ -413,22 +405,45 @@ function handleAttack(damage) {
 }
 
 // Function to handle touch events
-function handleTouch(event) {
-    // Ignore touch events on buttons and UI elements
-    if (event.target.tagName === 'BUTTON' || event.target.closest('.ui-element')) {
-        return;  // Don't trigger attacks if touch is on a button or UI element
+function handleTouchStart(event) {
+    touchStartY = event.touches[0].clientY;
+}
+
+function handleTouchMove(event) {
+    touchEndY = event.touches[0].clientY;
+    const touchDiff = touchStartY - touchEndY;
+
+    if (Math.abs(touchDiff) > scrollThreshold) {
+        // If the touch difference is greater than the threshold, it's a scroll
+        event.stopPropagation();
+    } else {
+        // If it's a small movement, prevent default to avoid unintended scrolls
+        event.preventDefault();
+    }
+}
+
+function handleTouchEnd(event) {
+    const touchDiff = touchStartY - touchEndY;
+
+    if (Math.abs(touchDiff) <= scrollThreshold) {
+        // If the touch difference is small, it's a tap/click
+        handleClick(event);
     }
 
-    // Prevent multiple attacks if the character is already defeated
-    if (health <= 0) {
-        return;
-    }
+    // Reset touch coordinates
+    touchStartY = 0;
+    touchEndY = 0;
+}
 
-    event.preventDefault();  // Prevent default touch behavior (like scrolling)
-
-    // Process attack for each touch
-    for (let i = 0; i < event.touches.length; i++) {
-        handleAttack(damagePerClick);  // Trigger attack for each active touch point
+function handleClick(event) {
+    // Prevent clicks on buttons or messages from triggering attacks
+    if (event.target.tagName !== 'BUTTON' && 
+        !event.target.closest('#defeat-message') && 
+        !event.target.closest('#leaderboard') && 
+        !event.target.closest('#wallet-screen') &&
+        !event.target.closest('.action-button')) {
+        console.log("Handling click for attack");
+        handleAttack(damagePerClick);
     }
 }
 
@@ -781,8 +796,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Add event listeners for clicks and touches
     if (gameContainer) {
         gameContainer.addEventListener('click', handleClick);
-        gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-        gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+        gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
     } else {
         console.error("Game container not found");
     }
