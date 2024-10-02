@@ -34,27 +34,40 @@
             </div>
 
             <div id="character-info">
-                <div id="character-name"></div>
-                <div id="character-container">
-                    <div id="character"></div>
-                    <div id="pain-overlay"></div>
-                </div>
                 <div id="health-bar">
                     <div id="health-fill"></div>
                 </div>
                 <div id="health-text">
                     Health: <span id="current-health">100</span> / <span id="max-health">100</span>
                 </div>
+                <div id="character-name"></div>
+                <div id="character-container">
+                    <div id="character"></div>
+                    <div id="pain-overlay"></div>
+                </div>
             </div>
 
             <div id="actions">
-                <button id="replenish-will-button">Replenish Will (100 credits)</button>
-                <button id="increase-damage-button">Increase Damage (200 credits)</button>
-            </div>
-
-            <div id="menu-buttons">
-                <button id="show-leaderboard-button">Show Leaderboard</button>
-                <button id="show-wallet-button">Wallet</button>
+                <div class="action-button">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FReplenish%20will.png?alt=media" alt="Replenish Will" id="replenish-will-button">
+                    <div class="action-cost">
+                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Credits" class="cost-icon">
+                        <span id="replenish-will-cost">100</span>
+                    </div>
+                </div>
+                <div class="action-button">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FIncrease%20damage.png?alt=media" alt="Increase Damage" id="increase-damage-button">
+                    <div class="action-cost">
+                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Credits" class="cost-icon">
+                        <span id="increase-damage-cost">200</span>
+                    </div>
+                </div>
+                <div class="action-button">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FLeaderboard.png?alt=media" alt="Show Leaderboard" id="show-leaderboard-button">
+                </div>
+                <div class="action-button">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FWallet.png?alt=media" alt="Wallet" id="show-wallet-button">
+                </div>
             </div>
         </div>
 

@@ -323,7 +323,6 @@ function updateDisplay() {
         console.error("Character name element not found");
     }
 
-    document.getElementById('character-name').textContent = characters[characterIndex].name;
     document.getElementById('current-health').textContent = health;
     document.getElementById('max-health').textContent = maxHealth;
     document.getElementById('health-fill').style.width = `${(health / maxHealth) * 100}%`;
@@ -331,12 +330,16 @@ function updateDisplay() {
     document.getElementById('credits').textContent = credits;
     document.getElementById('will').textContent = will;
     document.getElementById('level').textContent = level;
-    document.getElementById('replenish-will-button').textContent = `Replenish Will (${replenishWillCost} credits)`;
-    document.getElementById('increase-damage-button').textContent = `Increase Damage (${increaseDamageCost} credits)`;
+
+    // Update costs for Replenish Will and Increase Damage
+    const replenishWillCostElement = document.getElementById('replenish-will-cost');
+    const increaseDamageCostElement = document.getElementById('increase-damage-cost');
+    if (replenishWillCostElement) replenishWillCostElement.textContent = replenishWillCost;
+    if (increaseDamageCostElement) increaseDamageCostElement.textContent = increaseDamageCost;
 
     // Update wallet display if wallet screen is open
     if (!document.getElementById('wallet-screen').classList.contains('hidden')) {
-        document.getElementById('wallet-points').textContent = points;
+        document.getElementById('wallet-credits').textContent = credits;
         document.getElementById('rigged-tokens').textContent = riggedTokens;
     }
 
@@ -715,7 +718,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     currentHealthElement = document.getElementById('current-health');
     maxHealthElement = document.getElementById('max-health');
     scoreElement = document.getElementById('score');
-    pointsElement = document.getElementById('points');
+    creditsElement = document.getElementById('credits');
     willElement = document.getElementById('will');
     levelElement = document.getElementById('level');
     replenishWillButton = document.getElementById('replenish-will-button');
@@ -726,7 +729,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     
     // Wallet elements
     walletScreen = document.getElementById('wallet-screen');
-    walletPointsElement = document.getElementById('wallet-points');
+    walletCreditsElement = document.getElementById('wallet-credits');
     riggedTokensElement = document.getElementById('rigged-tokens');
     baseWalletAddressInput = document.getElementById('base-wallet-address');
     saveWalletAddressButton = document.getElementById('save-wallet-address');
@@ -736,12 +739,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     walletAddressError = document.getElementById('wallet-address-error');
 
     // Close the wallet screen on game load
-    closeWalletScreen();
+    if (walletScreen) walletScreen.classList.add('hidden');
 
     // Add event listeners for clicks and touches
-    gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
-    gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    if (gameContainer) {
+        gameContainer.addEventListener('click', handleClick);
+        gameContainer.addEventListener('touchstart', handleTouch, { passive: false });
+        gameContainer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    } else {
+        console.error("Game container not found");
+    }
 
     // Button click handlers
     const buttonHandlers = {
@@ -752,8 +759,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'close-wallet': handleCloseWallet,
         'claim-rigged': handleClaimRigged,
         'burn-rigged': handleBurnRigged,
-        'save-wallet-address': handleSaveWalletAddress,
-        'close-leaderboard-button': closeLeaderboard
+        'save-wallet-address': handleSaveWalletAddress
     };
 
     Object.entries(buttonHandlers).forEach(([id, handler]) => {
