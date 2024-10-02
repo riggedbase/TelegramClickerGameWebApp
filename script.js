@@ -251,19 +251,22 @@ function autoReplenishWill() {
 // Updated showDefeatMessage function
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
-    if (!defeatMessage) {
-        console.error("Defeat message element not found");
+    const defeatText = document.getElementById('defeat-text');
+    const closeButton = document.getElementById('close-defeat-message');
+
+    if (!defeatMessage || !defeatText || !closeButton) {
+        console.error("Defeat message elements not found");
         return;
     }
 
-    defeatMessage.innerHTML = `<p>${characters[characterIndex].defeatMessage}</p>`;
+    defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatMessage.classList.remove('hidden');
 
     // Remove the click event listener from the game container
     gameContainer.removeEventListener('click', handleClick);
     
-    // Add a one-time click event listener to the defeat message
-    defeatMessage.addEventListener('click', function closeDefeatMessage() {
+    // Add a one-time click event listener to the close button
+    closeButton.addEventListener('click', function closeDefeatMessage() {
         defeatMessage.classList.add('hidden');
         nextCharacter();
         updateDisplay();
@@ -273,13 +276,7 @@ function showDefeatMessage() {
         }, 500);
     }, { once: true });
 
-    console.log("Defeat message shown, waiting for user to click to continue");
-}
-
-function nextCharacterAfterDefeat() {
-    nextCharacter();
-    updateDisplay();
-    saveProgress();
+    console.log("Defeat message shown, waiting for user to click close button to continue");
 }
 
 // Updated nextCharacter function
