@@ -68,9 +68,19 @@ h1 {
 }
 
 #character {
-    font-size: 60px;
+    width: 100px; /* Adjust as needed */
+    height: 100px; /* Adjust as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     transition: all 0.3s ease;
     user-select: none;
+}
+
+#character img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 #pain-overlay {
