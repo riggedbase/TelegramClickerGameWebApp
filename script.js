@@ -74,7 +74,7 @@ let baseWalletAddress = '';  // Initialize baseWalletAddress
 
 // Declare character information globally with updated defeat messages
 const characters = [
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fjoe01.png?alt=media', baseHealth: 100, name: 'Demon', defeatMessage: "You've banished the demon back to the underworld!" },
+    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fbiden01.png?alt=media', baseHealth: 100, name: 'Demon', defeatMessage: "You've banished the demon back to the underworld!" },
     { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fkamala01.png?alt=media', baseHealth: 200, name: 'Ogre', defeatMessage: "The ogre stumbles and falls. Victory is yours!" },
     { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fluke01.png?alt=media', baseHealth: 300, name: 'Alien', defeatMessage: "The alien retreats to its spacecraft. Earth is saved!" },
     { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fswift01.png?alt=media', baseHealth: 400, name: 'Dragon', defeatMessage: "The mighty dragon has been slain. You are the true hero!" },
