@@ -59,7 +59,7 @@ let gameContainer, characterElement, characterNameElement, healthFill, currentHe
 
 // Game variables
 let score = 0;
-let points = 0;
+let credits = 0;
 let will = 1000;
 let level = 1;
 let health = 100;
@@ -128,7 +128,7 @@ function generateRandomUsername() {
 function initializeDefaultValues() {
     displayName = generateRandomUsername();
     score = 0;
-    points = 0;
+    credits = 0;
     will = 1000;
     level = 1;
     health = 100;
@@ -174,7 +174,7 @@ function saveProgress() {
 
     if (telegramUserId) {
         const dataToSave = {
-            displayName, score, points, will, level, health, maxHealth,
+            displayName, score, credits, will, level, health, maxHealth,
             damagePerClick, replenishWillCost, increaseDamageCost,
             baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex
         };
@@ -208,7 +208,7 @@ function loadProgress() {
                 if (data) {
                     displayName = data.displayName || generateRandomUsername();
                     score = data.score || 0;
-                    points = data.points || 0;
+                    credits = data.credits || 0;
                     will = data.will || 1000;
                     level = data.level || 1;
                     health = data.health || 100;
@@ -328,11 +328,11 @@ function updateDisplay() {
     document.getElementById('max-health').textContent = maxHealth;
     document.getElementById('health-fill').style.width = `${(health / maxHealth) * 100}%`;
     document.getElementById('score').textContent = score;
-    document.getElementById('points').textContent = points;
+    document.getElementById('credits').textContent = credits;
     document.getElementById('will').textContent = will;
     document.getElementById('level').textContent = level;
-    document.getElementById('replenish-will-button').textContent = `Replenish Will (${replenishWillCost} points)`;
-    document.getElementById('increase-damage-button').textContent = `Increase Damage (${increaseDamageCost} points)`;
+    document.getElementById('replenish-will-button').textContent = `Replenish Will (${replenishWillCost} credits)`;
+    document.getElementById('increase-damage-button').textContent = `Increase Damage (${increaseDamageCost} credits)`;
 
     // Update wallet display if wallet screen is open
     if (!document.getElementById('wallet-screen').classList.contains('hidden')) {
@@ -368,11 +368,11 @@ function handleAttack(damage) {
 
     health -= damage;
     score += damage;
-    points += damage;
+    credits += damage;
     will -= 1;
 
     console.log(`Health after attack: ${health}`);
-    console.log(`Score: ${score}, Points: ${points}, Will: ${will}`);
+    console.log(`Score: ${score}, Credits: ${credits}, Will: ${will}`);
 
     const character = document.getElementById('character');
     const painOverlay = document.getElementById('pain-overlay');
@@ -418,8 +418,8 @@ function handleTouch(event) {
 function handleReplenishWill() {
     console.log("Replenish Will button clicked");
     console.log("Replenishing will");
-    if (points >= replenishWillCost) {
-        points -= replenishWillCost;
+    if (credits >= replenishWillCost) {
+        credits -= replenishWillCost;
         will = 1000;
         replenishWillCost = Math.floor(replenishWillCost * 1.5);
         updateDisplay();
@@ -430,8 +430,8 @@ function handleReplenishWill() {
 // Function to handle Increase Damage
 function handleIncreaseDamage() {
     console.log("Increase Damage button clicked");
-    if (points >= increaseDamageCost) {
-        points -= increaseDamageCost;
+    if (credits >= increaseDamageCost) {
+        credits -= increaseDamageCost;
         damagePerClick += 1;
         console.log(`Damage per click increased to: ${damagePerClick}`);  // Log the increase
         increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
@@ -564,7 +564,7 @@ function handleClaimRigged() {
     console.log("Claiming $RIGGED");
     try {
         const claimedAmount = riggedTokens;
-        points = 0;  // Reset points after claiming
+        credits = 0;  // Reset credits after claiming
         riggedTokens = 0;  // Reset $RIGGED tokens after claiming
         updateWalletDisplay();
         saveProgress();
@@ -587,7 +587,7 @@ function handleBurnRigged() {
     try {
         const burnedAmount = riggedTokens;
         riggedTokens = 0;  // Reset $RIGGED tokens after burning
-        pointsAtLastBurn = points;  // Update points at last burn
+        pointsAtLastBurn = credits;  // Update credits at last burn
         updateWalletDisplay();
         saveProgress();
         alert(`Successfully burned ${burnedAmount} $RIGGED tokens!`);
@@ -620,14 +620,14 @@ function handleSaveWalletAddress() {
 
 // Function to update wallet display
 function updateWalletDisplay() {
-    document.getElementById('wallet-points').textContent = points;
+    document.getElementById('wallet-credits').textContent = credits;
     document.getElementById('rigged-tokens').textContent = riggedTokens;
 }
 
 // Function to calculate Rigged tokens
 function calculateRigged() {
-    const eligiblePoints = points - pointsAtLastBurn;
-    const riggedTokensEarned = Math.floor(eligiblePoints / 100);
+    const eligibleCredits = credits - pointsAtLastBurn;
+    const riggedTokensEarned = Math.floor(eligibleCredits / 100);
     
     // Ensure that $RIGGED tokens can't be negative
     if (riggedTokensEarned < 0) {
