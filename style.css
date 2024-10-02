@@ -37,19 +37,19 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 #stats {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 #character-info {
@@ -57,17 +57,16 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-grow: 1;
 }
 
 #character-container {
     position: relative;
     width: 80vw;
-    height: 50vh;
+    height: 45vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px 0;
+    margin: 5px 0;
     cursor: pointer;
 }
 
@@ -109,14 +108,14 @@ h1 {
 #stats div {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 #health-bar {
     width: 80%;
     height: 10px;
     background-color: #ddd;
-    margin: 5px 0;
+    margin: 2px 0;
 }
 
 #health-fill {
@@ -130,20 +129,21 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    margin-top: 10px;
+    margin-top: 0;
+    padding-top: 5px;
 }
 
 .action-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 10px;
-    width: 70px;
+    margin: 0 5px;
+    width: 60px;
 }
 
 .action-button img {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     cursor: pointer;
 }
 
@@ -151,13 +151,13 @@ h1 {
     display: flex;
     align-items: center;
     font-size: 12px;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 
 .action-cost img {
-    width: 20px;
-    height: 20px;
-    margin-right: 3px;
+    width: 18px;
+    height: 18px;
+    margin-right: 2px;
 }
 
 #defeat-message, #leaderboard, #wallet-screen {
@@ -324,12 +324,12 @@ h1 {
     }
     
     .action-button img {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
     }
     
     .action-cost img {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
     }
 }
