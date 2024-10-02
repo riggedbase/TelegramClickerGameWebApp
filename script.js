@@ -258,14 +258,31 @@ function showDefeatMessage() {
         return;
     }
 
-    defeatContent.textContent = characters[characterIndex].defeatMessage;
+    // Clear existing content
+    defeatContent.innerHTML = '';
+
+    // Add the "X" button
+    const closeButton = document.createElement('span');
+    closeButton.textContent = '✖';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '10px';
+    closeButton.style.right = '10px';
+    defeatContent.appendChild(closeButton);
+
+    // Add the defeat message
+    const defeatText = document.createElement('p');
+    defeatText.textContent = characters[characterIndex].defeatMessage;
+    defeatContent.appendChild(defeatText);
+
     defeatMessage.classList.remove('hidden');
 
     // Remove the click event listener from the game container
     gameContainer.removeEventListener('click', handleClick);
     
-    // Add a one-time click event listener to the defeat message
-    defeatMessage.addEventListener('click', function closeDefeatMessage() {
+    // Add a one-time click event listener to the close button
+    closeButton.addEventListener('click', function closeDefeatMessage(event) {
+        event.stopPropagation(); // Prevent the click from propagating to the defeatMessage
         defeatMessage.classList.add('hidden');
         nextCharacter();
         updateDisplay();
@@ -275,7 +292,7 @@ function showDefeatMessage() {
         }, 500);
     }, { once: true });
 
-    console.log("Defeat message shown, waiting for user to click to continue");
+    console.log("Defeat message shown, waiting for user to click close button to continue");
 }
 
 // Updated nextCharacter function
