@@ -251,9 +251,12 @@ function autoReplenishWill() {
 // Updated showDefeatMessage function
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
-    const defeatText = document.getElementById('defeat-text');
+    if (!defeatMessage) {
+        console.error("Defeat message element not found");
+        return;
+    }
 
-    defeatText.textContent = characters[characterIndex].defeatMessage;
+    defeatMessage.innerHTML = `<p>${characters[characterIndex].defeatMessage}</p>`;
     defeatMessage.classList.remove('hidden');
 
     // Remove the click event listener from the game container
@@ -264,8 +267,6 @@ function showDefeatMessage() {
         defeatMessage.classList.add('hidden');
         nextCharacter();
         updateDisplay();
-        // Remove this event listener
-        defeatMessage.removeEventListener('click', closeDefeatMessage);
         // Re-add the click event listener to the game container after a short delay
         setTimeout(() => {
             gameContainer.addEventListener('click', handleClick);
