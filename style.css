@@ -27,6 +27,7 @@ body, html {
     background-size: cover;
     background-position: center;
     opacity: 1;
+    z-index: 0;
 }
 
 #game-ui {
@@ -37,19 +38,20 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
+    z-index: 1;
 }
 
 h1 {
     text-align: center;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 #stats {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 #character-info {
@@ -57,16 +59,17 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-grow: 1;
 }
 
 #character-container {
     position: relative;
     width: 80vw;
-    height: 45vh;
+    height: 50vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 5px 0;
+    margin: 10px 0;
     cursor: pointer;
 }
 
@@ -108,14 +111,14 @@ h1 {
 #stats div {
     display: flex;
     align-items: center;
-    margin-bottom: 2px;
+    margin-bottom: 5px;
 }
 
 #health-bar {
     width: 80%;
     height: 10px;
     background-color: #ddd;
-    margin: 2px 0;
+    margin: 5px 0;
 }
 
 #health-fill {
@@ -129,35 +132,38 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    margin-top: 0;
-    padding-top: 5px;
+    margin-top: 10px;
+    z-index: 2;
 }
 
 .action-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 5px;
-    width: 60px;
+    margin: 0 10px;
+    width: 70px;
+    z-index: 3;
+    position: relative;
 }
 
 .action-button img {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     cursor: pointer;
+    pointer-events: auto;
 }
 
 .action-cost {
     display: flex;
     align-items: center;
     font-size: 12px;
-    margin-top: 2px;
+    margin-top: 5px;
 }
 
 .action-cost img {
-    width: 18px;
-    height: 18px;
-    margin-right: 2px;
+    width: 20px;
+    height: 20px;
+    margin-right: 3px;
 }
 
 #defeat-message, #leaderboard, #wallet-screen {
@@ -213,6 +219,7 @@ h1 {
 
 #leaderboard > div, #wallet-content {
     background-color: white;
+    color: black;
     padding: 20px;
     border-radius: 10px;
     max-width: 80%;
@@ -277,6 +284,7 @@ h1 {
 
 .modal-content {
     background-color: #fefefe;
+    color: black;
     padding: 20px;
     border-radius: 5px;
     width: 80%;
@@ -324,12 +332,12 @@ h1 {
     }
     
     .action-button img {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
     }
     
     .action-cost img {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
     }
 }

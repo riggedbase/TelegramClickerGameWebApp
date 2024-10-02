@@ -466,23 +466,48 @@ function initializeWalletState() {
 
 // Function to handle Show Wallet
 function handleShowWallet() {
-    console.log("Wallet button clicked - function triggered");  // Confirm the function is triggered
+    console.log("Wallet button clicked - function triggered");
     
-    riggedTokens = calculateRigged();  // Assuming this calculates the rigged tokens
-    updateWalletDisplay();  // Updates the wallet display
+    riggedTokens = calculateRigged();
+    updateWalletDisplay();
 
     const walletScreen = document.getElementById('wallet-screen');
-    console.log(walletScreen);  // Log the element to confirm it's found
+    const walletContent = document.getElementById('wallet-content');
 
-    if (walletScreen) {
-        walletScreen.classList.remove('hidden');  // Remove the 'hidden' class
-        walletScreen.style.display = 'block';  // Force display for testing purposes
+    if (walletScreen && walletContent) {
+        // Clear existing content
+        walletContent.innerHTML = '';
+
+        // Recreate wallet content
+        walletContent.innerHTML = `
+            <h2>Wallet</h2>
+            <div>Current Credits: <span id="wallet-credits">${credits}</span></div>
+            <div>$RIGGED Tokens: <span id="rigged-tokens">${riggedTokens}</span></div>
+            <div>
+                Base Wallet Address: 
+                <input type="text" id="base-wallet-address" value="${baseWalletAddress}">
+                <button id="save-wallet-address">Save Address</button>
+                <div id="wallet-address-error"></div>
+            </div>
+            <button id="claim-rigged">Claim $RIGGED</button>
+            <button id="burn-rigged">Burn $RIGGED</button>
+            <button id="close-wallet">Close Wallet</button>
+        `;
+
+        walletScreen.classList.remove('hidden');
+        walletScreen.style.display = 'flex';
         console.log("Wallet screen is now visible");
+
+        // Re-attach event listeners
+        document.getElementById('save-wallet-address').addEventListener('click', handleSaveWalletAddress);
+        document.getElementById('claim-rigged').addEventListener('click', handleClaimRigged);
+        document.getElementById('burn-rigged').addEventListener('click', handleBurnRigged);
+        document.getElementById('close-wallet').addEventListener('click', handleCloseWallet);
     } else {
-        console.error("Wallet screen element not found");
+        console.error("Wallet screen or content element not found");
     }
 
-    saveProgress();  // Save the wallet state
+    saveProgress();
 }
 
 // Function to change Username
@@ -705,6 +730,7 @@ function handleShowLeaderboard() {
 
     // Show the leaderboard
     leaderboard.classList.remove('hidden');
+    leaderboard.style.display = 'flex';
 }
 
 // Define the closeLeaderboard function to prevent the error
