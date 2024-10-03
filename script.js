@@ -360,6 +360,13 @@ function nextCharacter() {
         console.log(`Level increased to: ${level}`);
     }
 
+    // Set the base image immediately on character load
+    const characterElement = document.getElementById('character');
+    if (characterElement) {
+        const baseImage = characters[characterIndex].images[0];  // Get base image
+        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}">`;
+    }
+
     // Update the display with the new character and save progress
     updateDisplay();
     saveProgress();
@@ -864,6 +871,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Close the wallet screen on game load
     if (walletScreen) walletScreen.classList.add('hidden');
 
+    // Set the base image for the first character on game load
+    if (characterElement && characters.length > 0) {
+        const baseImage = characters[0].images[0];  // Load the base image for the first character
+        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[0].name}">`;
+    }
+
     // Add event listeners for clicks and touches
     if (gameContainer) {
         gameContainer.addEventListener('click', handleClick);
@@ -886,6 +899,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         'save-wallet-address': handleSaveWalletAddress
     };
 
+    // Initialize button event listeners
     Object.entries(buttonHandlers).forEach(([id, handler]) => {
         const button = document.getElementById(id);
         if (button) {
@@ -899,13 +913,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             console.error(`Button with id '${id}' not found`);
         }
     });
-
-    if (closeWalletButton) {
-        closeWalletButton.addEventListener('click', handleCloseWallet);
-        console.log('Event listener added for close-wallet');
-    } else {
-        console.error("Button with id 'close-wallet' not found");
-    }
 
     // Add event listener for change username button
     const changeUsernameButton = document.getElementById('change-username-button');
