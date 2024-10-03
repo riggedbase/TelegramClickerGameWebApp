@@ -384,7 +384,9 @@ function updateDisplay() {
     const healthFill = document.getElementById('health-fill');
 
     if (characterElement) {
-        characterElement.innerHTML = `<img src="${characters[characterIndex].imageUrl}" alt="${characters[characterIndex].name}">`;
+        // Ensure the base image is set for the character
+        const baseImage = characters[characterIndex].images[0];  // Base image of the character
+        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
     }
 
     if (characterNameElement) {
@@ -439,22 +441,22 @@ function animateCharacterDamage() {
     const characterElement = document.getElementById('character');
     const characterImages = characters[characterIndex].images;
 
-    // Start by fading out the base image
-    characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="fade-out">`;
+    // Show the base image initially
+    characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="character-image">`;
 
-    // After 100ms, show the mid-movement image with a fade-in
+    // After 100ms, show the mid-movement image
     setTimeout(() => {
-        characterElement.innerHTML = `<img src="${characterImages[1]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+        characterElement.innerHTML = `<img src="${characterImages[1]}" alt="${characters[characterIndex].name}" class="character-image">`;
     }, 100);  // Mid-movement image after 100ms
 
     // After another 200ms, show the final progression image
     setTimeout(() => {
-        characterElement.innerHTML = `<img src="${characterImages[2]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+        characterElement.innerHTML = `<img src="${characterImages[2]}" alt="${characters[characterIndex].name}" class="character-image">`;
     }, 300);  // Final image after 300ms
 
     // After 500ms, return to the base image
     setTimeout(() => {
-        characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+        characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="character-image">`;
     }, 500);  // Back to base image after 500ms
 }
 
