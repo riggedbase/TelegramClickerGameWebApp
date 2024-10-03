@@ -77,11 +77,56 @@ const scrollThreshold = 10; // Adjust this value as needed
 
 // Declare character information globally with updated defeat messages
 const characters = [
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fbiden01.png?alt=media', baseHealth: 100, name: 'Demon', defeatMessage: "You've banished the demon back to the underworld!" },
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fkamala01.png?alt=media', baseHealth: 200, name: 'Ogre', defeatMessage: "The ogre stumbles and falls. Victory is yours!" },
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fluke01.png?alt=media', baseHealth: 300, name: 'Alien', defeatMessage: "The alien retreats to its spacecraft. Earth is saved!" },
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fswift01.png?alt=media', baseHealth: 400, name: 'Dragon', defeatMessage: "The mighty dragon has been slain. You are the true hero!" },
-    { imageUrl: 'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fobama01.png?alt=media', baseHealth: 500, name: 'Wizard', defeatMessage: "The wizard's magic fades. Your strength prevails!" }
+    { 
+        name: 'Demon',
+        images: [
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fbiden01.png?alt=media',  // Base image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FBiden%2Fbiden02.png?alt=media',  // Mid-movement image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FBiden%2Fbiden03.png?alt=media'   // Final progression image
+        ],
+        baseHealth: 100,
+        defeatMessage: "You've banished the demon back to the underworld!"
+    },
+    { 
+        name: 'Ogre',
+        images: [
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fkamala01.png?alt=media',  // Base image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FKamala%2Fkamala02.png?alt=media',  // Mid-movement image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FKamala%2Fkamala03.png?alt=media'   // Final progression image
+        ],
+        baseHealth: 200,
+        defeatMessage: "The ogre stumbles and falls. Victory is yours!"
+    },
+    { 
+        name: 'Alien',
+        images: [
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fluke01.png?alt=media',  // Base image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FMark%2Fluke02.png?alt=media',  // Mid-movement image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FMark%2Fluke03.png?alt=media'   // Final progression image
+        ],
+        baseHealth: 300,
+        defeatMessage: "The alien has been defeated. You've sent them back to space!"
+    },
+    { 
+        name: 'Dragon',
+        images: [
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fswift01.png?alt=media',  // Base image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FTaylor%2Fswift02.png?alt=media',  // Mid-movement image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FTaylor%2Fswift03.png?alt=media'   // Final progression image
+        ],
+        baseHealth: 400,
+        defeatMessage: "The dragon is no more. You are victorious!"
+    },
+    { 
+        name: 'Wizard',
+        images: [
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fobama01.png?alt=media',  // Base image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FObama%2Fobama02.png?alt=media',  // Mid-movement image
+            'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FObama%2Fobama03.png?alt=media'   // Final progression image
+        ],
+        baseHealth: 500,
+        defeatMessage: "The wizard's spells have been broken. You have won!"
+    }
 ];
 
 function closeWalletScreen() {
@@ -272,7 +317,7 @@ function showDefeatMessage() {
     closeButton.style.right = '10px';
     defeatContent.appendChild(closeButton);
 
-    // Add the defeat message text
+    // Add the defeat message text from the characters array
     const defeatText = document.createElement('p');
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatContent.appendChild(defeatText);
@@ -383,40 +428,47 @@ function updateDisplay() {
     console.log("Display updated");
 }
 
+function animateCharacterDamage() {
+    const characterElement = document.getElementById('character');
+    const characterImages = characters[characterIndex].images;
+
+    // Start by fading out the base image
+    characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="fade-out">`;
+
+    // After 100ms, show the mid-movement image with a fade-in
+    setTimeout(() => {
+        characterElement.innerHTML = `<img src="${characterImages[1]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+    }, 100);  // Mid-movement image after 100ms
+
+    // After another 200ms, show the final progression image
+    setTimeout(() => {
+        characterElement.innerHTML = `<img src="${characterImages[2]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+    }, 300);  // Final image after 300ms
+
+    // After 500ms, return to the base image
+    setTimeout(() => {
+        characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="fade-in">`;
+    }, 500);  // Back to base image after 500ms
+}
+
 // Updated handleAttack function
 function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
 
     console.log(`Attacking character: ${characters[characterIndex].name}`);
-    console.log(`Dealing ${damage} damage. Expected damage per click: ${damagePerClick}`);
-    console.log(`Current health before attack: ${health}`);
-    
-    if (damage !== damagePerClick) {
-        console.warn(`Damage mismatch! Expected ${damagePerClick}, but dealing ${damage}`);
-    }
-
     health -= damage;
-    score += damage;
-    credits += damage;
+    score += damage;  // Update score with damage dealt
+    credits += damage;  // Update credits with damage dealt
     will -= 1;
 
-    console.log(`Health after attack: ${health}`);
-    console.log(`Score: ${score}, Credits: ${credits}, Will: ${will}`);
-
-    const character = document.getElementById('character');
-    const painOverlay = document.getElementById('pain-overlay');
-    character.classList.add('pain');
-    painOverlay.style.opacity = '0.5';
-
-    setTimeout(() => {
-        character.classList.remove('pain');
-        painOverlay.style.opacity = '0';
-    }, 500);
+    // Trigger the character damage animation
+    animateCharacterDamage();
 
     if (health <= 0) {
         console.log("Character defeated, transitioning to next character");
-        showDefeatMessage();
+        showDefeatMessage();  // Show defeat message
     } else {
+        // Update the display with the new health, score, etc.
         updateDisplay();
     }
 
