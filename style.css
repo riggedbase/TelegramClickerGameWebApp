@@ -113,39 +113,40 @@ h1 {
     object-fit: contain;
 }
 
+/* Adjustments for Buttons */
 #actions {
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
     padding: 5px 0;
     width: 100%;
-    position: absolute;
-    bottom: 10px;
-    left: 0;
+    position: relative;
+    margin-top: 10px;
 }
 
 .action-button {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin: 5px;
 }
 
 .action-button img {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
 }
 
 .action-cost {
     display: flex;
     align-items: center;
-    font-size: 8px;
+    font-size: 12px;
     margin-top: 2px;
 }
 
 .action-cost img {
-    width: 8px;
-    height: 8px;
+    width: 14px;
+    height: 14px;
     margin-right: 2px;
 }
 
@@ -175,12 +176,6 @@ h1 {
     text-align: center;
     position: relative;
     max-width: 80%;
-}
-
-#defeat-text {
-    color: white;
-    font-size: 24px;
-    margin-bottom: 20px;
 }
 
 #close-defeat-message {
@@ -319,13 +314,18 @@ h1 {
     }
 
     .action-button img {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
     }
 
     .action-cost img {
         width: 14px;
         height: 14px;
+    }
+
+    #stats div {
+        flex-basis: 50%;
+        margin-bottom: 3px;
     }
 }
 
@@ -339,8 +339,8 @@ h1 {
     }
 
     .action-button img {
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
     }
 
     .action-cost img {
@@ -349,15 +349,11 @@ h1 {
     }
 
     .action-cost {
-        font-size: 9px;
-    }
-
-    #stats {
-        flex-wrap: wrap;
+        font-size: 10px;
     }
 
     #stats div {
-        flex-basis: 50%;
+        flex-basis: 100%;
         margin-bottom: 3px;
     }
 }
@@ -390,7 +386,7 @@ h1 {
     }
 
     .action-cost img {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
     }
 }
