@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Clicker Game</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
@@ -14,6 +13,7 @@
         <div id="background"></div>
         <div id="game-ui">
             <h1>Clicker Game</h1>
+            
             <div id="stats">
                 <div>
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints.png?alt=media" class="stat-icon" alt="Score Icon">
@@ -31,6 +31,7 @@
                     Level: <span id="level">1</span>
                 </div>
             </div>
+
             <div id="character-info">
                 <div id="health-bar">
                     <div id="health-fill"></div>
@@ -44,6 +45,7 @@
                     <div id="pain-overlay"></div>
                 </div>
             </div>
+
             <div id="actions">
                 <div class="action-button">
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FReplenish%20will.png?alt=media" id="replenish-will-button" alt="Replenish Will">
@@ -68,11 +70,13 @@
             </div>
         </div>
     </div>
+
     <div id="defeat-message" class="hidden">
         <div class="defeat-content">
             ✖
         </div>
     </div>
+
     <div id="leaderboard" class="hidden">
         <div id="leaderboard-content">
             <h2>Leaderboard</h2>
@@ -80,6 +84,7 @@
             <button id="close-leaderboard-button">Close Leaderboard</button>
         </div>
     </div>
+
     <div id="wallet-screen" class="hidden">
         <div id="wallet-content">
             <h2>Wallet</h2>
@@ -96,6 +101,7 @@
             <button id="close-wallet">Close Wallet</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
