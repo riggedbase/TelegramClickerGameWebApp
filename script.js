@@ -261,10 +261,9 @@ function showDefeatMessage() {
         return;
     }
 
-    // Clear existing content
-    defeatContent.innerHTML = '';
+    defeatContent.innerHTML = ''; // Clear existing content
 
-    // Add the "X" button
+    // Add the close button
     const closeButton = document.createElement('span');
     closeButton.textContent = '✖';
     closeButton.style.cursor = 'pointer';
@@ -273,23 +272,25 @@ function showDefeatMessage() {
     closeButton.style.right = '10px';
     defeatContent.appendChild(closeButton);
 
-    // Add the defeat message
+    // Add the defeat message text
     const defeatText = document.createElement('p');
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatContent.appendChild(defeatText);
 
-    defeatMessage.classList.remove('hidden');
+    defeatMessage.classList.remove('hidden'); // Show defeat message
 
-    // Remove the click event listener from the game container
+    // Remove the click event listener from the game container to avoid attacks
     gameContainer.removeEventListener('click', handleClick);
-    
-    // Add a one-time click event listener to the close button
+
+    // Close the defeat message and trigger character transition
     closeButton.addEventListener('click', function closeDefeatMessage(event) {
-        event.stopPropagation(); // Prevent the click from propagating to the defeatMessage
-        defeatMessage.classList.add('hidden');
-        nextCharacter();
-        updateDisplay();
-        // Re-add the click event listener to the game container after a short delay
+        event.stopPropagation(); // Prevent further propagation
+
+        defeatMessage.classList.add('hidden'); // Hide defeat message
+        nextCharacter();  // Load next character
+        updateDisplay();  // Update UI with new character data
+
+        // Re-add the click event listener for attacks
         setTimeout(() => {
             gameContainer.addEventListener('click', handleClick);
         }, 500);
@@ -301,62 +302,56 @@ function showDefeatMessage() {
 // Updated nextCharacter function
 function nextCharacter() {
     console.log("Loading next character");
-    console.log(`Current character index: ${characterIndex}`);
-    console.log(`Current character: ${characters[characterIndex].name}`);
-    console.log(`Current damage per click before transition: ${damagePerClick}`);
-    
+
+    // Increment character index
     characterIndex = (characterIndex + 1) % characters.length;
 
-    console.log(`New character index: ${characterIndex}`);
-    console.log(`New character: ${characters[characterIndex].name}`);
-
-    if (characterIndex === 0) {
-        level++;
-        console.log(`Level increased to: ${level}`);
-    }
-
+    // Reset health for the new character
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
 
-    console.log(`Next character loaded. Max Health: ${maxHealth}, Current Health: ${health}`);
-    console.log(`Current damage per click after transition: ${damagePerClick}`);
+    if (characterIndex === 0) {
+        level++;  // Increment level when all characters have been cycled through
+        console.log(`Level increased to: ${level}`);
+    }
 
+    // Ensure the display is updated immediately
     updateDisplay();
     saveProgress();
+
+    console.log(`Next character loaded: ${characters[characterIndex].name}`);
 }
 
 // Function to update display
 function updateDisplay() {
-    const character = document.getElementById('character');
-    if (character) {
-        // Always update the character image, even after transitions
-        character.innerHTML = `<img src="${characters[characterIndex].imageUrl}" alt="${characters[characterIndex].name}">`;
+    const characterElement = document.getElementById('character');
+    const characterNameElement = document.getElementById('character-name');
+    const healthElement = document.getElementById('current-health');
+    const maxHealthElement = document.getElementById('max-health');
+    const healthFill = document.getElementById('health-fill');
+
+    // Update character image
+    if (characterElement) {
+        characterElement.innerHTML = `<img src="${characters[characterIndex].imageUrl}" alt="${characters[characterIndex].name}">`;
     }
 
-    const characterName = document.getElementById('character-name');
-    if (characterName) {
-        characterName.textContent = characters[characterIndex].name;
+    // Update character name
+    if (characterNameElement) {
+        characterNameElement.textContent = characters[characterIndex].name;
     }
 
-    document.getElementById('current-health').textContent = health;
-    document.getElementById('max-health').textContent = maxHealth;
-    document.getElementById('health-fill').style.width = `${(health / maxHealth) * 100}%`;
+    // Update health
+    if (healthElement && maxHealthElement) {
+        healthElement.textContent = health;
+        maxHealthElement.textContent = maxHealth;
+        healthFill.style.width = `${(health / maxHealth) * 100}%`;
+    }
+
+    // Update score, credits, will, level, etc.
     document.getElementById('score').textContent = score;
     document.getElementById('credits').textContent = credits;
     document.getElementById('will').textContent = will;
     document.getElementById('level').textContent = level;
-
-    // Update costs for Replenish Will and Increase Damage
-    const replenishWillCostElement = document.getElementById('replenish-will-cost');
-    const increaseDamageCostElement = document.getElementById('increase-damage-cost');
-    if (replenishWillCostElement) replenishWillCostElement.textContent = replenishWillCost;
-    if (increaseDamageCostElement) increaseDamageCostElement.textContent = increaseDamageCost;
-
-    // Update wallet display if wallet screen is open
-    if (!document.getElementById('wallet-screen').classList.contains('hidden')) {
-        document.getElementById('wallet-credits').textContent = credits;
-        document.getElementById('rigged-tokens').textContent = riggedTokens;
-    }
 
     console.log("Display updated");
 }
