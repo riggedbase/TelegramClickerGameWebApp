@@ -44,14 +44,30 @@ body, html {
 
 h1 {
     text-align: center;
-    margin-bottom: 10px;
+    margin: 5px 0;
+    font-size: 20px;
 }
 
 #stats {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+#stats div {
+    flex-basis: 50%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.stat-icon {
+    width: 20px;
+    height: auto;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 #character-info {
@@ -61,13 +77,26 @@ h1 {
     align-items: center;
 }
 
+#health-bar {
+    width: 80%;
+    height: 10px;
+    background-color: #ddd;
+    margin: 5px 0;
+}
+
+#health-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
 #character-container {
     width: 100%;
     height: 40vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px 0;
+    margin: 5px 0;
     overflow: hidden;
 }
 
@@ -97,37 +126,11 @@ h1 {
     pointer-events: none;
 }
 
-.stat-icon {
-    width: 24px;
-    height: auto;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-
-#stats div {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-#health-bar {
-    width: 80%;
-    height: 10px;
-    background-color: #ddd;
-    margin: 5px 0;
-}
-
-#health-fill {
-    height: 100%;
-    background-color: #4CAF50;
-    transition: width 0.3s ease;
-}
-
 #actions {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    padding: 10px 0;
+    padding: 5px 0;
     width: 100%;
     z-index: 2;
 }
@@ -136,14 +139,13 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 5px;
     z-index: 3;
     position: relative;
 }
 
 .action-button img {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     pointer-events: auto;
 }
@@ -151,13 +153,13 @@ h1 {
 .action-cost {
     display: flex;
     align-items: center;
-    font-size: 12px;
+    font-size: 10px;
     margin-top: 2px;
 }
 
 .action-cost img {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     margin-right: 2px;
 }
 
@@ -361,7 +363,7 @@ h1 {
     }
 
     .action-cost {
-        font-size: 10px;
+        font-size: 9px;
     }
 
     #stats {
