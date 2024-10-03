@@ -444,20 +444,20 @@ function animateCharacterDamage() {
     // Show the base image initially
     characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="character-image">`;
 
-    // After 100ms, show the mid-movement image
+    // After 50ms (half of 100ms), show the mid-movement image
     setTimeout(() => {
         characterElement.innerHTML = `<img src="${characterImages[1]}" alt="${characters[characterIndex].name}" class="character-image">`;
-    }, 100);  // Mid-movement image after 100ms
+    }, 50);  // Mid-movement image after 50ms
 
-    // After another 200ms, show the final progression image
+    // After another 100ms (half of 200ms), show the final progression image
     setTimeout(() => {
         characterElement.innerHTML = `<img src="${characterImages[2]}" alt="${characters[characterIndex].name}" class="character-image">`;
-    }, 300);  // Final image after 300ms
+    }, 150);  // Final image after 150ms
 
-    // After 500ms, return to the base image
+    // After 250ms (half of 500ms), return to the base image
     setTimeout(() => {
         characterElement.innerHTML = `<img src="${characterImages[0]}" alt="${characters[characterIndex].name}" class="character-image">`;
-    }, 500);  // Back to base image after 500ms
+    }, 250);  // Back to base image after 250ms
 }
 
 // Updated handleAttack function
@@ -485,29 +485,54 @@ function handleAttack(damage) {
 }
 
 // Function to handle touch events
+// Handle touch start to detect initial touch position
 function handleTouchStart(event) {
-    touchStartY = event.touches[0].clientY;
-}
+    event.preventDefault();  // Prevent scrolling
+    const touches = event.touches;  // Get all active touches
 
-function handleTouchMove(event) {
-    touchEndY = event.touches[0].clientY;
-    const touchDiff = touchStartY - touchEndY;
-
-    if (Math.abs(touchDiff) > scrollThreshold) {
-        // If the touch difference is greater than the threshold, it's a scroll
-        event.stopPropagation();
-    } else {
-        // If it's a small movement, prevent default to avoid unintended scrolls
-        event.preventDefault();
+    // Loop through all touches and handle each one as a separate tap
+    for (let i = 0; i < touches.length; i++) {
+        const touch = touches[i];
+        const touchY = touch.clientY;  // Capture Y position for future reference
+        touchStartY = touchY;  // Save this Y position to compare in touchMove
     }
 }
 
-function handleTouchEnd(event) {
-    const touchDiff = touchStartY - touchEndY;
+// Handle touch move to determine if it's a scroll or tap
+function handleTouchMove(event) {
+    const touches = event.touches;
+    let isScrolling = false;
 
-    if (Math.abs(touchDiff) <= scrollThreshold) {
-        // If the touch difference is small, it's a tap/click
-        handleClick(event);
+    // Check each touch to see if it's a scroll
+    for (let i = 0; i < touches.length; i++) {
+        const touch = touches[i];
+        const touchY = touch.clientY;
+        const touchDiff = touchStartY - touchY;
+
+        if (Math.abs(touchDiff) > scrollThreshold) {
+            isScrolling = true;
+            break;  // If any touch is scrolling, we stop processing
+        }
+    }
+
+    if (isScrolling) {
+        event.stopPropagation();  // Let the scroll pass through
+    } else {
+        event.preventDefault();  // Prevent default behavior for taps
+    }
+}
+
+// Handle touch end to register the tap and trigger the attack
+function handleTouchEnd(event) {
+    event.preventDefault();  // Prevent any unintended behavior
+    const touches = event.changedTouches;  // Get all ended touches
+
+    // Process each ended touch as a tap/click
+    for (let i = 0; i < touches.length; i++) {
+        const touch = touches[i];
+
+        // Treat each tap as a separate attack
+        handleClick(touch);  // Use handleClick to process the tap as an attack
     }
 
     // Reset touch coordinates
@@ -522,8 +547,9 @@ function handleClick(event) {
         !event.target.closest('#leaderboard') && 
         !event.target.closest('#wallet-screen') &&
         !event.target.closest('.action-button')) {
+
         console.log("Handling click for attack");
-        handleAttack(damagePerClick);
+        handleAttack(damagePerClick);  // Apply damage for each tap
     }
 }
 
