@@ -303,31 +303,28 @@ function showDefeatMessage() {
 function nextCharacter() {
     console.log("Loading next character");
 
-    // Increment character index
+    // Increment character index and cycle through characters
     characterIndex = (characterIndex + 1) % characters.length;
 
-    // Reset health, but persist replenishWillCost and increaseDamageCost
+    // Reset health for the new character, but do not reset other stats
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
 
     if (characterIndex === 0) {
-        level++;  // Increment level when all characters have been cycled through
+        level++;  // Increase level when cycling through all characters
         console.log(`Level increased to: ${level}`);
     }
 
-    // Ensure that replenishWillCost and increaseDamageCost are NOT reset here
-    console.log("Replenish Will Cost:", replenishWillCost, "Increase Damage Cost:", increaseDamageCost);
-
-    // Update the character image, name, and other details
+    // Update the display with the new character and save progress
     updateDisplay();
-    saveProgress();  // Save the updated state
+    saveProgress();
 
     console.log(`Next character loaded: ${characters[characterIndex].name}`);
 }
 
 // Function to update display
 function updateDisplay() {
-    // Update character image and health
+    // Update character image and name
     const characterElement = document.getElementById('character');
     const characterNameElement = document.getElementById('character-name');
     const healthElement = document.getElementById('current-health');
@@ -342,18 +339,46 @@ function updateDisplay() {
         characterNameElement.textContent = characters[characterIndex].name;
     }
 
+    // Update health values
     if (healthElement && maxHealthElement) {
         healthElement.textContent = health;
         maxHealthElement.textContent = maxHealth;
         healthFill.style.width = `${(health / maxHealth) * 100}%`;
     }
 
-    // Ensure costs are not being reset
+    // Update Score, Credits, Will, and Level in the UI
+    const scoreElement = document.getElementById('score');
+    const creditsElement = document.getElementById('credits');
+    const willElement = document.getElementById('will');
+    const levelElement = document.getElementById('level');
+
+    if (scoreElement) {
+        scoreElement.textContent = score;
+    }
+
+    if (creditsElement) {
+        creditsElement.textContent = credits;
+    }
+
+    if (willElement) {
+        willElement.textContent = will;
+    }
+
+    if (levelElement) {
+        levelElement.textContent = level;
+    }
+
+    // Ensure costs are correctly displayed
     const replenishWillCostElement = document.getElementById('replenish-will-cost');
     const increaseDamageCostElement = document.getElementById('increase-damage-cost');
 
-    if (replenishWillCostElement) replenishWillCostElement.textContent = replenishWillCost;
-    if (increaseDamageCostElement) increaseDamageCostElement.textContent = increaseDamageCost;
+    if (replenishWillCostElement) {
+        replenishWillCostElement.textContent = replenishWillCost;
+    }
+
+    if (increaseDamageCostElement) {
+        increaseDamageCostElement.textContent = increaseDamageCost;
+    }
 
     console.log("Display updated");
 }
