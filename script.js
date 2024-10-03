@@ -328,17 +328,13 @@ function nextCharacter() {
 // Function to update display
 function updateDisplay() {
     const character = document.getElementById('character');
-    if (character) {
+    if (character && character.innerHTML === '') {
         character.innerHTML = `<img src="${characters[characterIndex].imageUrl}" alt="${characters[characterIndex].name}">`;
-    } else {
-        console.error("Character element not found");
     }
 
     const characterName = document.getElementById('character-name');
     if (characterName) {
         characterName.textContent = characters[characterIndex].name;
-    } else {
-        console.error("Character name element not found");
     }
 
     document.getElementById('current-health').textContent = health;
