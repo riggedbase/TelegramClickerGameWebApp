@@ -328,7 +328,8 @@ function nextCharacter() {
 // Function to update display
 function updateDisplay() {
     const character = document.getElementById('character');
-    if (character && character.innerHTML === '') {
+    if (character) {
+        // Always update the character image, even after transitions
         character.innerHTML = `<img src="${characters[characterIndex].imageUrl}" alt="${characters[characterIndex].name}">`;
     }
 
