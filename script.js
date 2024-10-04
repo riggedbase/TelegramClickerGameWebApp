@@ -78,54 +78,54 @@ const scrollThreshold = 10; // Adjust this value as needed
 // Declare character information globally with updated defeat messages
 const characters = [
     { 
-        name: 'Demon',
+        name: 'Sleepy Joe',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fbiden01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FBiden%2Fbiden02.png?alt=media',  // Mid-movement image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FBiden%2Fbiden03.png?alt=media'   // Final progression image
         ],
         baseHealth: 100,
-        defeatMessage: "You've banished the demon back to the underworld!"
+        defeatMessage: "Sleepy Joe has fainted after a single slap!"
     },
     { 
-        name: 'Ogre',
+        name: 'Skamala',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fkamala01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FKamala%2Fkamala02.png?alt=media',  // Mid-movement image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FKamala%2Fkamala03.png?alt=media'   // Final progression image
         ],
         baseHealth: 200,
-        defeatMessage: "The ogre stumbles and falls. Victory is yours!"
+        defeatMessage: "Skamala has finally stopped cackling. It retreats back to its handlers!"
     },
     { 
-        name: 'Alien',
+        name: 'Vaderson',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fluke01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FMark%2Fluke02.png?alt=media',  // Mid-movement image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FMark%2Fluke03.png?alt=media'   // Final progression image
         ],
         baseHealth: 300,
-        defeatMessage: "The alien has been defeated. You've sent them back to space!"
+        defeatMessage: "The force wasn't so strong with this one afterall!"
     },
     { 
-        name: 'Dragon',
+        name: 'Saylor Twift',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fswift01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FTaylor%2Fswift02.png?alt=media',  // Mid-movement image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FTaylor%2Fswift03.png?alt=media'   // Final progression image
         ],
         baseHealth: 400,
-        defeatMessage: "The dragon is no more. You are victorious!"
+        defeatMessage: "You have offended every Twifty on the planet. How can you live with yourself!"
     },
     { 
-        name: 'Wizard',
+        name: 'Big Mike's Bootycall',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fobama01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FObama%2Fobama02.png?alt=media',  // Mid-movement image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FObama%2Fobama03.png?alt=media'   // Final progression image
         ],
         baseHealth: 500,
-        defeatMessage: "The wizard's spells have been broken. You have won!"
+        defeatMessage: "He probably should have had his wife here to take those slaps like a man!"
     }
 ];
 
