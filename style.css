@@ -29,7 +29,7 @@ body, html {
 }
 
 #game-title-image {
-    max-width: 25%;  /* Restrict the image to 60% of the screen width */
+    max-width: 10%;  /* Restrict the image to 60% of the screen width */
     height: auto;    /* Maintain aspect ratio */
     display: block;
     margin: 0 auto;  /* Center the image */
