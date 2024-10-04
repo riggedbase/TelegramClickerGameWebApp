@@ -73,6 +73,7 @@ h1 {
     align-items: center;
     margin-bottom: 1px;  /* Reduced gap below stats */
     padding: 0;
+    flex-shrink: 0;
 }
 
 #stats div {
@@ -95,6 +96,9 @@ h1 {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 0;
 }
 
 #health-bar {
@@ -112,7 +116,8 @@ h1 {
 
 #character-container {
     width: 100%;
-    height: 40vh;
+    height: 100%;
+    max-height: 40vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -141,6 +146,7 @@ h1 {
     align-items: center;  /* Ensure buttons are aligned at the same level */
     padding: 5px 0;
     margin-top: 1px;  /* Reduced gap between character and buttons */
+    flex-shrink: 0;
 }
 
 .action-button {
@@ -329,7 +335,7 @@ h1 {
     }
 
     #character-container {
-        height: 35vh;
+        max-height: 35vh;
     }
 
     .action-button img {
@@ -353,8 +359,12 @@ h1 {
         padding: 3px;
     }
 
+    #game-title-image {
+        max-width: 80%;
+    }
+
     #character-container {
-        height: 30vh;
+        max-height: 30vh;
     }
 
     .action-button img {
@@ -396,7 +406,7 @@ h1 {
     }
 
     #character-container {
-        height: 40vh;
+        max-height: 40vh;
     }
 
     .action-button img {
@@ -407,5 +417,24 @@ h1 {
     .action-cost img {
         width: 16px;
         height: 16px;
+    }
+}
+
+@media (max-height: 600px) {
+    #game-title-image {
+        max-width: 40%;
+    }
+
+    #character-container {
+        max-height: 30vh;
+    }
+
+    #actions {
+        padding: 3px 0;
+    }
+
+    .action-button img {
+        width: 25px;
+        height: 25px;
     }
 }
