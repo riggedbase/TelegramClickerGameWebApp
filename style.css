@@ -21,11 +21,15 @@ body, html {
 #game-title {
     text-align: center;
     margin: 10px 0;
+    max-width: 100%;  /* Ensure the container doesn't exceed the screen width */
+    overflow: hidden; /* Prevents the image from overflowing */
 }
 
 .game-title-image {
-    max-width: 100%;
-    height: auto;
+    max-width: 60%;  /* Restrict the width to 60% of the screen */
+    height: auto;    /* Maintain the aspect ratio */
+    display: block;
+    margin: 0 auto;  /* Center the image */
 }
 
 #background {
