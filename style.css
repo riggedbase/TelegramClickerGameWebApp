@@ -41,19 +41,17 @@ body, html {
     z-index: 1;
 }
 
-/* Reduce margin below the title and adjust font size */
 h1 {
     text-align: center;
-    margin: 0 0 1px 0;  /* Reduced gap below title */
+    margin: 0 0 1px 0;
     font-size: 16px;
 }
 
-/* Align stats horizontally across the screen */
 #stats {
     display: flex;
-    justify-content: space-between;  /* Align the stats in one row */
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1px;  /* Reduced gap below stats */
+    margin-bottom: 1px;
     padding: 0;
 }
 
@@ -63,7 +61,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;  /* Adjust font size for stats */
+    font-size: 12px;
 }
 
 .stat-icon {
@@ -98,7 +96,8 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 2px 0;  /* Reduced gap between character and action buttons */
+    margin: 2px 0;
+    position: relative;
     overflow: hidden;
 }
 
@@ -108,6 +107,9 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 #character img {
@@ -116,20 +118,30 @@ h1 {
     object-fit: contain;
 }
 
-/* Align action icons horizontally and at the same vertical level */
+#pain-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.3);
+    display: none;
+    z-index: 2;
+}
+
 #actions {
     display: flex;
     justify-content: space-around;
-    align-items: center;  /* Ensure buttons are aligned at the same level */
+    align-items: center;
     padding: 5px 0;
-    margin-top: 1px;  /* Reduced gap between character and buttons */
+    margin-top: 1px;
 }
 
 .action-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 10px;  /* Space around buttons */
+    margin: 0 10px;
 }
 
 .action-button img {
