@@ -18,6 +18,16 @@ body, html {
     flex-direction: column;
 }
 
+#game-title {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.game-title-image {
+    max-width: 100%;
+    height: auto;
+}
+
 #background {
     position: absolute;
     top: 0;
