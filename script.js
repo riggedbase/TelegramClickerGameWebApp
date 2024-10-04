@@ -118,7 +118,7 @@ const characters = [
         defeatMessage: "You have offended every Twifty on the planet. How can you live with yourself!"
     },
     { 
-        name: 'Big Mike's Bootycall',
+        name: 'Big Mike Bootycall',
         images: [
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Base%20Images%2Fobama01.png?alt=media',  // Base image
             'https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Character%20Animations%2FObama%2Fobama02.png?alt=media',  // Mid-movement image

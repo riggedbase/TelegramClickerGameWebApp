@@ -16,6 +16,24 @@ body, html {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    z-index: 2;  /* Ensure game elements stay above the title */
+}
+
+#game-title {
+    text-align: center;
+    margin: 10px 0;
+    width: 100%;
+    height: auto;  /* Let the height adjust automatically based on the content */
+    z-index: 1;
+    flex-shrink: 0;  /* Ensure it doesn't shrink when space is constrained */
+}
+
+#game-title-image {
+    max-width: 60%;  /* Restrict the image to 60% of the screen width */
+    height: auto;    /* Maintain aspect ratio */
+    display: block;
+    margin: 0 auto;  /* Center the image */
+    z-index: 1;
 }
 
 #background {
@@ -41,17 +59,19 @@ body, html {
     z-index: 1;
 }
 
+/* Reduce margin below the title and adjust font size */
 h1 {
     text-align: center;
-    margin: 0 0 1px 0;
+    margin: 0 0 1px 0;  /* Reduced gap below title */
     font-size: 16px;
 }
 
+/* Align stats horizontally across the screen */
 #stats {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between;  /* Align the stats in one row */
     align-items: center;
-    margin-bottom: 1px;
+    margin-bottom: 1px;  /* Reduced gap below stats */
     padding: 0;
 }
 
@@ -61,7 +81,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 12px;  /* Adjust font size for stats */
 }
 
 .stat-icon {
@@ -96,8 +116,7 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 2px 0;
-    position: relative;
+    margin: 2px 0;  /* Reduced gap between character and action buttons */
     overflow: hidden;
 }
 
@@ -107,9 +126,6 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 #character img {
@@ -118,30 +134,20 @@ h1 {
     object-fit: contain;
 }
 
-#pain-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 0, 0, 0.3);
-    display: none;
-    z-index: 2;
-}
-
+/* Align action icons horizontally and at the same vertical level */
 #actions {
     display: flex;
     justify-content: space-around;
-    align-items: center;
+    align-items: center;  /* Ensure buttons are aligned at the same level */
     padding: 5px 0;
-    margin-top: 1px;
+    margin-top: 1px;  /* Reduced gap between character and buttons */
 }
 
 .action-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 10px;
+    margin: 0 10px;  /* Space around buttons */
 }
 
 .action-button img {

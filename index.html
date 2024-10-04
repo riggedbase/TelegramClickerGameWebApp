@@ -2,32 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slap a Communist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Clicker Game</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
     <div id="game-container">
         <div id="background"></div>
         <div id="game-ui">
-            <h1>Slap a Communist</h1>
+            <div id="game-title">
+    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FGame%20Header.png?alt=media" alt="Game Title" id="game-title-image">
+</div>
+
+            
+            <!-- Stats Section (Updated for Flexbox) -->
             <div id="stats">
                 <div>
-                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints.png?alt=media" alt="Score Icon" class="stat-icon">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints.png?alt=media" class="stat-icon" alt="Score Icon">
                     Score: <span id="score">0</span>
                 </div>
                 <div>
-                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Credits Icon" class="stat-icon">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" class="stat-icon" alt="Credits Icon">
                     Credits: <span id="credits">0</span>
                 </div>
                 <div>
-                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FWill.png?alt=media" alt="Will Icon" class="stat-icon">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FWill.png?alt=media" class="stat-icon" alt="Will Icon">
                     Will: <span id="will">1000</span>
                 </div>
                 <div>
                     Level: <span id="level">1</span>
                 </div>
             </div>
+
             <div id="character-info">
                 <div id="health-bar">
                     <div id="health-fill"></div>
@@ -41,18 +49,20 @@
                     <div id="pain-overlay"></div>
                 </div>
             </div>
+
+            <!-- Action Buttons -->
             <div id="actions">
                 <div class="action-button">
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FReplenish%20will.png?alt=media" id="replenish-will-button" alt="Replenish Will">
                     <div class="action-cost">
-                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Credits" class="cost-icon">
+                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" class="cost-icon" alt="Credits">
                         <span id="replenish-will-cost">100</span>
                     </div>
                 </div>
                 <div class="action-button">
                     <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FIncrease%20damage.png?alt=media" id="increase-damage-button" alt="Increase Damage">
                     <div class="action-cost">
-                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" alt="Credits" class="cost-icon">
+                        <img src="https://firebasestorage.googleapis.com/v0/b/rigged-clicker-game-1.appspot.com/o/Button%20Icons%2FPoints%20coin.png?alt=media" class="cost-icon" alt="Credits">
                         <span id="increase-damage-cost">200</span>
                     </div>
                 </div>
@@ -65,24 +75,28 @@
             </div>
         </div>
     </div>
+
     <div id="defeat-message" class="hidden">
         <div class="defeat-content">
             ✖
         </div>
     </div>
+
     <div id="leaderboard" class="hidden">
         <div id="leaderboard-content">
             <h2>Leaderboard</h2>
-            <!-- Leaderboard content will be dynamically populated -->
+            <button id="change-username-button">Change Username</button>
+            <button id="close-leaderboard-button">Close Leaderboard</button>
         </div>
     </div>
+
     <div id="wallet-screen" class="hidden">
         <div id="wallet-content">
             <h2>Wallet</h2>
             <div>Current Credits: <span id="wallet-credits">0</span></div>
             <div>$RIGGED Tokens: <span id="rigged-tokens">0</span></div>
             <div>
-                Base Wallet Address:
+                Base Wallet Address: 
                 <input type="text" id="base-wallet-address">
                 <button id="save-wallet-address">Save Address</button>
                 <div id="wallet-address-error"></div>
@@ -92,6 +106,7 @@
             <button id="close-wallet">Close Wallet</button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
