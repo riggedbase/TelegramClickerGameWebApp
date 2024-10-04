@@ -123,6 +123,7 @@ h1 {
     align-items: center;
     margin: 2px 0;  /* Reduced gap between character and action buttons */
     overflow: hidden;
+    max-height: 50vh; /* New: Limit max height to ensure space for action buttons */
 }
 
 #character {
@@ -147,6 +148,7 @@ h1 {
     padding: 5px 0;
     margin-top: auto; /* Push actions to the bottom */
     flex-shrink: 0;
+    min-height: 70px; /* New: Ensure minimum height for action buttons */
 }
 
 .action-button {
@@ -334,8 +336,13 @@ h1 {
         padding: 5px;
     }
 
+    #game-title-image {
+        max-width: 50%; /* Reduced from 60% */
+    }
+
     #character-container {
-        flex-grow: 0.7; /* Adjusted growth factor */
+        flex-grow: 0.6; /* Adjusted from 0.7 */
+        max-height: 40vh; /* Added max-height */
     }
 
     .action-button img {
@@ -348,9 +355,18 @@ h1 {
         height: 14px;
     }
 
+    .action-cost {
+        font-size: 10px; /* Reduced from 12px */
+    }
+
     #stats div {
         flex-basis: 50%;
         margin-bottom: 3px;
+        font-size: 11px; /* Reduced from 12px */
+    }
+
+    #actions {
+        min-height: 60px; /* Reduced from 70px */
     }
 }
 
@@ -360,11 +376,12 @@ h1 {
     }
 
     #game-title-image {
-        max-width: 80%;
+        max-width: 40%; /* Reduced from 80% */
     }
 
     #character-container {
-        flex-grow: 0.5; /* Further reduced growth factor */
+        flex-grow: 0.5;
+        max-height: 35vh; /* Further reduced max-height */
     }
 
     .action-button img {
@@ -378,12 +395,18 @@ h1 {
     }
 
     .action-cost {
-        font-size: 10px;
+        font-size: 9px; /* Further reduced */
     }
 
     #stats div {
         flex-basis: 100%;
         margin-bottom: 3px;
+        font-size: 10px; /* Further reduced */
+    }
+
+    #actions {
+        min-height: 55px; /* Further reduced */
+        padding: 2px 0;
     }
 }
 
@@ -422,38 +445,49 @@ h1 {
 
 @media (max-height: 600px) {
     #game-title-image {
-        max-width: 40%;
+        max-width: 30%; /* Reduced from 40% */
     }
 
     #character-container {
-        flex-grow: 0.4; /* Reduced growth for smaller heights */
+        flex-grow: 0.4;
+        max-height: 30vh; /* Added max-height */
     }
 
     #actions {
-        padding: 3px 0;
+        padding: 2px 0;
+        min-height: 50px; /* Reduced from previous */
     }
 
     .action-button img {
         width: 25px;
         height: 25px;
     }
+
+    #stats {
+        font-size: 10px; /* Reduced font size */
+    }
 }
 
 @media (max-height: 480px) {
     #game-title-image {
-        max-width: 30%;
+        max-width: 25%; /* Reduced from 30% */
     }
 
     #stats {
-        font-size: 10px;
+        font-size: 9px; /* Further reduced */
     }
 
     #character-container {
-        flex-grow: 0.3; /* Further reduced for very small heights */
+        flex-grow: 0.3;
+        max-height: 25vh; /* Further reduced max-height */
     }
 
     .action-button img {
         width: 20px;
         height: 20px;
+    }
+
+    #actions {
+        min-height: 45px; /* Further reduced */
     }
 }
