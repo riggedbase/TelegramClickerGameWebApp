@@ -151,6 +151,7 @@ h1 {
     bottom: 40px; /* Distance from bottom of screen */
     left: 0;
     right: 0;
+    z-index: 100; /* Ensure actions are above other elements */
 }
 
 .action-button {
@@ -158,6 +159,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     margin: 0 10px;  /* Space around buttons */
+    padding: 5px; /* Small padding to increase touch area */
 }
 
 .action-button img {
@@ -404,6 +406,10 @@ h1 {
 
     #actions {
         bottom: 20px;
+    }
+
+    .action-button {
+        padding: 8px 5px; /* Slightly increased padding for smaller screens */
     }
 }
 

@@ -546,7 +546,8 @@ function handleClick(event) {
         !event.target.closest('#defeat-message') && 
         !event.target.closest('#leaderboard') && 
         !event.target.closest('#wallet-screen') &&
-        !event.target.closest('.action-button')) {
+        !event.target.closest('.action-button') &&
+        !event.target.closest('#actions')) {
 
         console.log("Handling click for attack");
         handleAttack(damagePerClick);  // Apply damage for each tap
@@ -909,7 +910,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if (gameContainer) {
         gameContainer.addEventListener('click', handleClick);
         gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-        gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+        gameContainer.addEventListener('touchend', (event) => {
+    if (!event.target.closest('#actions')) {
+        handleClick(event);
+    }
+}, { passive: false });
         gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
     } else {
         console.error("Game container not found");
