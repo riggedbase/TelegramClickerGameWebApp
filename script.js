@@ -488,11 +488,12 @@ function handleAttack(damage) {
 // Handle touch start to detect initial touch position
 function handleTouchStart(event) {
     const touches = event.touches;  // Get all active touches
-    // Loop through all touches and handle each one as a separate tap
+    touchStartY = []; // Reset touchStartY array
+    
+    // Loop through all touches and save their initial positions
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
-        const touchY = touch.clientY;  // Capture Y position for future reference
-        touchStartY = touchY;  // Save this Y position to compare in touchMove
+        touchStartY[i] = touch.clientY;  // Save Y position for each touch
     }
     
     // Only prevent default if not touching an action button
@@ -510,16 +511,17 @@ function handleTouchMove(event) {
 
     const touches = event.touches;
     let isScrolling = false;
+
     // Check each touch to see if it's a scroll
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
-        const touchY = touch.clientY;
-        const touchDiff = touchStartY - touchY;
-        if (Math.abs(touchDiff) > scrollThreshold) {
+        const touchDiff = Math.abs(touchStartY[i] - touch.clientY);
+        if (touchDiff > scrollThreshold) {
             isScrolling = true;
             break;  // If any touch is scrolling, we stop processing
         }
     }
+
     if (isScrolling) {
         event.stopPropagation();  // Let the scroll pass through
     } else {
@@ -536,20 +538,31 @@ function handleTouchEnd(event) {
 
     event.preventDefault();  // Prevent any unintended behavior
     const touches = event.changedTouches;  // Get all ended touches
+
     // Process each ended touch as a tap/click
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
-        // Treat each tap as a separate attack
-        handleClick(touch);  // Use handleClick to process the tap as an attack
+        const touchDiff = Math.abs(touchStartY[i] - touch.clientY);
+        
+        // Only process as a tap if the touch didn't move significantly
+        if (touchDiff <= scrollThreshold) {
+            // Create a synthetic event object to pass to handleClick
+            const syntheticEvent = {
+                target: touch.target,
+                preventDefault: () => {},
+                stopPropagation: () => {}
+            };
+            handleClick(syntheticEvent);  // Use handleClick to process the tap as an attack
+        }
     }
+
     // Reset touch coordinates
-    touchStartY = 0;
-    touchEndY = 0;
+    touchStartY = [];
 }
 
 function handleClick(event) {
-    // Prevent clicks on buttons or messages from triggering attacks
-    if (event.target.tagName !== 'BUTTON' && 
+    // Check if the click is within the game container and not on excluded elements
+    if (event.target.closest('#game-container') &&
         !event.target.closest('#defeat-message') && 
         !event.target.closest('#leaderboard') && 
         !event.target.closest('#wallet-screen') &&
@@ -558,6 +571,8 @@ function handleClick(event) {
 
         console.log("Handling click for attack");
         handleAttack(damagePerClick);  // Apply damage for each tap
+        event.preventDefault();  // Prevent any default behavior
+        event.stopPropagation();  // Stop the event from bubbling up
     }
 }
 
@@ -914,18 +929,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Add event listeners for clicks and touches
-    if (gameContainer) {
-        gameContainer.addEventListener('click', handleClick);
-        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-        gameContainer.addEventListener('touchend', (event) => {
-    if (!event.target.closest('#actions')) {
-        handleClick(event);
-    }
-}, { passive: false });
-        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-    } else {
-        console.error("Game container not found");
-    }
+if (gameContainer) {
+    gameContainer.addEventListener('click', handleClick);
+    gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+    gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+    gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+} else {
+    console.error("Game container not found");
+}
 
     // Button click handlers
     const buttonHandlers = {
