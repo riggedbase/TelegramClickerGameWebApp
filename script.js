@@ -487,34 +487,39 @@ function handleAttack(damage) {
 // Function to handle touch events
 // Handle touch start to detect initial touch position
 function handleTouchStart(event) {
-    event.preventDefault();  // Prevent scrolling
     const touches = event.touches;  // Get all active touches
-
     // Loop through all touches and handle each one as a separate tap
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
         const touchY = touch.clientY;  // Capture Y position for future reference
         touchStartY = touchY;  // Save this Y position to compare in touchMove
     }
+    
+    // Only prevent default if not touching an action button
+    if (!event.target.closest('#actions')) {
+        event.preventDefault();  // Prevent scrolling
+    }
 }
 
 // Handle touch move to determine if it's a scroll or tap
 function handleTouchMove(event) {
+    // If touching an action button, allow default behavior
+    if (event.target.closest('#actions')) {
+        return;
+    }
+
     const touches = event.touches;
     let isScrolling = false;
-
     // Check each touch to see if it's a scroll
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
         const touchY = touch.clientY;
         const touchDiff = touchStartY - touchY;
-
         if (Math.abs(touchDiff) > scrollThreshold) {
             isScrolling = true;
             break;  // If any touch is scrolling, we stop processing
         }
     }
-
     if (isScrolling) {
         event.stopPropagation();  // Let the scroll pass through
     } else {
@@ -524,17 +529,19 @@ function handleTouchMove(event) {
 
 // Handle touch end to register the tap and trigger the attack
 function handleTouchEnd(event) {
+    // If ending touch on an action button, allow default behavior
+    if (event.target.closest('#actions')) {
+        return;
+    }
+
     event.preventDefault();  // Prevent any unintended behavior
     const touches = event.changedTouches;  // Get all ended touches
-
     // Process each ended touch as a tap/click
     for (let i = 0; i < touches.length; i++) {
         const touch = touches[i];
-
         // Treat each tap as a separate attack
         handleClick(touch);  // Use handleClick to process the tap as an attack
     }
-
     // Reset touch coordinates
     touchStartY = 0;
     touchEndY = 0;
@@ -933,19 +940,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
 
     // Initialize button event listeners
-    Object.entries(buttonHandlers).forEach(([id, handler]) => {
-        const button = document.getElementById(id);
-        if (button) {
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
-                handler(event);
-                console.log(`Button clicked: ${id}`);
-            });
-            console.log(`Event listener added for button: ${id}`);
-        } else {
-            console.error(`Button with id '${id}' not found`);
-        }
-    });
+Object.entries(buttonHandlers).forEach(([id, handler]) => {
+    const button = document.getElementById(id);
+    if (button) {
+        const eventHandler = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handler(event);
+            console.log(`Button activated: ${id}`);
+        };
+        button.addEventListener('click', eventHandler);
+        button.addEventListener('touchend', eventHandler);
+        console.log(`Event listeners added for button: ${id}`);
+    } else {
+        console.error(`Button with id '${id}' not found`);
+    }
+});
 
     // Add event listener for change username button
     const changeUsernameButton = document.getElementById('change-username-button');
