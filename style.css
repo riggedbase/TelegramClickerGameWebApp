@@ -366,7 +366,7 @@ h1 {
     }
 
     #actions {
-        bottom: 5px;
+        bottom: 20px;
     }
 }
 
@@ -403,7 +403,7 @@ h1 {
     }
 
     #actions {
-        bottom: 3px;
+        bottom: 20px;
     }
 }
 
@@ -440,7 +440,7 @@ h1 {
     }
 
     #actions {
-        bottom: 15px;
+        bottom: 20px;
     }
 }
 
@@ -455,7 +455,7 @@ h1 {
 
     #actions {
         padding: 3px 0;
-        bottom: 3px;
+        bottom: 20px;
     }
 
     .action-button img {
@@ -483,6 +483,6 @@ h1 {
     }
 
     #actions {
-        bottom: 2px;
+        bottom: 20px;
     }
 }
