@@ -148,7 +148,7 @@ h1 {
     margin-top: auto; /* Push actions to the bottom */
     flex-shrink: 0;
     position: fixed; /* Fixed position to ensure visibility */
-    bottom: 10px; /* Distance from bottom of screen */
+    bottom: 40px; /* Distance from bottom of screen */
     left: 0;
     right: 0;
 }
