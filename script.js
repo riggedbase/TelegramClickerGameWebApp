@@ -442,8 +442,8 @@ function loadProgress() {
                     credits = userData.credits || 0;
                     will = userData.will || 1000;
                     level = userData.level || 1;
-                    health = userData.health || 100;
-                    maxHealth = userData.maxHealth || 100;
+                    health = Math.max(0, userData.health || 100);
+                    maxHealth = Math.max(health, userData.maxHealth || 100);
                     damagePerClick = userData.damagePerClick || 1;
                     replenishWillCost = userData.replenishWillCost || 100;
                     increaseDamageCost = userData.increaseDamageCost || 200;
@@ -688,6 +688,11 @@ function updateDisplay() {
         }
     });
 
+    // Force a re-render
+    gameContainer.style.display = 'none';
+    gameContainer.offsetHeight; // Trigger a reflow
+    gameContainer.style.display = 'flex';
+
     console.log("Display update complete");
 
     // Check visibility of key elements
@@ -724,14 +729,15 @@ function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
 
     console.log(`Attacking character: ${characters[characterIndex].name}`);
+    console.log(`Current health: ${health}, Damage: ${damage}`);
+    
     health = Math.max(0, health - damage);  // Ensure health never goes below 0
     score += damage;  // Update score with damage dealt
     credits += damage;  // Update credits with damage dealt
-    will -= 1;
+    will = Math.max(0, will - 1);  // Ensure will never goes below 0
 
-    console.log(`New health: ${health}`);
+    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}`);
 
-    
     // Trigger the character damage animation
     animateCharacterDamage();
 
@@ -742,8 +748,6 @@ function handleAttack(damage) {
         // Update the display with the new health, score, etc.
         updateDisplay();
     }
-
-    console.log(`Attack dealt: ${damage}, Current damage per click after attack: ${damagePerClick}`);
 
     // Save progress after each attack
     saveProgress();
