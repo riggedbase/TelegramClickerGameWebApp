@@ -789,17 +789,27 @@ function validateWalletAddress(address) {
     return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
 }
 
+function validateWalletAddress(address) {
+    return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
+}
+
 // Function to save wallet address (newly added)
 function handleSaveWalletAddress() {
     const walletAddress = baseWalletAddressInput.value.trim();
     if (validateWalletAddress(walletAddress)) {
         baseWalletAddress = walletAddress;
-        isWalletValid = true;
-        walletAddressError.textContent = "Wallet address saved successfully!";
-        walletAddressError.style.color = "green";
-        saveProgress();
+        database.ref('users/' + telegramUserId + '/baseWalletAddress').set(walletAddress)
+            .then(() => {
+                walletAddressError.textContent = "Wallet address saved successfully!";
+                walletAddressError.style.color = "green";
+                saveProgress();
+            })
+            .catch((error) => {
+                console.error("Error saving wallet address:", error);
+                walletAddressError.textContent = "Error saving wallet address. Please try again.";
+                walletAddressError.style.color = "red";
+            });
     } else {
-        isWalletValid = false;
         walletAddressError.textContent = "Invalid wallet address. Must be a 42-character hexadecimal address starting with '0x' or a Base ENS name ending with '.base.eth'.";
         walletAddressError.style.color = "red";
     }
