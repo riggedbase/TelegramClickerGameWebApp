@@ -356,61 +356,66 @@ function changeUsername(newUsername) {
 // Updated saveProgress function to ensure incremental updates and prevent overwriting
 function saveProgress() {
     console.log("Attempting to save progress...");
-    if (!database || !telegramUserId) {
-        console.error("Unable to save progress: Database or User ID not available");
-        alert("Unable to save progress. Please try refreshing the page.");
-        return;
-    }
-
-    const dataToSave = {
-        displayName, 
-        score, 
-        credits, 
-        will, 
-        level, 
-        health, 
-        maxHealth,
-        damagePerClick, 
-        replenishWillCost, 
-        increaseDamageCost,
-        baseWalletAddress, 
-        riggedTokens, 
-        pointsAtLastBurn, 
-        characterIndex,
-        totalClaimed, 
-        totalBurned
-    };
-
-    // Function to track changes and only save what's changed
-    function trackChanges(newData, oldData) {
-        const changes = {};
-        Object.keys(newData).forEach((key) => {
-            if (newData[key] !== oldData[key]) {
-                changes[key] = newData[key];
-            }
-        });
-        return changes;
-    }
-
-    // Fetch current data from Firebase to track changes
-    database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
-        const currentData = snapshot.val() || {};
-        const changes = trackChanges(dataToSave, currentData);
-        if (Object.keys(changes).length > 0) {
-            console.log("Data to update:", changes);
-            // Update only changed fields in Firebase
-            database.ref('users/' + telegramUserId).update(changes)
-                .then(() => console.log("Progress updated successfully"))
-                .catch((error) => {
-                    console.error("Error saving progress:", error);
-                    alert("There was an error saving your progress. Please try again later.");
-                });
-        } else {
-            console.log("No changes detected. Progress not updated.");
+    return new Promise((resolve, reject) => {
+        if (!database || !telegramUserId) {
+            console.error("Unable to save progress: Database or User ID not available");
+            alert("Unable to save progress. Please try refreshing the page.");
+            reject(new Error("Database or User ID not available"));
+            return;
         }
-    }).catch((error) => {
-        console.error("Error fetching current data:", error);
-        alert("There was an error saving your progress. Please try again later.");
+
+        const dataToSave = {
+            displayName, 
+            score, 
+            credits, 
+            will, 
+            level, 
+            health, 
+            maxHealth,
+            damagePerClick, 
+            replenishWillCost, 
+            increaseDamageCost,
+            baseWalletAddress, 
+            riggedTokens, 
+            pointsAtLastBurn, 
+            characterIndex,
+            totalClaimed, 
+            totalBurned
+        };
+
+        console.log("Data to save:", dataToSave);
+
+        // Function to track changes and only save what's changed
+        function trackChanges(newData, oldData) {
+            const changes = {};
+            Object.keys(newData).forEach((key) => {
+                if (newData[key] !== oldData[key]) {
+                    changes[key] = newData[key];
+                }
+            });
+            return changes;
+        }
+
+        // Fetch current data from Firebase to track changes
+        database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+            const currentData = snapshot.val() || {};
+            const changes = trackChanges(dataToSave, currentData);
+            if (Object.keys(changes).length > 0) {
+                console.log("Data to update:", changes);
+                // Update only changed fields in Firebase
+                return database.ref('users/' + telegramUserId).update(changes);
+            } else {
+                console.log("No changes detected. Progress not updated.");
+                resolve();
+            }
+        }).then(() => {
+            console.log("Progress updated successfully");
+            resolve();
+        }).catch((error) => {
+            console.error("Error saving progress:", error);
+            alert("There was an error saving your progress. Please try again later.");
+            reject(error);
+        });
     });
 }
 
@@ -442,8 +447,8 @@ function loadProgress() {
                     credits = userData.credits || 0;
                     will = userData.will || 1000;
                     level = userData.level || 1;
-                    health = Math.max(0, userData.health || 100);
-                    maxHealth = Math.max(health, userData.maxHealth || 100);
+                    health = userData.health || 100;
+                    maxHealth = userData.maxHealth || 100;
                     damagePerClick = userData.damagePerClick || 1;
                     replenishWillCost = userData.replenishWillCost || 100;
                     increaseDamageCost = userData.increaseDamageCost || 200;
@@ -631,7 +636,6 @@ function nextCharacter() {
 // Function to update display
 function updateDisplay() {
     console.log("Updating display...");
-
     const elements = {
         character: document.getElementById('character'),
         characterName: document.getElementById('character-name'),
@@ -646,12 +650,11 @@ function updateDisplay() {
         increaseDamageCost: document.getElementById('increase-damage-cost')
     };
 
-    // Log the existence of each element
     Object.entries(elements).forEach(([key, element]) => {
         console.log(`${key} element exists:`, !!element);
+        if (!element) console.warn(`${key} element is missing from the DOM`);
     });
 
-    // Update character image and name
     if (elements.character) {
         const baseImage = characters[characterIndex].images[0];
         elements.character.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
@@ -663,7 +666,6 @@ function updateDisplay() {
         console.log("Character name updated:", characters[characterIndex].name);
     }
 
-    // Update health values
     if (elements.health && elements.maxHealth && elements.healthFill) {
         elements.health.textContent = health;
         elements.maxHealth.textContent = maxHealth;
@@ -671,7 +673,6 @@ function updateDisplay() {
         console.log("Health updated:", health, "/", maxHealth);
     }
 
-    // Update Score, Credits, Will, and Level
     const updates = [
         { element: elements.score, value: score },
         { element: elements.credits, value: credits },
@@ -685,17 +686,22 @@ function updateDisplay() {
         if (element) {
             element.textContent = value;
             console.log(`${element.id} updated:`, value);
+        } else {
+            console.warn(`Element for ${value} not found in the DOM`);
         }
     });
 
-    // Force a re-render
-    gameContainer.style.display = 'none';
-    gameContainer.offsetHeight; // Trigger a reflow
-    gameContainer.style.display = 'flex';
+    if (gameContainer) {
+        gameContainer.style.display = 'none';
+        gameContainer.offsetHeight; // Trigger a reflow
+        gameContainer.style.display = 'flex';
+        console.log("Game container display forced to flex");
+    } else {
+        console.error("Game container not found in the DOM");
+    }
 
     console.log("Display update complete");
 
-    // Check visibility of key elements
     checkElementVisibility('game-container');
     checkElementVisibility('character');
     checkElementVisibility('actions');
@@ -726,31 +732,32 @@ function animateCharacterDamage() {
 
 // Updated handleAttack function
 function handleAttack(damage) {
-    if (health <= 0 || will <= 0) return;
-
+    if (health <= 0 || will <= 0) {
+        console.log("Attack aborted: health or will is 0");
+        return;
+    }
     console.log(`Attacking character: ${characters[characterIndex].name}`);
-    console.log(`Current health: ${health}, Damage: ${damage}`);
+    console.log(`Current health: ${health}, Damage: ${damage}, Will: ${will}`);
     
-    health = Math.max(0, health - damage);  // Ensure health never goes below 0
-    score += damage;  // Update score with damage dealt
-    credits += damage;  // Update credits with damage dealt
-    will = Math.max(0, will - 1);  // Ensure will never goes below 0
+    health = Math.max(0, health - damage);
+    score += damage;
+    credits += damage;
+    will = Math.max(0, will - 1);
 
     console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}`);
 
-    // Trigger the character damage animation
     animateCharacterDamage();
 
     if (health <= 0) {
         console.log("Character defeated, transitioning to next character");
-        showDefeatMessage();  // Show defeat message
+        showDefeatMessage();
     } else {
-        // Update the display with the new health, score, etc.
         updateDisplay();
     }
 
-    // Save progress after each attack
-    saveProgress();
+    saveProgress().catch(error => {
+        console.error("Failed to save progress after attack:", error);
+    });
 }
 
 // Function to handle touch events
