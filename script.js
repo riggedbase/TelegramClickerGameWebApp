@@ -1,5 +1,27 @@
 console.log("Script starting to load");
 
+// Retry Firebase connection function
+function retryFirebaseConnection(attempts = 3) {
+    let retries = 0;
+    const interval = setInterval(() => {
+        if (retries >= attempts) {
+            clearInterval(interval);
+            console.error("Firebase connection failed after multiple attempts.");
+            return;
+        }
+        
+        if (database) {
+            clearInterval(interval);
+            console.log("Firebase connected successfully.");
+            return;
+        }
+
+        console.log("Retrying Firebase connection...");
+        initializeFirebase();  // Ensure this function retries the Firebase connection
+        retries++;
+    }, 3000);  // Retry every 3 seconds
+}
+
 // Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyA7k-CcnTG4X2sEfDdbSS8OuQPbdL-mBvI",
@@ -384,12 +406,22 @@ function nextCharacter() {
     const characterElement = document.getElementById('character');
     if (characterElement) {
         const baseImage = characters[characterIndex].images[0];  // Get base image
-        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}">`;
+        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
     }
 
     // Update the display with the new character and save progress
     updateDisplay();
     saveProgress();
+
+    // Ensure event listeners for clicks/touches remain active after character change
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.addEventListener('click', handleClick);
+        gameContainer.addEventListener('touchend', handleTouchEnd);
+        console.log("Event listeners reattached after character change.");
+    } else {
+        console.error("Game container not found, unable to reattach event listeners.");
+    }
 
     console.log(`Next character loaded: ${characters[characterIndex].name}`);
 }
@@ -912,8 +944,8 @@ function handleShowLeaderboard() {
         const topPlayers = [];
         snapshot.forEach((childSnapshot) => {
             topPlayers.push({
-                username: childSnapshot.val().displayName,
-                score: childSnapshot.val().score
+                username: childSnapshot.val().displayName || 'Unknown',  // Handle missing usernames
+                score: childSnapshot.val().score || 0                     // Handle missing scores
             });
         });
         topPlayers.reverse(); // Reverse to get descending order
@@ -960,9 +992,10 @@ function handleShowLeaderboard() {
             closeButton.id = 'close-leaderboard-button';
             closeButton.onclick = closeLeaderboard;
             leaderboardContent.appendChild(closeButton);
+
         }).catch(error => {
             console.error("Error fetching user rank:", error);
-            leaderboardContent.textContent = "Error loading leaderboard. Please try again later.";
+            leaderboardContent.textContent = "Error loading user rank. Please try again later.";
         });
     }).catch(error => {
         console.error("Error fetching leaderboard data:", error);
