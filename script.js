@@ -45,11 +45,11 @@ const firebaseConfig = {
 
 let database;
 
-// Initialize Firebase
+// Initialize Firebase and ensure the database is properly initialized
 function initializeFirebase() {
     try {
         firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
+        database = firebase.database();  // Ensure this sets the database instance correctly
         console.log("Firebase initialized successfully");
 
         // Test Firebase connection
@@ -93,6 +93,11 @@ function initializeFirebase() {
         alert("There was an error initializing the game. Please try refreshing the page.");
     }
 }
+
+// Ensure Firebase initialization happens before loading progress
+document.addEventListener('DOMContentLoaded', function () {
+    initializeFirebase();  // Ensure this is called before trying to load progress
+});
 
 function loadOrInitializeUser(firebaseUid) {
     console.log("Loading or initializing user for Firebase UID:", firebaseUid);
