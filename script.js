@@ -617,65 +617,73 @@ function nextCharacter() {
 
 // Function to update display
 function updateDisplay() {
-    // Update character image and name
-    const characterElement = document.getElementById('character');
-    const characterNameElement = document.getElementById('character-name');
-    const healthElement = document.getElementById('current-health');
-    const maxHealthElement = document.getElementById('max-health');
-    const healthFill = document.getElementById('health-fill');
+    console.log("Updating display...");
 
-    if (characterElement) {
-        // Ensure the base image is set for the character
-        const baseImage = characters[characterIndex].images[0];  // Base image of the character
-        characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
+    const elements = {
+        character: document.getElementById('character'),
+        characterName: document.getElementById('character-name'),
+        health: document.getElementById('current-health'),
+        maxHealth: document.getElementById('max-health'),
+        healthFill: document.getElementById('health-fill'),
+        score: document.getElementById('score'),
+        credits: document.getElementById('credits'),
+        will: document.getElementById('will'),
+        level: document.getElementById('level'),
+        replenishWillCost: document.getElementById('replenish-will-cost'),
+        increaseDamageCost: document.getElementById('increase-damage-cost')
+    };
+
+    // Log the existence of each element
+    Object.entries(elements).forEach(([key, element]) => {
+        console.log(`${key} element exists:`, !!element);
+    });
+
+    // Update character image and name
+    if (elements.character) {
+        const baseImage = characters[characterIndex].images[0];
+        elements.character.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
+        console.log("Character image updated:", baseImage);
     }
 
-    if (characterNameElement) {
-        characterNameElement.textContent = characters[characterIndex].name;
+    if (elements.characterName) {
+        elements.characterName.textContent = characters[characterIndex].name;
+        console.log("Character name updated:", characters[characterIndex].name);
     }
 
     // Update health values
-    if (healthElement && maxHealthElement) {
-        healthElement.textContent = health;
-        maxHealthElement.textContent = maxHealth;
-        healthFill.style.width = `${(health / maxHealth) * 100}%`;
+    if (elements.health && elements.maxHealth && elements.healthFill) {
+        elements.health.textContent = health;
+        elements.maxHealth.textContent = maxHealth;
+        elements.healthFill.style.width = `${(health / maxHealth) * 100}%`;
+        console.log("Health updated:", health, "/", maxHealth);
     }
 
-    // Update Score, Credits, Will, and Level in the UI
-    const scoreElement = document.getElementById('score');
-    const creditsElement = document.getElementById('credits');
-    const willElement = document.getElementById('will');
-    const levelElement = document.getElementById('level');
+    // Update Score, Credits, Will, and Level
+    const updates = [
+        { element: elements.score, value: score },
+        { element: elements.credits, value: credits },
+        { element: elements.will, value: will },
+        { element: elements.level, value: level },
+        { element: elements.replenishWillCost, value: replenishWillCost },
+        { element: elements.increaseDamageCost, value: increaseDamageCost }
+    ];
 
-    if (scoreElement) {
-        scoreElement.textContent = score;
+    updates.forEach(({ element, value }) => {
+        if (element) {
+            element.textContent = value;
+            console.log(`${element.id} updated:`, value);
+        }
+    });
+
+    console.log("Display update complete");
+
+    // Log the visibility of the game container
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        console.log("Game container visibility:", window.getComputedStyle(gameContainer).display);
+    } else {
+        console.log("Game container not found");
     }
-
-    if (creditsElement) {
-        creditsElement.textContent = credits;
-    }
-
-    if (willElement) {
-        willElement.textContent = will;
-    }
-
-    if (levelElement) {
-        levelElement.textContent = level;
-    }
-
-    // Ensure costs are correctly displayed
-    const replenishWillCostElement = document.getElementById('replenish-will-cost');
-    const increaseDamageCostElement = document.getElementById('increase-damage-cost');
-
-    if (replenishWillCostElement) {
-        replenishWillCostElement.textContent = replenishWillCost;
-    }
-
-    if (increaseDamageCostElement) {
-        increaseDamageCostElement.textContent = increaseDamageCost;
-    }
-
-    console.log("Display updated");
 }
 
 function animateCharacterDamage() {
@@ -1297,17 +1305,25 @@ Object.entries(buttonHandlers).forEach(([id, handler]) => {
     // Will auto-replenish by 1 every 2 seconds
     setInterval(autoReplenishWill, 2000);
 
-    // Initialize game after DOM elements are loaded
+     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
     .then(() => loadProgress())
     .then(() => {
-    updateDisplay();
-    setInterval(saveProgress, 5000);
-    console.log("Game initialized");
+        updateDisplay();
+        setInterval(saveProgress, 5000);
+        console.log("Game initialized");
+
+        // Log the game container visibility
+        const gameContainer = document.getElementById('game-container');
+        if (gameContainer) {
+            console.log("Game container visibility:", window.getComputedStyle(gameContainer).display);
+        } else {
+            console.log("Game container not found");
+        }
     })
     .catch((error) => {
-    console.error("Error initializing game:", error);
-    alert("Error initializing game. Please ensure you're running this in Telegram.");
+        console.error("Error initializing game:", error);
+        alert("Error initializing game. Please ensure you're running this in Telegram.");
     });
 });
 
