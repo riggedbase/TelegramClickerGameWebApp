@@ -213,18 +213,17 @@ function changeUsername(newUsername) {
 function saveProgress() {
     console.log("Attempting to save progress...");
     console.log("Current telegramUserId:", telegramUserId);
-
     if (!database) {
         console.error("Firebase database not initialized");
         alert("Unable to save progress. Please try refreshing the page.");
         return;
     }
-
     if (telegramUserId) {
         const dataToSave = {
             displayName, score, credits, will, level, health, maxHealth,
             damagePerClick, replenishWillCost, increaseDamageCost,
-            baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex
+            baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex,
+            totalClaimed, totalBurned // Add these two fields
         };
         console.log("Data being saved:", dataToSave);
         database.ref('users/' + telegramUserId).set(dataToSave)
@@ -268,13 +267,15 @@ function loadProgress() {
                     riggedTokens = data.riggedTokens || 0;
                     pointsAtLastBurn = data.pointsAtLastBurn || 0;
                     characterIndex = data.characterIndex || 0;
+                    totalClaimed = data.totalClaimed || 0; // Add this line
+                    totalBurned = data.totalBurned || 0; // Add this line
                     isWalletValid = validateWalletAddress(baseWalletAddress);
                     console.log("Progress loaded successfully");
                 } else {
                     console.log("No existing data found, initializing with default values");
                     initializeDefaultValues();
                 }
-                console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex });
+                console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
                 resolve();
             }).catch((error) => {
                 console.error("Error loading progress:", error);
@@ -752,6 +753,12 @@ function handleClaimRigged() {
         const claimedAmount = riggedTokens;
         credits = 0;  // Reset credits after claiming
         riggedTokens = 0;  // Reset $RIGGED tokens after claiming
+
+        // Update totalClaimed in Firebase
+        database.ref('users/' + telegramUserId + '/totalClaimed').transaction(currentTotal => {
+            return (currentTotal || 0) + claimedAmount;
+        });
+
         updateWalletDisplay();
         saveProgress();
         alert(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
@@ -763,6 +770,12 @@ function handleClaimRigged() {
 
 // Updated handleBurnRigged function
 function handleBurnRigged() {
+    if (!baseWalletAddress || !isWalletValid) {
+        walletAddressError.textContent = "Please provide a valid wallet address before burning $RIGGED.";
+        walletAddressError.style.color = "red";
+        return;
+    }
+
     console.log("Burning $RIGGED");
     
     // Ensure that riggedTokens is zero or greater
@@ -774,6 +787,12 @@ function handleBurnRigged() {
         const burnedAmount = riggedTokens;
         riggedTokens = 0;  // Reset $RIGGED tokens after burning
         pointsAtLastBurn = credits;  // Update credits at last burn
+
+        // Update totalBurned in Firebase
+        database.ref('users/' + telegramUserId + '/totalBurned').transaction(currentTotal => {
+            return (currentTotal || 0) + burnedAmount;
+        });
+
         updateWalletDisplay();
         saveProgress();
         alert(`Successfully burned ${burnedAmount} $RIGGED tokens!`);
