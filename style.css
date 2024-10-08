@@ -496,7 +496,13 @@ h1 {
         bottom: 20px;
     }
 }
+
 #game-container {
     z-index: 1000;
     position: relative;
+}
+
+#game-container {
+    display: flex !important;
+    visibility: visible !important;
 }

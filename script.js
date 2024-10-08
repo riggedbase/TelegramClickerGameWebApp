@@ -729,6 +729,9 @@ function handleAttack(damage) {
     credits += damage;  // Update credits with damage dealt
     will -= 1;
 
+    console.log(`New health: ${health}`);
+
+    
     // Trigger the character damage animation
     animateCharacterDamage();
 
@@ -824,6 +827,8 @@ function handleTouchEnd(event) {
 
 function handleClick(event) {
     console.log("Click/touch event triggered", event.type);
+    console.log("Target:", event.target);
+    console.log("Current target:", event.currentTarget);
     
     // Check if the click/touch is within the game container and not on excluded elements
     if (event.target.closest('#game-container') &&
@@ -834,13 +839,24 @@ function handleClick(event) {
         !event.target.closest('#actions')) {
 
         console.log("Handling click/touch for attack");
+        console.log("Damage per click:", damagePerClick);
+        console.log("Current health:", health);
         handleAttack(damagePerClick);  // Apply damage for each tap
+        console.log("New health after attack:", health);
 
         // Prevent default behavior and stop propagation for all event types
         event.preventDefault();
         event.stopPropagation();
     } else {
         console.log("Click/touch was on an excluded element or outside game container");
+        console.log("Closest game container:", event.target.closest('#game-container'));
+        console.log("Closest excluded elements:", {
+            defeatMessage: event.target.closest('#defeat-message'),
+            leaderboard: event.target.closest('#leaderboard'),
+            walletScreen: event.target.closest('#wallet-screen'),
+            actionButton: event.target.closest('.action-button'),
+            actions: event.target.closest('#actions')
+        });
     }
 }
 
@@ -1089,7 +1105,7 @@ function handleSaveWalletAddress() {
             })
             .catch((error) => {
                 console.error("Error saving wallet address:", error);
-                walletAddressError.textContent = "Error saving wallet address. Please try again.";
+                walletAddressError.textContent = "Error saving wallet address: " + error.message;
                 walletAddressError.style.color = "red";
                 isWalletValid = false;
             });
