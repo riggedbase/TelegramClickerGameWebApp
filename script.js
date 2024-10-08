@@ -268,6 +268,7 @@ function loadProgress() {
                     riggedTokens = data.riggedTokens || 0;
                     pointsAtLastBurn = data.pointsAtLastBurn || 0;
                     characterIndex = data.characterIndex || 0;
+                    isWalletValid = validateWalletAddress(baseWalletAddress);
                     console.log("Progress loaded successfully");
                 } else {
                     console.log("No existing data found, initializing with default values");
@@ -614,14 +615,11 @@ function handleShowWallet() {
     
     riggedTokens = calculateRigged();
     updateWalletDisplay();
-
     const walletScreen = document.getElementById('wallet-screen');
     const walletContent = document.getElementById('wallet-content');
-
     if (walletScreen && walletContent) {
         // Clear existing content
         walletContent.innerHTML = '';
-
         // Recreate wallet content
         walletContent.innerHTML = `
             <h2>Wallet</h2>
@@ -637,20 +635,21 @@ function handleShowWallet() {
             <button id="burn-rigged">Burn $RIGGED</button>
             <button id="close-wallet">Close Wallet</button>
         `;
-
         walletScreen.classList.remove('hidden');
         walletScreen.style.display = 'flex';
         console.log("Wallet screen is now visible");
-
         // Re-attach event listeners
         document.getElementById('save-wallet-address').addEventListener('click', handleSaveWalletAddress);
         document.getElementById('claim-rigged').addEventListener('click', handleClaimRigged);
         document.getElementById('burn-rigged').addEventListener('click', handleBurnRigged);
         document.getElementById('close-wallet').addEventListener('click', handleCloseWallet);
+        
+        // Update these lines
+        baseWalletAddressInput = document.getElementById('base-wallet-address');
+        walletAddressError = document.getElementById('wallet-address-error');
     } else {
         console.error("Wallet screen or content element not found");
     }
-
     saveProgress();
 }
 
@@ -737,7 +736,7 @@ function handleCloseWallet() {
 
 // Updated handleClaimRigged function
 function handleClaimRigged() {
-    if (!isWalletValid) {
+    if (!baseWalletAddress || !isWalletValid) {
         walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
         walletAddressError.style.color = "red";
         return;
@@ -795,23 +794,29 @@ function validateWalletAddress(address) {
 
 // Function to save wallet address (newly added)
 function handleSaveWalletAddress() {
+    console.log("Save wallet address button clicked");
     const walletAddress = baseWalletAddressInput.value.trim();
     if (validateWalletAddress(walletAddress)) {
         baseWalletAddress = walletAddress;
         database.ref('users/' + telegramUserId + '/baseWalletAddress').set(walletAddress)
             .then(() => {
+                console.log("Wallet address saved successfully");
                 walletAddressError.textContent = "Wallet address saved successfully!";
                 walletAddressError.style.color = "green";
+                isWalletValid = true;
                 saveProgress();
             })
             .catch((error) => {
                 console.error("Error saving wallet address:", error);
                 walletAddressError.textContent = "Error saving wallet address. Please try again.";
                 walletAddressError.style.color = "red";
+                isWalletValid = false;
             });
     } else {
+        console.log("Invalid wallet address");
         walletAddressError.textContent = "Invalid wallet address. Must be a 42-character hexadecimal address starting with '0x' or a Base ENS name ending with '.base.eth'.";
         walletAddressError.style.color = "red";
+        isWalletValid = false;
     }
 }
 
