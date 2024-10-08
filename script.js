@@ -303,7 +303,7 @@ function changeUsername(newUsername) {
     return false;
 }
 
-// Updated saveProgress function
+// Updated saveProgress function to ensure incremental updates
 function saveProgress() {
     console.log("Attempting to save progress...");
 
@@ -337,8 +337,8 @@ function saveProgress() {
 
             console.log("Data being saved:", dataToSave);
 
-            // Save the progress under the Firebase user UID
-            database.ref('users/' + user.uid).set(dataToSave)
+            // Update the progress instead of setting it entirely
+            database.ref('users/' + user.uid).update(dataToSave)
                 .then(() => console.log("Progress saved successfully"))
                 .catch((error) => {
                     console.error("Error saving progress:", error);
@@ -351,7 +351,7 @@ function saveProgress() {
     });
 }
 
-// Updated loadProgress function
+// Updated loadProgress function with real-time sync
 function loadProgress() {
     console.log("Loading progress for user:", telegramUserId);
     
@@ -369,10 +369,11 @@ function loadProgress() {
                 if (telegramUserId) {
                     // Reference Firebase UID, and ensure mapping between telegramUserId and user.uid
                     const userRef = database.ref('users/' + user.uid);
-                    
-                    userRef.once('value').then((snapshot) => {
+
+                    // Add real-time listener to sync progress across devices
+                    userRef.on('value', (snapshot) => {
                         const data = snapshot.val();
-                        console.log("Loaded data from Firebase:", data);
+                        console.log("Loaded real-time data from Firebase:", data);
 
                         if (data) {
                             // If progress exists, load it
@@ -393,7 +394,7 @@ function loadProgress() {
                             totalClaimed = data.totalClaimed || 0;
                             totalBurned = data.totalBurned || 0;
                             isWalletValid = validateWalletAddress(baseWalletAddress);
-                            console.log("Progress loaded successfully");
+                            console.log("Real-time progress loaded successfully");
 
                             // Ensure the telegramUserId is saved in Firebase if not already present
                             if (!data.telegramUserId) {
@@ -429,7 +430,7 @@ function loadProgress() {
                         console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
                         resolve();
 
-                    }).catch((error) => {
+                    }, (error) => {
                         console.error("Error loading progress:", error);
                         initializeDefaultValues();
                         reject(error);
@@ -1032,7 +1033,7 @@ function calculateRigged() {
     return riggedTokensEarned;
 }
 
-// Function to show leaderboard
+// Show Leaderboard
 function handleShowLeaderboard() {
     console.log("Show Leaderboard button clicked");
     const leaderboard = document.getElementById('leaderboard');
@@ -1044,15 +1045,12 @@ function handleShowLeaderboard() {
     }
 
     console.log("Fetching leaderboard data");
-
     // Clear existing leaderboard entries
     leaderboardContent.innerHTML = '<h2>Leaderboard</h2>';
-
     // Add loading indicator
     const loadingIndicator = document.createElement('div');
     loadingIndicator.textContent = 'Loading leaderboard...';
     leaderboardContent.appendChild(loadingIndicator);
-
     // Show the leaderboard
     leaderboard.classList.remove('hidden');
     leaderboard.style.display = 'flex';
@@ -1072,24 +1070,24 @@ function handleShowLeaderboard() {
         // Fetch current user's rank
         database.ref('users').orderByChild('score').startAfter(score).once('value', (rankSnapshot) => {
             const userRank = rankSnapshot.numChildren() + 1;
-
             // Remove loading indicator
             leaderboardContent.removeChild(loadingIndicator);
-
             // Create leaderboard list
             const leaderboardList = document.createElement('ol');
             leaderboardList.id = 'leaderboard-list';
-
             // Populate leaderboard
             topPlayers.forEach((player) => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${player.username}: ${player.score} points`;
                 leaderboardList.appendChild(listItem);
             });
-
             leaderboardContent.appendChild(leaderboardList);
 
-            // Add current user's rank and score
+            // Add current user's display name, rank and score
+            const userDisplayNameElement = document.createElement('div');
+            userDisplayNameElement.textContent = `Your Display Name: ${displayName}`;
+            leaderboardContent.appendChild(userDisplayNameElement);
+
             const userRankElement = document.createElement('div');
             userRankElement.textContent = `Your Rank: ${userRank}`;
             leaderboardContent.appendChild(userRankElement);
@@ -1111,7 +1109,6 @@ function handleShowLeaderboard() {
             closeButton.id = 'close-leaderboard-button';
             closeButton.onclick = closeLeaderboard;
             leaderboardContent.appendChild(closeButton);
-
         }).catch(error => {
             console.error("Error fetching user rank:", error);
             leaderboardContent.textContent = "Error loading user rank. Please try again later.";
