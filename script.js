@@ -1081,7 +1081,7 @@ function handleShowLeaderboard() {
             leaderboardList.id = 'leaderboard-list';
 
             // Populate leaderboard
-            topPlayers.forEach((player, index) => {
+            topPlayers.forEach((player) => {
                 const listItem = document.createElement('li');
                 listItem.textContent = `${player.username}: ${player.score} points`;
                 leaderboardList.appendChild(listItem);
