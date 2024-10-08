@@ -484,6 +484,9 @@ function handleAttack(damage) {
     }
 
     console.log(`Attack dealt: ${damage}, Current damage per click after attack: ${damagePerClick}`);
+
+    // Add this line to save progress after each attack
+    saveProgress();
 }
 
 // Function to handle touch events
@@ -869,46 +872,82 @@ function handleShowLeaderboard() {
         return;
     }
 
-    console.log("Showing leaderboard");
-
-    // Sample leaderboard data - replace with actual data fetching logic
-    const leaderboardData = [
-        { username: 'Player1', score: 100 },
-        { username: 'Player2', score: 90 },
-        { username: 'Player3', score: 80 },
-        { username: displayName + ' (You)', score: score }
-    ];
+    console.log("Fetching leaderboard data");
 
     // Clear existing leaderboard entries
     leaderboardContent.innerHTML = '<h2>Leaderboard</h2>';
 
-    // Populate leaderboard
-    const leaderboardList = document.createElement('ul');
-    leaderboardList.id = 'leaderboard-list';
-    leaderboardData.forEach(player => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${player.username}: ${player.score} points`;
-        leaderboardList.appendChild(listItem);
-    });
-    leaderboardContent.appendChild(leaderboardList);
-
-    // Add change username button
-    const changeUsernameButton = document.createElement('button');
-    changeUsernameButton.textContent = 'Change Username';
-    changeUsernameButton.id = 'change-username-button';
-    changeUsernameButton.onclick = handleChangeUsername;
-    leaderboardContent.appendChild(changeUsernameButton);
-
-    // Add close button
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close Leaderboard';
-    closeButton.id = 'close-leaderboard-button';
-    closeButton.onclick = closeLeaderboard;
-    leaderboardContent.appendChild(closeButton);
+    // Add loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.textContent = 'Loading leaderboard...';
+    leaderboardContent.appendChild(loadingIndicator);
 
     // Show the leaderboard
     leaderboard.classList.remove('hidden');
     leaderboard.style.display = 'flex';
+
+    // Fetch top 10 players
+    const topPlayersRef = database.ref('users').orderByChild('score').limitToLast(10);
+    topPlayersRef.once('value', (snapshot) => {
+        const topPlayers = [];
+        snapshot.forEach((childSnapshot) => {
+            topPlayers.push({
+                username: childSnapshot.val().displayName,
+                score: childSnapshot.val().score
+            });
+        });
+        topPlayers.reverse(); // Reverse to get descending order
+
+        // Fetch current user's rank
+        database.ref('users').orderByChild('score').startAfter(score).once('value', (rankSnapshot) => {
+            const userRank = rankSnapshot.numChildren() + 1;
+
+            // Remove loading indicator
+            leaderboardContent.removeChild(loadingIndicator);
+
+            // Create leaderboard list
+            const leaderboardList = document.createElement('ol');
+            leaderboardList.id = 'leaderboard-list';
+
+            // Populate leaderboard
+            topPlayers.forEach((player, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${player.username}: ${player.score} points`;
+                leaderboardList.appendChild(listItem);
+            });
+
+            leaderboardContent.appendChild(leaderboardList);
+
+            // Add current user's rank and score
+            const userRankElement = document.createElement('div');
+            userRankElement.textContent = `Your Rank: ${userRank}`;
+            leaderboardContent.appendChild(userRankElement);
+
+            const userScoreElement = document.createElement('div');
+            userScoreElement.textContent = `Your Score: ${score}`;
+            leaderboardContent.appendChild(userScoreElement);
+
+            // Add change username button
+            const changeUsernameButton = document.createElement('button');
+            changeUsernameButton.textContent = 'Change Username';
+            changeUsernameButton.id = 'change-username-button';
+            changeUsernameButton.onclick = handleChangeUsername;
+            leaderboardContent.appendChild(changeUsernameButton);
+
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Close Leaderboard';
+            closeButton.id = 'close-leaderboard-button';
+            closeButton.onclick = closeLeaderboard;
+            leaderboardContent.appendChild(closeButton);
+        }).catch(error => {
+            console.error("Error fetching user rank:", error);
+            leaderboardContent.textContent = "Error loading leaderboard. Please try again later.";
+        });
+    }).catch(error => {
+        console.error("Error fetching leaderboard data:", error);
+        leaderboardContent.textContent = "Error loading leaderboard. Please try again later.";
+    });
 }
 
 // Define the closeLeaderboard function to prevent the error
