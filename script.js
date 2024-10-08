@@ -79,58 +79,55 @@ try {
 
 function loadOrInitializeUser(firebaseUid) {
     console.log("Loading or initializing user for Firebase UID:", firebaseUid);
-    
-    // Reference to the user's data in the Firebase database
+
     const userRef = database.ref('users/' + firebaseUid);
 
     userRef.once('value').then((snapshot) => {
         const data = snapshot.val();
         
-        if (data) {
-            // Case 1: Data exists for this Firebase UID
-            if (data.telegramUserId === telegramUserId) {
-                // Mapping exists and matches the Telegram ID, load the progress
-                console.log("Mapping found. Loading user data...");
-                loadProgress(firebaseUid); // Load progress if mapping is correct
-            } else if (!data.telegramUserId) {
-                // Case 2: If the data exists but the Telegram ID is missing, update it
-                console.log("No Telegram User ID in Firebase. Updating with Telegram ID:", telegramUserId);
-                userRef.update({ telegramUserId: telegramUserId }).then(() => {
-                    loadProgress(firebaseUid);
-                    console.log("Updated Telegram User ID in Firebase.");
-                });
-            } else {
-                // Case 3: Data exists but the Telegram ID mismatches, warn about the conflict
-                console.warn("Conflict: Mismatched Telegram User ID detected. Not loading data.");
-                alert("An account conflict occurred. Please contact support if this issue persists.");
-            }
+        // Check if the telegramUserId is already mapped
+        if (data && data.telegramUserId === telegramUserId) {
+            console.log("Mapping found. Loading user data...");
+            loadProgress(firebaseUid); // Load progress if mapping is correct
         } else {
-            // Case 4: No data exists for this Firebase UID, initialize with default values and map the Telegram ID
-            console.log("No existing mapping found. Initializing and mapping telegramUserId to Firebase UID.");
-            userRef.set({
-                telegramUserId: telegramUserId,
-                displayName: generateRandomUsername(),
-                score: 0,
-                credits: 0,
-                will: 1000,
-                level: 1,
-                health: 100,
-                maxHealth: 100,
-                damagePerClick: 1,
-                replenishWillCost: 100,
-                increaseDamageCost: 200,
-                baseWalletAddress: '',
-                riggedTokens: 0,
-                pointsAtLastBurn: 0,
-                characterIndex: 0,
-                totalClaimed: 0,
-                totalBurned: 0
-            }).then(() => {
-                console.log("User mapping and initialization complete");
-                loadProgress(firebaseUid);  // Now load the initialized progress
-            }).catch(error => {
-                console.error("Error initializing user:", error);
-            });
+            // Check if any user with the telegramUserId already exists
+            database.ref('users').orderByChild('telegramUserId').equalTo(telegramUserId).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        // Get the existing Firebase UID for the Telegram ID
+                        const existingUid = Object.keys(snapshot.val())[0];
+                        console.log("Existing Telegram mapping found for UID:", existingUid);
+                        loadProgress(existingUid); // Load the data for the existing UID
+                    } else {
+                        console.log("No existing mapping found. Mapping telegramUserId to Firebase UID.");
+                        userRef.set({
+                            telegramUserId: telegramUserId,
+                            displayName: generateRandomUsername(),
+                            score: 0,
+                            credits: 0,
+                            will: 1000,
+                            level: 1,
+                            health: 100,
+                            maxHealth: 100,
+                            damagePerClick: 1,
+                            replenishWillCost: 100,
+                            increaseDamageCost: 200,
+                            baseWalletAddress: '',
+                            riggedTokens: 0,
+                            pointsAtLastBurn: 0,
+                            characterIndex: 0,
+                            totalClaimed: 0,
+                            totalBurned: 0
+                        }).then(() => {
+                            console.log("User mapping and initialization complete");
+                            loadProgress(firebaseUid);  // Now load the initialized progress
+                        }).catch(error => {
+                            console.error("Error initializing user:", error);
+                        });
+                    }
+                }).catch(error => {
+                    console.error("Error checking for existing Telegram ID:", error);
+                });
         }
     }).catch(error => {
         console.error("Error loading user mapping:", error);
@@ -405,7 +402,7 @@ function saveProgress() {
 // Updated loadProgress function with real-time sync and session validation
 function loadProgress() {
     console.log("Loading progress for user:", telegramUserId);
-    
+
     return new Promise((resolve, reject) => {
         if (!database) {
             console.error("Firebase database not initialized");
@@ -421,77 +418,27 @@ function loadProgress() {
                     // Reference Firebase UID, and ensure mapping between telegramUserId and user.uid
                     const userRef = database.ref('users/' + user.uid);
 
-                    // Add real-time listener to sync progress across devices
-                    userRef.on('value', (snapshot) => {
-                        const data = snapshot.val();
-                        console.log("Loaded real-time data from Firebase:", data);
+                    // Check if there is already a user with the Telegram ID
+                    database.ref('users').orderByChild('telegramUserId').equalTo(telegramUserId).once('value')
+                        .then((snapshot) => {
+                            if (snapshot.exists()) {
+                                const existingUid = Object.keys(snapshot.val())[0];
 
-                        if (data) {
-                            // Ensure we load progress only if the telegramUserId matches
-                            if (data.telegramUserId === telegramUserId) {
-                                // If progress exists and matches the Telegram ID, load it
-                                displayName = data.displayName || generateRandomUsername();
-                                score = data.score || 0;
-                                credits = data.credits || 0;
-                                will = data.will || 1000;
-                                level = data.level || 1;
-                                health = data.health || 100;
-                                maxHealth = data.maxHealth || 100;
-                                damagePerClick = data.damagePerClick || 1;
-                                replenishWillCost = data.replenishWillCost || 100;
-                                increaseDamageCost = data.increaseDamageCost || 200;
-                                baseWalletAddress = data.baseWalletAddress || '';
-                                riggedTokens = data.riggedTokens || 0;
-                                pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                                characterIndex = data.characterIndex || 0;
-                                totalClaimed = data.totalClaimed || 0;
-                                totalBurned = data.totalBurned || 0;
-                                isWalletValid = validateWalletAddress(baseWalletAddress);
-                                console.log("Real-time progress loaded successfully");
-
-                                // Ensure the telegramUserId is saved in Firebase if not already present
-                                if (!data.telegramUserId) {
-                                    userRef.update({ telegramUserId: telegramUserId });
-                                    console.log("Mapped Telegram user ID to Firebase UID:", telegramUserId);
+                                // If the current Firebase UID is different, load from the existing UID
+                                if (existingUid !== user.uid) {
+                                    console.log("Existing Telegram mapping found for UID:", existingUid);
+                                    loadProgressFromExistingUID(existingUid);
+                                    return;
                                 }
-                            } else {
-                                console.warn("Mismatched Telegram User ID detected. Skipping load.");
                             }
-                        } else {
-                            // If no progress, initialize with default values and map Telegram ID
-                            console.log("No existing data found, initializing with default values");
-                            initializeDefaultValues();
-                            userRef.set({
-                                telegramUserId: telegramUserId,
-                                displayName: displayName,
-                                score: score,
-                                credits: credits,
-                                will: will,
-                                level: level,
-                                health: health,
-                                maxHealth: maxHealth,
-                                damagePerClick: damagePerClick,
-                                replenishWillCost: replenishWillCost,
-                                increaseDamageCost: increaseDamageCost,
-                                baseWalletAddress: baseWalletAddress,
-                                riggedTokens: riggedTokens,
-                                pointsAtLastBurn: pointsAtLastBurn,
-                                characterIndex: characterIndex,
-                                totalClaimed: totalClaimed,
-                                totalBurned: totalBurned
-                            });
-                            console.log("Progress initialized for new user and Telegram ID mapped.");
-                        }
 
-                        console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
-                        resolve();
-
-                    }, (error) => {
-                        console.error("Error loading progress:", error);
-                        initializeDefaultValues();
-                        reject(error);
-                    });
-
+                            // If no existing mapping or Firebase UID is correct, proceed to load data
+                            loadOrUpdateProgress(userRef, user.uid);
+                        })
+                        .catch((error) => {
+                            console.error("Error checking for existing Telegram ID mapping:", error);
+                            reject(error);
+                        });
                 } else {
                     console.error("No Telegram User ID available");
                     initializeDefaultValues();
@@ -503,6 +450,113 @@ function loadProgress() {
                 reject("User is not authenticated");
             }
         });
+    });
+}
+
+// Helper function to load progress from an existing UID
+function loadProgressFromExistingUID(existingUid) {
+    const userRef = database.ref('users/' + existingUid);
+    userRef.once('value').then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            displayName = data.displayName || generateRandomUsername();
+            score = data.score || 0;
+            credits = data.credits || 0;
+            will = data.will || 1000;
+            level = data.level || 1;
+            health = data.health || 100;
+            maxHealth = data.maxHealth || 100;
+            damagePerClick = data.damagePerClick || 1;
+            replenishWillCost = data.replenishWillCost || 100;
+            increaseDamageCost = data.increaseDamageCost || 200;
+            baseWalletAddress = data.baseWalletAddress || '';
+            riggedTokens = data.riggedTokens || 0;
+            pointsAtLastBurn = data.pointsAtLastBurn || 0;
+            characterIndex = data.characterIndex || 0;
+            totalClaimed = data.totalClaimed || 0;
+            totalBurned = data.totalBurned || 0;
+            isWalletValid = validateWalletAddress(baseWalletAddress);
+            console.log("Progress loaded successfully from existing UID.");
+
+            console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
+        } else {
+            console.log("No data found for the user with existing UID.");
+            initializeDefaultValues();
+        }
+    }).catch((error) => {
+        console.error("Error loading progress from existing UID:", error);
+    });
+}
+
+// Helper function to load or initialize the progress
+function loadOrUpdateProgress(userRef, firebaseUid) {
+    userRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log("Loaded real-time data from Firebase:", data);
+
+        if (data) {
+            // Ensure we load progress only if the telegramUserId matches
+            if (data.telegramUserId === telegramUserId) {
+                // If progress exists and matches the Telegram ID, load it
+                displayName = data.displayName || generateRandomUsername();
+                score = data.score || 0;
+                credits = data.credits || 0;
+                will = data.will || 1000;
+                level = data.level || 1;
+                health = data.health || 100;
+                maxHealth = data.maxHealth || 100;
+                damagePerClick = data.damagePerClick || 1;
+                replenishWillCost = data.replenishWillCost || 100;
+                increaseDamageCost = data.increaseDamageCost || 200;
+                baseWalletAddress = data.baseWalletAddress || '';
+                riggedTokens = data.riggedTokens || 0;
+                pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                characterIndex = data.characterIndex || 0;
+                totalClaimed = data.totalClaimed || 0;
+                totalBurned = data.totalBurned || 0;
+                isWalletValid = validateWalletAddress(baseWalletAddress);
+                console.log("Real-time progress loaded successfully.");
+
+                // Ensure the telegramUserId is saved in Firebase if not already present
+                if (!data.telegramUserId) {
+                    userRef.update({ telegramUserId: telegramUserId });
+                    console.log("Mapped Telegram user ID to Firebase UID:", telegramUserId);
+                }
+            } else {
+                console.warn("Mismatched Telegram User ID detected. Skipping load.");
+            }
+        } else {
+            // If no progress, initialize with default values and map Telegram ID
+            console.log("No existing data found, initializing with default values.");
+            initializeDefaultValues();
+            userRef.set({
+                telegramUserId: telegramUserId,
+                displayName: displayName,
+                score: score,
+                credits: credits,
+                will: will,
+                level: level,
+                health: health,
+                maxHealth: maxHealth,
+                damagePerClick: damagePerClick,
+                replenishWillCost: replenishWillCost,
+                increaseDamageCost: increaseDamageCost,
+                baseWalletAddress: baseWalletAddress,
+                riggedTokens: riggedTokens,
+                pointsAtLastBurn: pointsAtLastBurn,
+                characterIndex: characterIndex,
+                totalClaimed: totalClaimed,
+                totalBurned: totalBurned
+            });
+            console.log("Progress initialized for new user and Telegram ID mapped.");
+        }
+
+        console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
+        resolve();
+    }, (error) => {
+        console.error("Error loading progress:", error);
+        initializeDefaultValues();
+        reject(error);
     });
 }
 
