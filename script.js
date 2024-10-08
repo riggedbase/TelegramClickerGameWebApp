@@ -303,7 +303,7 @@ function changeUsername(newUsername) {
     return false;
 }
 
-// Updated saveProgress function to ensure incremental updates
+// Updated saveProgress function with incremental updates and change detection
 function saveProgress() {
     console.log("Attempting to save progress...");
 
@@ -335,15 +335,38 @@ function saveProgress() {
                 telegramUserId  // Ensure telegramUserId is saved with the progress
             };
 
-            console.log("Data being saved:", dataToSave);
-
-            // Update the progress instead of setting it entirely
-            database.ref('users/' + user.uid).update(dataToSave)
-                .then(() => console.log("Progress saved successfully"))
-                .catch((error) => {
-                    console.error("Error saving progress:", error);
-                    alert("There was an error saving your progress. Please try again later.");
+            // Function to track changes and only save what's changed
+            function trackChanges(newData, oldData) {
+                const changes = {};
+                Object.keys(newData).forEach((key) => {
+                    if (newData[key] !== oldData[key]) {
+                        changes[key] = newData[key];
+                    }
                 });
+                return changes;
+            }
+
+            // Fetch current data from Firebase to track changes
+            database.ref('users/' + user.uid).once('value').then((snapshot) => {
+                const currentData = snapshot.val() || {};
+                const changes = trackChanges(dataToSave, currentData);
+
+                if (Object.keys(changes).length > 0) {
+                    console.log("Data to update:", changes);
+
+                    // Update only changed fields in Firebase
+                    database.ref('users/' + user.uid).update(changes)
+                        .then(() => console.log("Progress updated successfully"))
+                        .catch((error) => {
+                            console.error("Error saving progress:", error);
+                            alert("There was an error saving your progress. Please try again later.");
+                        });
+                } else {
+                    console.log("No changes detected. Progress not updated.");
+                }
+            }).catch((error) => {
+                console.error("Error fetching current data:", error);
+            });
         } else {
             console.error("No Firebase User ID available, progress not saved");
             alert("Unable to save progress. Please make sure you're logged in.");
@@ -351,7 +374,7 @@ function saveProgress() {
     });
 }
 
-// Updated loadProgress function with real-time sync
+// Updated loadProgress function with real-time sync and session validation
 function loadProgress() {
     console.log("Loading progress for user:", telegramUserId);
     
@@ -376,30 +399,35 @@ function loadProgress() {
                         console.log("Loaded real-time data from Firebase:", data);
 
                         if (data) {
-                            // If progress exists, load it
-                            displayName = data.displayName || generateRandomUsername();
-                            score = data.score || 0;
-                            credits = data.credits || 0;
-                            will = data.will || 1000;
-                            level = data.level || 1;
-                            health = data.health || 100;
-                            maxHealth = data.maxHealth || 100;
-                            damagePerClick = data.damagePerClick || 1;
-                            replenishWillCost = data.replenishWillCost || 100;
-                            increaseDamageCost = data.increaseDamageCost || 200;
-                            baseWalletAddress = data.baseWalletAddress || '';
-                            riggedTokens = data.riggedTokens || 0;
-                            pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                            characterIndex = data.characterIndex || 0;
-                            totalClaimed = data.totalClaimed || 0;
-                            totalBurned = data.totalBurned || 0;
-                            isWalletValid = validateWalletAddress(baseWalletAddress);
-                            console.log("Real-time progress loaded successfully");
+                            // Ensure we load progress only if the telegramUserId matches
+                            if (data.telegramUserId === telegramUserId) {
+                                // If progress exists and matches the Telegram ID, load it
+                                displayName = data.displayName || generateRandomUsername();
+                                score = data.score || 0;
+                                credits = data.credits || 0;
+                                will = data.will || 1000;
+                                level = data.level || 1;
+                                health = data.health || 100;
+                                maxHealth = data.maxHealth || 100;
+                                damagePerClick = data.damagePerClick || 1;
+                                replenishWillCost = data.replenishWillCost || 100;
+                                increaseDamageCost = data.increaseDamageCost || 200;
+                                baseWalletAddress = data.baseWalletAddress || '';
+                                riggedTokens = data.riggedTokens || 0;
+                                pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                                characterIndex = data.characterIndex || 0;
+                                totalClaimed = data.totalClaimed || 0;
+                                totalBurned = data.totalBurned || 0;
+                                isWalletValid = validateWalletAddress(baseWalletAddress);
+                                console.log("Real-time progress loaded successfully");
 
-                            // Ensure the telegramUserId is saved in Firebase if not already present
-                            if (!data.telegramUserId) {
-                                userRef.update({ telegramUserId: telegramUserId });
-                                console.log("Mapped Telegram user ID to Firebase UID:", telegramUserId);
+                                // Ensure the telegramUserId is saved in Firebase if not already present
+                                if (!data.telegramUserId) {
+                                    userRef.update({ telegramUserId: telegramUserId });
+                                    console.log("Mapped Telegram user ID to Firebase UID:", telegramUserId);
+                                }
+                            } else {
+                                console.warn("Mismatched Telegram User ID detected. Skipping load.");
                             }
                         } else {
                             // If no progress, initialize with default values and map Telegram ID
