@@ -485,7 +485,7 @@ function handleAttack(damage) {
     if (health <= 0 || will <= 0) return;
 
     console.log(`Attacking character: ${characters[characterIndex].name}`);
-    health -= damage;
+    health = Math.max(0, health - damage);  // Ensure health never goes below 0
     score += damage;  // Update score with damage dealt
     credits += damage;  // Update credits with damage dealt
     will -= 1;
@@ -503,7 +503,7 @@ function handleAttack(damage) {
 
     console.log(`Attack dealt: ${damage}, Current damage per click after attack: ${damagePerClick}`);
 
-    // Add this line to save progress after each attack
+    // Save progress after each attack
     saveProgress();
 }
 
