@@ -52,34 +52,58 @@ try {
     });
 
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-            console.log("User is authenticated with Firebase:", user.uid);
-            loadOrInitializeUser(user.uid); // Load or initialize the user with Firebase UID
-        } else {
-            firebase.auth().signInAnonymously()
-                .then(() => {
-                    console.log("User signed in anonymously.");
+    if (user) {
+        // User is authenticated, ensure the Telegram ID is mapped
+        console.log("User is authenticated with Firebase:", user.uid);
+        loadOrInitializeUser(user.uid); // Load or initialize user data
+    } else {
+        // No user is authenticated, use Telegram ID to handle sign-in
+        if (telegramUserId) {
+            firebase.auth().signInWithCustomToken(telegramUserId)
+                .then((authData) => {
+                    console.log("Signed in using Telegram ID:", telegramUserId);
+                    loadOrInitializeUser(authData.uid);
                 })
-                .catch(error => {
-                    console.error("Error during anonymous sign-in:", error);
+                .catch((error) => {
+                    console.error("Error during Telegram-based sign-in:", error);
                 });
+        } else {
+            console.error("Telegram User ID not available, unable to sign in");
         }
-    });
-} catch (error) {
-    console.error("Error initializing Firebase:", error);
-    alert("There was an error initializing the game. Please try refreshing the page.");
-}
+    }
+});
 
 function loadOrInitializeUser(firebaseUid) {
     console.log("Loading or initializing user for Firebase UID:", firebaseUid);
-    database.ref('users/' + firebaseUid).once('value').then((snapshot) => {
+    
+    // Reference to the user's data in the Firebase database
+    const userRef = database.ref('users/' + firebaseUid);
+
+    userRef.once('value').then((snapshot) => {
         const data = snapshot.val();
-        if (data && data.telegramUserId === telegramUserId) {
-            console.log("Mapping found. Loading user data...");
-            loadProgress(firebaseUid); // Load progress if mapping is correct
+        
+        if (data) {
+            // Case 1: Data exists for this Firebase UID
+            if (data.telegramUserId === telegramUserId) {
+                // Mapping exists and matches the Telegram ID, load the progress
+                console.log("Mapping found. Loading user data...");
+                loadProgress(firebaseUid); // Load progress if mapping is correct
+            } else if (!data.telegramUserId) {
+                // Case 2: If the data exists but the Telegram ID is missing, update it
+                console.log("No Telegram User ID in Firebase. Updating with Telegram ID:", telegramUserId);
+                userRef.update({ telegramUserId: telegramUserId }).then(() => {
+                    loadProgress(firebaseUid);
+                    console.log("Updated Telegram User ID in Firebase.");
+                });
+            } else {
+                // Case 3: Data exists but the Telegram ID mismatches, warn about the conflict
+                console.warn("Conflict: Mismatched Telegram User ID detected. Not loading data.");
+                alert("An account conflict occurred. Please contact support if this issue persists.");
+            }
         } else {
-            console.log("No existing mapping found. Mapping telegramUserId to Firebase UID.");
-            database.ref('users/' + firebaseUid).set({
+            // Case 4: No data exists for this Firebase UID, initialize with default values and map the Telegram ID
+            console.log("No existing mapping found. Initializing and mapping telegramUserId to Firebase UID.");
+            userRef.set({
                 telegramUserId: telegramUserId,
                 displayName: generateRandomUsername(),
                 score: 0,
@@ -303,7 +327,7 @@ function changeUsername(newUsername) {
     return false;
 }
 
-// Updated saveProgress function with incremental updates and change detection
+// Updated saveProgress function to ensure incremental updates and prevent overwriting
 function saveProgress() {
     console.log("Attempting to save progress...");
 
