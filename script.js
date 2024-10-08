@@ -4,20 +4,29 @@ console.log("Script starting to load");
 function retryFirebaseConnection(attempts = 3) {
     let retries = 0;
     const interval = setInterval(() => {
+        // If max attempts reached, stop retrying
         if (retries >= attempts) {
             clearInterval(interval);
             console.error("Firebase connection failed after multiple attempts.");
-            return;
-        }
-        
-        if (database) {
-            clearInterval(interval);
-            console.log("Firebase connected successfully.");
+            alert("Failed to connect to Firebase. Please check your internet connection and try again.");
             return;
         }
 
-        console.log("Retrying Firebase connection...");
-        initializeFirebase();  // Ensure this function retries the Firebase connection
+        // Check Firebase database connectivity status
+        if (firebase && firebase.database && firebase.database().ref('.info/connected')) {
+            firebase.database().ref('.info/connected').on('value', (snap) => {
+                if (snap.val() === true) {
+                    clearInterval(interval);
+                    console.log("Firebase connected successfully.");
+                } else {
+                    console.log("Firebase not connected yet, retrying...");
+                }
+            });
+        } else {
+            console.log("Retrying Firebase initialization...");
+            initializeFirebase();  // Ensure initialization is retried
+        }
+
         retries++;
     }, 3000);  // Retry every 3 seconds
 }
@@ -37,44 +46,52 @@ const firebaseConfig = {
 let database;
 
 // Initialize Firebase
-try {
-    firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-    console.log("Firebase initialized successfully");
-    
-    // Test Firebase connection
-    database.ref('.info/connected').on('value', function(snap) {
-        if (snap.val() === true) {
-            console.log("Connected to Firebase");
-        } else {
-            console.log("Not connected to Firebase");
-        }
-    });
+function initializeFirebase() {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        console.log("Firebase initialized successfully");
 
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-            // User is authenticated, ensure the Telegram ID is mapped
-            console.log("User is authenticated with Firebase:", user.uid);
-            loadOrInitializeUser(user.uid); // Load or initialize user data
-        } else {
-            // No user is authenticated, use Telegram ID to handle sign-in
-            if (telegramUserId) {
-                firebase.auth().signInWithCustomToken(telegramUserId)
-                    .then((authData) => {
-                        console.log("Signed in using Telegram ID:", telegramUserId);
-                        loadOrInitializeUser(authData.uid);
-                    })
-                    .catch((error) => {
-                        console.error("Error during Telegram-based sign-in:", error);
-                    });
+        // Test Firebase connection
+        database.ref('.info/connected').on('value', function (snap) {
+            if (snap.val() === true) {
+                console.log("Connected to Firebase");
             } else {
-                console.error("Telegram User ID not available, unable to sign in");
+                console.log("Not connected to Firebase, retrying connection...");
+                retryFirebaseConnection();  // Retry connection if not connected
             }
-        }
-    });
-} catch (error) {
-    console.error("Error initializing Firebase:", error);
-    alert("There was an error initializing the game. Please try refreshing the page.");
+        });
+
+        // Handle Firebase authentication state
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                // User is authenticated
+                console.log("User is authenticated with Firebase:", user.uid);
+                loadOrInitializeUser(user.uid); // Load or initialize user data
+            } else {
+                // No user is authenticated, use Telegram ID for sign-in
+                if (telegramUserId) {
+                    // Use custom token authentication based on Telegram user ID
+                    firebase.auth().signInWithCustomToken(telegramUserId)
+                        .then((authData) => {
+                            console.log("Signed in using Telegram ID:", telegramUserId);
+                            loadOrInitializeUser(authData.user.uid);  // Use `authData.user.uid` to avoid possible undefined issue
+                        })
+                        .catch((error) => {
+                            console.error("Error during Telegram-based sign-in:", error);
+                            alert("Failed to sign in using Telegram. Please try again.");
+                        });
+                } else {
+                    console.error("Telegram User ID not available, unable to sign in");
+                    alert("Telegram User ID not available. Please ensure you are running this within Telegram.");
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error("Error initializing Firebase:", error);
+        alert("There was an error initializing the game. Please try refreshing the page.");
+    }
 }
 
 function loadOrInitializeUser(firebaseUid) {
