@@ -146,6 +146,19 @@ function loadOrInitializeUser(firebaseUid) {
     });
 }
 
+function checkElementVisibility(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        const rect = element.getBoundingClientRect();
+        const isVisible = rect.top >= 0 && rect.left >= 0 && 
+                          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                          rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+        console.log(`${elementId} visibility:`, isVisible, 'Position:', rect);
+    } else {
+        console.log(`${elementId} not found in DOM`);
+    }
+}
+
 let telegramUserId = null;
 let displayName = null;
 let isWalletValid = false; // Track wallet validation status
@@ -677,13 +690,10 @@ function updateDisplay() {
 
     console.log("Display update complete");
 
-    // Log the visibility of the game container
-    const gameContainer = document.getElementById('game-container');
-    if (gameContainer) {
-        console.log("Game container visibility:", window.getComputedStyle(gameContainer).display);
-    } else {
-        console.log("Game container not found");
-    }
+    // Check visibility of key elements
+    checkElementVisibility('game-container');
+    checkElementVisibility('character');
+    checkElementVisibility('actions');
 }
 
 function animateCharacterDamage() {
@@ -1248,14 +1258,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Add event listeners for clicks and touches
-if (gameContainer) {
-    gameContainer.addEventListener('click', handleClick);
-    gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-    gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-    gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
-} else {
-    console.error("Game container not found");
-}
+    if (gameContainer) {
+        gameContainer.addEventListener('click', handleClick);
+        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+        gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+    } else {
+        console.error("Game container not found");
+    }
 
     // Button click handlers
     const buttonHandlers = {
@@ -1270,22 +1280,22 @@ if (gameContainer) {
     };
 
     // Initialize button event listeners
-Object.entries(buttonHandlers).forEach(([id, handler]) => {
-    const button = document.getElementById(id);
-    if (button) {
-        const eventHandler = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            handler(event);
-            console.log(`Button activated: ${id}`);
-        };
-        button.addEventListener('click', eventHandler);
-        button.addEventListener('touchend', eventHandler);
-        console.log(`Event listeners added for button: ${id}`);
-    } else {
-        console.error(`Button with id '${id}' not found`);
-    }
-});
+    Object.entries(buttonHandlers).forEach(([id, handler]) => {
+        const button = document.getElementById(id);
+        if (button) {
+            const eventHandler = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handler(event);
+                console.log(`Button activated: ${id}`);
+            };
+            button.addEventListener('click', eventHandler);
+            button.addEventListener('touchend', eventHandler);
+            console.log(`Event listeners added for button: ${id}`);
+        } else {
+            console.error(`Button with id '${id}' not found`);
+        }
+    });
 
     // Add event listener for change username button
     const changeUsernameButton = document.getElementById('change-username-button');
@@ -1300,12 +1310,16 @@ Object.entries(buttonHandlers).forEach(([id, handler]) => {
         console.log("Initializing Telegram WebApp...");
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
+
+        window.Telegram.WebApp.onEvent('viewportChanged', function() {
+            updateDisplay();  // Refresh the display when the viewport changes
+        });
     }
 
     // Will auto-replenish by 1 every 2 seconds
     setInterval(autoReplenishWill, 2000);
 
-     // Initialize game after DOM elements are loaded
+    // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
     .then(() => loadProgress())
     .then(() => {
