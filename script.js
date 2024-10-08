@@ -50,6 +50,20 @@ try {
             console.log("Not connected to Firebase");
         }
     });
+
+firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            console.log("User is authenticated with Firebase:", user.uid);
+        } else {
+            firebase.auth().signInAnonymously()
+                .then(() => {
+                    console.log("User signed in anonymously.");
+                })
+                .catch(error => {
+                    console.error("Error during anonymous sign-in:", error);
+                });
+        }
+    });
 } catch (error) {
     console.error("Error initializing Firebase:", error);
     alert("There was an error initializing the game. Please try refreshing the page.");
@@ -281,52 +295,68 @@ function saveProgress() {
 // Updated loadProgress function
 function loadProgress() {
     console.log("Loading progress for user:", telegramUserId);
+    
     return new Promise((resolve, reject) => {
         if (!database) {
             console.error("Firebase database not initialized");
             reject("Firebase database not initialized");
             return;
         }
-        
-        if (telegramUserId) {
-            database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                console.log("Loaded data from Firebase:", data);
-                if (data) {
-                    displayName = data.displayName || generateRandomUsername();
-                    score = data.score || 0;
-                    credits = data.credits || 0;
-                    will = data.will || 1000;
-                    level = data.level || 1;
-                    health = data.health || 100;
-                    maxHealth = data.maxHealth || 100;
-                    damagePerClick = data.damagePerClick || 1;
-                    replenishWillCost = data.replenishWillCost || 100;
-                    increaseDamageCost = data.increaseDamageCost || 200;
-                    baseWalletAddress = data.baseWalletAddress || '';
-                    riggedTokens = data.riggedTokens || 0;
-                    pointsAtLastBurn = data.pointsAtLastBurn || 0;
-                    characterIndex = data.characterIndex || 0;
-                    totalClaimed = data.totalClaimed || 0; // Add this line
-                    totalBurned = data.totalBurned || 0; // Add this line
-                    isWalletValid = validateWalletAddress(baseWalletAddress);
-                    console.log("Progress loaded successfully");
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                console.log("Authenticated with Firebase, user UID:", user.uid);
+
+                if (telegramUserId) {
+                    // Ensure the authenticated Firebase user matches the telegramUserId (if necessary)
+                    database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+                        const data = snapshot.val();
+                        console.log("Loaded data from Firebase:", data);
+
+                        if (data) {
+                            displayName = data.displayName || generateRandomUsername();
+                            score = data.score || 0;
+                            credits = data.credits || 0;
+                            will = data.will || 1000;
+                            level = data.level || 1;
+                            health = data.health || 100;
+                            maxHealth = data.maxHealth || 100;
+                            damagePerClick = data.damagePerClick || 1;
+                            replenishWillCost = data.replenishWillCost || 100;
+                            increaseDamageCost = data.increaseDamageCost || 200;
+                            baseWalletAddress = data.baseWalletAddress || '';
+                            riggedTokens = data.riggedTokens || 0;
+                            pointsAtLastBurn = data.pointsAtLastBurn || 0;
+                            characterIndex = data.characterIndex || 0;
+                            totalClaimed = data.totalClaimed || 0;
+                            totalBurned = data.totalBurned || 0;
+                            isWalletValid = validateWalletAddress(baseWalletAddress);
+                            console.log("Progress loaded successfully");
+                        } else {
+                            console.log("No existing data found, initializing with default values");
+                            initializeDefaultValues();
+                        }
+
+                        console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
+                        resolve();
+
+                    }).catch((error) => {
+                        console.error("Error loading progress:", error);
+                        initializeDefaultValues();
+                        reject(error);
+                    });
+
                 } else {
-                    console.log("No existing data found, initializing with default values");
+                    console.error("No Telegram User ID available");
                     initializeDefaultValues();
+                    reject("No Telegram User ID available");
                 }
-                console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
-                resolve();
-            }).catch((error) => {
-                console.error("Error loading progress:", error);
+            } else {
+                console.error("User is not authenticated. Cannot load progress.");
                 initializeDefaultValues();
-                reject(error);
-            });
-        } else {
-            console.error("No Telegram User ID available");
-            initializeDefaultValues();
-            reject("No Telegram User ID available");
-        }
+                reject("User is not authenticated");
+            }
+        });
     });
 }
 
