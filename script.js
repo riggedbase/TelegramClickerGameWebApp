@@ -51,9 +51,10 @@ try {
         }
     });
 
-firebase.auth().onAuthStateChanged(function(user) {
+    firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             console.log("User is authenticated with Firebase:", user.uid);
+            loadOrInitializeUser(user.uid); // Load or initialize the user with Firebase UID
         } else {
             firebase.auth().signInAnonymously()
                 .then(() => {
@@ -67,6 +68,45 @@ firebase.auth().onAuthStateChanged(function(user) {
 } catch (error) {
     console.error("Error initializing Firebase:", error);
     alert("There was an error initializing the game. Please try refreshing the page.");
+}
+
+function loadOrInitializeUser(firebaseUid) {
+    console.log("Loading or initializing user for Firebase UID:", firebaseUid);
+    database.ref('users/' + firebaseUid).once('value').then((snapshot) => {
+        const data = snapshot.val();
+        if (data && data.telegramUserId === telegramUserId) {
+            console.log("Mapping found. Loading user data...");
+            loadProgress(firebaseUid); // Load progress if mapping is correct
+        } else {
+            console.log("No existing mapping found. Mapping telegramUserId to Firebase UID.");
+            database.ref('users/' + firebaseUid).set({
+                telegramUserId: telegramUserId,
+                displayName: generateRandomUsername(),
+                score: 0,
+                credits: 0,
+                will: 1000,
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                damagePerClick: 1,
+                replenishWillCost: 100,
+                increaseDamageCost: 200,
+                baseWalletAddress: '',
+                riggedTokens: 0,
+                pointsAtLastBurn: 0,
+                characterIndex: 0,
+                totalClaimed: 0,
+                totalBurned: 0
+            }).then(() => {
+                console.log("User mapping and initialization complete");
+                loadProgress(firebaseUid);  // Now load the initialized progress
+            }).catch(error => {
+                console.error("Error initializing user:", error);
+            });
+        }
+    }).catch(error => {
+        console.error("Error loading user mapping:", error);
+    });
 }
 
 let telegramUserId = null;
@@ -266,30 +306,49 @@ function changeUsername(newUsername) {
 // Updated saveProgress function
 function saveProgress() {
     console.log("Attempting to save progress...");
-    console.log("Current telegramUserId:", telegramUserId);
+
     if (!database) {
         console.error("Firebase database not initialized");
         alert("Unable to save progress. Please try refreshing the page.");
         return;
     }
-    if (telegramUserId) {
-        const dataToSave = {
-            displayName, score, credits, will, level, health, maxHealth,
-            damagePerClick, replenishWillCost, increaseDamageCost,
-            baseWalletAddress, riggedTokens, pointsAtLastBurn, characterIndex,
-            totalClaimed, totalBurned // Add these two fields
-        };
-        console.log("Data being saved:", dataToSave);
-        database.ref('users/' + telegramUserId).set(dataToSave)
-            .then(() => console.log("Progress saved successfully"))
-            .catch((error) => {
-                console.error("Error saving progress:", error);
-                alert("There was an error saving your progress. Please try again later.");
-            });
-    } else {
-        console.error("No Telegram User ID available, progress not saved");
-        alert("Unable to save progress. Please make sure you're logged in.");
-    }
+
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            const dataToSave = {
+                displayName, 
+                score, 
+                credits, 
+                will, 
+                level, 
+                health, 
+                maxHealth,
+                damagePerClick, 
+                replenishWillCost, 
+                increaseDamageCost,
+                baseWalletAddress, 
+                riggedTokens, 
+                pointsAtLastBurn, 
+                characterIndex,
+                totalClaimed, 
+                totalBurned,
+                telegramUserId  // Ensure telegramUserId is saved with the progress
+            };
+
+            console.log("Data being saved:", dataToSave);
+
+            // Save the progress under the Firebase user UID
+            database.ref('users/' + user.uid).set(dataToSave)
+                .then(() => console.log("Progress saved successfully"))
+                .catch((error) => {
+                    console.error("Error saving progress:", error);
+                    alert("There was an error saving your progress. Please try again later.");
+                });
+        } else {
+            console.error("No Firebase User ID available, progress not saved");
+            alert("Unable to save progress. Please make sure you're logged in.");
+        }
+    });
 }
 
 // Updated loadProgress function
@@ -308,12 +367,15 @@ function loadProgress() {
                 console.log("Authenticated with Firebase, user UID:", user.uid);
 
                 if (telegramUserId) {
-                    // Ensure the authenticated Firebase user matches the telegramUserId (if necessary)
-                    database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
+                    // Reference Firebase UID, and ensure mapping between telegramUserId and user.uid
+                    const userRef = database.ref('users/' + user.uid);
+                    
+                    userRef.once('value').then((snapshot) => {
                         const data = snapshot.val();
                         console.log("Loaded data from Firebase:", data);
 
                         if (data) {
+                            // If progress exists, load it
                             displayName = data.displayName || generateRandomUsername();
                             score = data.score || 0;
                             credits = data.credits || 0;
@@ -332,9 +394,36 @@ function loadProgress() {
                             totalBurned = data.totalBurned || 0;
                             isWalletValid = validateWalletAddress(baseWalletAddress);
                             console.log("Progress loaded successfully");
+
+                            // Ensure the telegramUserId is saved in Firebase if not already present
+                            if (!data.telegramUserId) {
+                                userRef.update({ telegramUserId: telegramUserId });
+                                console.log("Mapped Telegram user ID to Firebase UID:", telegramUserId);
+                            }
                         } else {
+                            // If no progress, initialize with default values and map Telegram ID
                             console.log("No existing data found, initializing with default values");
                             initializeDefaultValues();
+                            userRef.set({
+                                telegramUserId: telegramUserId,
+                                displayName: displayName,
+                                score: score,
+                                credits: credits,
+                                will: will,
+                                level: level,
+                                health: health,
+                                maxHealth: maxHealth,
+                                damagePerClick: damagePerClick,
+                                replenishWillCost: replenishWillCost,
+                                increaseDamageCost: increaseDamageCost,
+                                baseWalletAddress: baseWalletAddress,
+                                riggedTokens: riggedTokens,
+                                pointsAtLastBurn: pointsAtLastBurn,
+                                characterIndex: characterIndex,
+                                totalClaimed: totalClaimed,
+                                totalBurned: totalBurned
+                            });
+                            console.log("Progress initialized for new user and Telegram ID mapped.");
                         }
 
                         console.log("Game state after loading:", { displayName, score, credits, will, level, health, maxHealth, damagePerClick, replenishWillCost, increaseDamageCost, characterIndex, totalClaimed, totalBurned });
