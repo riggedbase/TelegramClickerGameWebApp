@@ -52,26 +52,30 @@ try {
     });
 
     firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-        // User is authenticated, ensure the Telegram ID is mapped
-        console.log("User is authenticated with Firebase:", user.uid);
-        loadOrInitializeUser(user.uid); // Load or initialize user data
-    } else {
-        // No user is authenticated, use Telegram ID to handle sign-in
-        if (telegramUserId) {
-            firebase.auth().signInWithCustomToken(telegramUserId)
-                .then((authData) => {
-                    console.log("Signed in using Telegram ID:", telegramUserId);
-                    loadOrInitializeUser(authData.uid);
-                })
-                .catch((error) => {
-                    console.error("Error during Telegram-based sign-in:", error);
-                });
+        if (user) {
+            // User is authenticated, ensure the Telegram ID is mapped
+            console.log("User is authenticated with Firebase:", user.uid);
+            loadOrInitializeUser(user.uid); // Load or initialize user data
         } else {
-            console.error("Telegram User ID not available, unable to sign in");
+            // No user is authenticated, use Telegram ID to handle sign-in
+            if (telegramUserId) {
+                firebase.auth().signInWithCustomToken(telegramUserId)
+                    .then((authData) => {
+                        console.log("Signed in using Telegram ID:", telegramUserId);
+                        loadOrInitializeUser(authData.uid);
+                    })
+                    .catch((error) => {
+                        console.error("Error during Telegram-based sign-in:", error);
+                    });
+            } else {
+                console.error("Telegram User ID not available, unable to sign in");
+            }
         }
-    }
-});
+    });
+} catch (error) {
+    console.error("Error initializing Firebase:", error);
+    alert("There was an error initializing the game. Please try refreshing the page.");
+}
 
 function loadOrInitializeUser(firebaseUid) {
     console.log("Loading or initializing user for Firebase UID:", firebaseUid);
