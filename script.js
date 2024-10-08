@@ -19,6 +19,15 @@ try {
     firebase.initializeApp(firebaseConfig);
     database = firebase.database();
     console.log("Firebase initialized successfully");
+    
+    // Test Firebase connection
+    database.ref('.info/connected').on('value', function(snap) {
+        if (snap.val() === true) {
+            console.log("Connected to Firebase");
+        } else {
+            console.log("Not connected to Firebase");
+        }
+    });
 } catch (error) {
     console.error("Error initializing Firebase:", error);
     alert("There was an error initializing the game. Please try refreshing the page.");
@@ -33,6 +42,17 @@ if (window.Telegram && window.Telegram.WebApp) {
     console.log("Telegram WebApp found in global scope");
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
+    
+    // Log WebApp data
+    console.log("WebApp initData:", window.Telegram.WebApp.initData);
+    console.log("WebApp User:", window.Telegram.WebApp.initDataUnsafe.user);
+    
+    if (window.Telegram.WebApp.initDataUnsafe.user) {
+        telegramUserId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+        console.log("Telegram user ID from WebApp:", telegramUserId);
+    } else {
+        console.error("User data not found in WebApp");
+    }
 } else {
     console.log("Telegram WebApp not found in global scope, checking URL parameters...");
     const urlParams = new URLSearchParams(window.location.hash.slice(1));
@@ -138,7 +158,7 @@ function closeWalletScreen() {
 
 // Updated authenticateTelegramUser function
 function authenticateTelegramUser() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         console.log("Authenticating Telegram user...");
         if (telegramUserId) {
             console.log("Using existing Telegram user ID:", telegramUserId);
@@ -151,14 +171,12 @@ function authenticateTelegramUser() {
                 console.log("Authenticated Telegram user ID:", telegramUserId);
                 resolve(telegramUserId);
             } else {
-                console.log("Unable to retrieve Telegram user ID, using fallback");
-                telegramUserId = 'telegram_' + Math.random().toString(36).substr(2, 9);
-                resolve(telegramUserId);
+                console.error("Unable to retrieve Telegram user ID from WebApp");
+                reject("No Telegram user data available");
             }
         } else {
-            console.log("Telegram WebApp not available, using web fallback");
-            telegramUserId = 'web_' + Math.random().toString(36).substr(2, 9);
-            resolve(telegramUserId);
+            console.error("Telegram WebApp not available");
+            reject("Telegram WebApp not available");
         }
     });
 }
@@ -566,7 +584,9 @@ function handleTouchEnd(event) {
 }
 
 function handleClick(event) {
-    // Check if the click is within the game container and not on excluded elements
+    console.log("Click/touch event triggered", event.type);
+    
+    // Check if the click/touch is within the game container and not on excluded elements
     if (event.target.closest('#game-container') &&
         !event.target.closest('#defeat-message') && 
         !event.target.closest('#leaderboard') && 
@@ -574,10 +594,14 @@ function handleClick(event) {
         !event.target.closest('.action-button') &&
         !event.target.closest('#actions')) {
 
-        console.log("Handling click for attack");
+        console.log("Handling click/touch for attack");
         handleAttack(damagePerClick);  // Apply damage for each tap
-        event.preventDefault();  // Prevent any default behavior
-        event.stopPropagation();  // Stop the event from bubbling up
+
+        // Prevent default behavior and stop propagation for all event types
+        event.preventDefault();
+        event.stopPropagation();
+    } else {
+        console.log("Click/touch was on an excluded element or outside game container");
     }
 }
 
@@ -806,10 +830,6 @@ function handleBurnRigged() {
 }
 
 // Function to validate wallet address (added back)
-function validateWalletAddress(address) {
-    return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
-}
-
 function validateWalletAddress(address) {
     return (address.length === 42 && address.startsWith('0x')) || address.endsWith('.base.eth');
 }
@@ -1063,17 +1083,13 @@ Object.entries(buttonHandlers).forEach(([id, handler]) => {
     authenticateTelegramUser()
     .then(() => loadProgress())
     .then(() => {
-        updateDisplay();
-        setInterval(saveProgress, 5000);
-        console.log("Game initialized");
+    updateDisplay();
+    setInterval(saveProgress, 5000);
+    console.log("Game initialized");
     })
     .catch((error) => {
-        console.error("Error initializing game:", error);
-        telegramUserId = 'error_' + Math.random().toString(36).substr(2, 9);
-        displayName = generateRandomUsername();
-        updateDisplay();
-        setInterval(saveProgress, 30000);
-        console.log("Game initialized with new session due to error");
+    console.error("Error initializing game:", error);
+    alert("Error initializing game. Please ensure you're running this in Telegram.");
     });
 });
 
