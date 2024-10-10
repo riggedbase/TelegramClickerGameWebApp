@@ -427,14 +427,12 @@ function loadProgress() {
             reject("Firebase database not initialized");
             return;
         }
-
         if (!telegramUserId) {
             console.error("No Telegram User ID available");
             initializeDefaultValues();
             reject("No Telegram User ID available");
             return;
         }
-
         const userRef = database.ref('users/' + telegramUserId);
         userRef.once('value')
             .then((snapshot) => {
@@ -447,20 +445,27 @@ function loadProgress() {
                     credits = userData.credits || 0;
                     will = userData.will || 1000;
                     level = userData.level || 1;
-                    health = userData.health || 100;
-                    maxHealth = userData.maxHealth || 100;
+                    characterIndex = userData.characterIndex || 0;
+                    maxHealth = characters[characterIndex].baseHealth * level;
+                    health = userData.health || maxHealth;
                     damagePerClick = userData.damagePerClick || 1;
                     replenishWillCost = userData.replenishWillCost || 100;
                     increaseDamageCost = userData.increaseDamageCost || 200;
                     baseWalletAddress = userData.baseWalletAddress || '';
                     riggedTokens = userData.riggedTokens || 0;
                     pointsAtLastBurn = userData.pointsAtLastBurn || 0;
-                    characterIndex = userData.characterIndex || 0;
                     totalClaimed = userData.totalClaimed || 0;
                     totalBurned = userData.totalBurned || 0;
 
                     console.log("User progress loaded successfully");
                     updateDisplay();
+
+                    // Check for negative health and trigger defeat message if necessary
+                    if (health <= 0) {
+                        console.log("Negative or zero health detected, triggering defeat message");
+                        setTimeout(() => showDefeatMessage(), 500); // Slight delay to ensure UI is updated
+                    }
+
                     resolve(userData);
                 } else {
                     console.log("No existing user data found. Initializing new user.");
@@ -549,14 +554,11 @@ function autoReplenishWill() {
 function showDefeatMessage() {
     const defeatMessage = document.getElementById('defeat-message');
     const defeatContent = defeatMessage.querySelector('.defeat-content');
-
     if (!defeatMessage || !defeatContent) {
         console.error("Defeat message elements not found");
         return;
     }
-
     defeatContent.innerHTML = ''; // Clear existing content
-
     // Add the close button
     const closeButton = document.createElement('span');
     closeButton.textContent = '✖';
@@ -565,61 +567,48 @@ function showDefeatMessage() {
     closeButton.style.top = '10px';
     closeButton.style.right = '10px';
     defeatContent.appendChild(closeButton);
-
     // Add the defeat message text from the characters array
     const defeatText = document.createElement('p');
     defeatText.textContent = characters[characterIndex].defeatMessage;
     defeatContent.appendChild(defeatText);
-
     defeatMessage.classList.remove('hidden'); // Show defeat message
-
     // Remove the click event listener from the game container to avoid attacks
     gameContainer.removeEventListener('click', handleClick);
-
     // Close the defeat message and trigger character transition
     closeButton.addEventListener('click', function closeDefeatMessage(event) {
         event.stopPropagation(); // Prevent further propagation
-
         defeatMessage.classList.add('hidden'); // Hide defeat message
         nextCharacter();  // Load next character
         updateDisplay();  // Update UI with new character data
-
         // Re-add the click event listener for attacks
         setTimeout(() => {
             gameContainer.addEventListener('click', handleClick);
         }, 500);
     }, { once: true });
-
     console.log("Defeat message shown, waiting for user to click close button to continue");
 }
 
 // Updated nextCharacter function
 function nextCharacter() {
     console.log("Loading next character");
-
     // Increment character index and cycle through characters
     characterIndex = (characterIndex + 1) % characters.length;
-
     // Reset health for the new character, but do not reset other stats
     maxHealth = characters[characterIndex].baseHealth * level;
     health = maxHealth;
-
     if (characterIndex === 0) {
         level++;  // Increase level when cycling through all characters
         console.log(`Level increased to: ${level}`);
     }
-
     // Set the base image immediately on character load
     const characterElement = document.getElementById('character');
     if (characterElement) {
         const baseImage = characters[characterIndex].images[0];  // Get base image
         characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
     }
-
     // Update the display with the new character and save progress
     updateDisplay();
     saveProgress();
-
     // Ensure event listeners for clicks/touches remain active after character change
     const gameContainer = document.getElementById('game-container');
     if (gameContainer) {
@@ -629,8 +618,7 @@ function nextCharacter() {
     } else {
         console.error("Game container not found, unable to reattach event listeners.");
     }
-
-    console.log(`Next character loaded: ${characters[characterIndex].name}`);
+    console.log(`Next character loaded: ${characters[characterIndex].name} with health: ${health}/${maxHealth}`);
 }
 
 // Function to update display
