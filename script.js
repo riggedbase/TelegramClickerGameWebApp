@@ -162,6 +162,8 @@ function checkElementVisibility(elementId) {
 let telegramUserId = null;
 let displayName = null;
 let isWalletValid = false; // Track wallet validation status
+let lastViewportWidth = window.innerWidth;
+let lastViewportHeight = window.innerHeight;
 
 console.log("Checking for Telegram WebApp...");
 if (window.Telegram && window.Telegram.WebApp) {
@@ -1404,20 +1406,4 @@ function initializeEventListeners() {
         console.error("Game container not found, unable to initialize event listeners");
     }
 }
-
-let lastViewportWidth = window.innerWidth;
-let lastViewportHeight = window.innerHeight;
-
-function handleViewportChange() {
-    const currentWidth = window.innerWidth;
-    const currentHeight = window.innerHeight;
-    
-    if (currentWidth !== lastViewportWidth || currentHeight !== lastViewportHeight) {
-        console.log("Viewport size changed. Updating display...");
-        updateDisplay();
-        lastViewportWidth = currentWidth;
-        lastViewportHeight = currentHeight;
-    }
-}
-
 console.log("Script loaded");
