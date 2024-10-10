@@ -227,8 +227,6 @@ let lastTapTime = 0;
 let tapCount = 0;
 let lastRenderedCharacterIndex = -1;
 let lastRenderedHealth = -1;
-let lastViewportWidth = window.innerWidth;
-let lastViewportHeight = window.innerHeight;
 let lastWillUpdateTime = Date.now();
 
 // Declare character information globally with updated defeat messages
