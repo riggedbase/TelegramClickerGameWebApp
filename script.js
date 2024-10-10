@@ -731,8 +731,9 @@ function handleAttack(damage) {
     score += damage;
     credits += damage;
     will = Math.max(0, will - 1);
+    riggedTokens = calculateRigged();  // Recalculate RIGGED tokens after attack
 
-    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}`);
+    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}, New RIGGED tokens: ${riggedTokens}`);
 
     animateCharacterDamage();
 
@@ -896,6 +897,8 @@ function handleShowWallet() {
     console.log("Wallet button clicked - function triggered");
     
     riggedTokens = calculateRigged();
+    console.log(`Calculated RIGGED tokens: ${riggedTokens}`);
+    
     updateWalletDisplay();
     const walletScreen = document.getElementById('wallet-screen');
     const walletContent = document.getElementById('wallet-content');
@@ -1127,12 +1130,9 @@ function calculateRigged() {
     const eligibleCredits = credits - pointsAtLastBurn;
     const riggedTokensEarned = Math.floor(eligibleCredits / 100);
     
-    // Ensure that $RIGGED tokens can't be negative
-    if (riggedTokensEarned < 0) {
-        return 0;
-    }
+    console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, Earned tokens: ${riggedTokensEarned}`);
     
-    return riggedTokensEarned;
+    return Math.max(0, riggedTokensEarned);
 }
 
 // Show Leaderboard
