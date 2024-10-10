@@ -220,6 +220,8 @@ let baseWalletAddress = '';  // Initialize baseWalletAddress
 let touchStartY = 0;
 let touchEndY = 0;
 const scrollThreshold = 10; // Adjust this value as needed
+let touchStartTime = 0;
+const tapThreshold = 200; // milliseconds
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -752,24 +754,21 @@ function handleAttack(damage) {
 // Function to handle touch events
 // Handle touch start to detect initial touch position
 function handleTouchStart(event) {
-    const touches = event.touches;  // Get all active touches
-    touchStartY = []; // Reset touchStartY array
+    touchStartTime = Date.now();
+    touchStartY = [];
+    const touches = event.touches;
     
-    // Loop through all touches and save their initial positions
     for (let i = 0; i < touches.length; i++) {
-        const touch = touches[i];
-        touchStartY[i] = touch.clientY;  // Save Y position for each touch
+        touchStartY[i] = touches[i].clientY;
     }
     
-    // Only prevent default if not touching an action button
     if (!event.target.closest('#actions')) {
-        event.preventDefault();  // Prevent scrolling
+        event.preventDefault();
     }
 }
 
 // Handle touch move to determine if it's a scroll or tap
 function handleTouchMove(event) {
-    // If touching an action button, allow default behavior
     if (event.target.closest('#actions')) {
         return;
     }
@@ -777,60 +776,68 @@ function handleTouchMove(event) {
     const touches = event.touches;
     let isScrolling = false;
 
-    // Check each touch to see if it's a scroll
     for (let i = 0; i < touches.length; i++) {
-        const touch = touches[i];
-        const touchDiff = Math.abs(touchStartY[i] - touch.clientY);
+        const touchDiff = Math.abs(touchStartY[i] - touches[i].clientY);
         if (touchDiff > scrollThreshold) {
             isScrolling = true;
-            break;  // If any touch is scrolling, we stop processing
+            break;
         }
     }
 
     if (isScrolling) {
-        event.stopPropagation();  // Let the scroll pass through
+        event.stopPropagation();
     } else {
-        event.preventDefault();  // Prevent default behavior for taps
+        event.preventDefault();
     }
 }
 
 // Handle touch end to register the tap and trigger the attack
 function handleTouchEnd(event) {
-    // If ending touch on an action button, allow default behavior
     if (event.target.closest('#actions')) {
         return;
     }
 
-    event.preventDefault();  // Prevent any unintended behavior
-    const touches = event.changedTouches;  // Get all ended touches
+    event.preventDefault();
+    const touchEndTime = Date.now();
+    const touchDuration = touchEndTime - touchStartTime;
 
-    // Process each ended touch as a tap/click
-    for (let i = 0; i < touches.length; i++) {
-        const touch = touches[i];
-        const touchDiff = Math.abs(touchStartY[i] - touch.clientY);
-        
-        // Only process as a tap if the touch didn't move significantly
-        if (touchDiff <= scrollThreshold) {
-            // Create a synthetic event object to pass to handleClick
-            const syntheticEvent = {
-                target: touch.target,
-                preventDefault: () => {},
-                stopPropagation: () => {}
-            };
-            handleClick(syntheticEvent);  // Use handleClick to process the tap as an attack
+    if (touchDuration <= tapThreshold) {
+        const touches = event.changedTouches;
+        let validTaps = 0;
+
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            const touchDiff = Math.abs(touchStartY[i] - touch.clientY);
+            
+            if (touchDiff <= scrollThreshold) {
+                const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (targetElement && targetElement.closest('#game-container') &&
+                    !targetElement.closest('#defeat-message') && 
+                    !targetElement.closest('#leaderboard') && 
+                    !targetElement.closest('#wallet-screen') &&
+                    !targetElement.closest('.action-button') &&
+                    !targetElement.closest('#actions')) {
+                    
+                    validTaps++;
+                }
+            }
+        }
+
+        if (validTaps > 0) {
+            console.log(`Registered ${validTaps} valid tap(s)`);
+            handleAttack(damagePerClick * validTaps);
         }
     }
 
-    // Reset touch coordinates
     touchStartY = [];
 }
 
 function handleClick(event) {
-    console.log("Click/touch event triggered", event.type);
+    console.log("Click event triggered");
     console.log("Target:", event.target);
     console.log("Current target:", event.currentTarget);
     
-    // Check if the click/touch is within the game container and not on excluded elements
     if (event.target.closest('#game-container') &&
         !event.target.closest('#defeat-message') && 
         !event.target.closest('#leaderboard') && 
@@ -838,17 +845,16 @@ function handleClick(event) {
         !event.target.closest('.action-button') &&
         !event.target.closest('#actions')) {
 
-        console.log("Handling click/touch for attack");
+        console.log("Handling click for attack");
         console.log("Damage per click:", damagePerClick);
         console.log("Current health:", health);
-        handleAttack(damagePerClick);  // Apply damage for each tap
+        handleAttack(damagePerClick);
         console.log("New health after attack:", health);
 
-        // Prevent default behavior and stop propagation for all event types
         event.preventDefault();
         event.stopPropagation();
     } else {
-        console.log("Click/touch was on an excluded element or outside game container");
+        console.log("Click was on an excluded element or outside game container");
         console.log("Closest game container:", event.target.closest('#game-container'));
         console.log("Closest excluded elements:", {
             defeatMessage: event.target.closest('#defeat-message'),
@@ -1272,15 +1278,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         characterElement.innerHTML = `<img src="${baseImage}" alt="${characters[0].name}">`;
     }
 
-    // Add event listeners for clicks and touches
-    if (gameContainer) {
-        gameContainer.addEventListener('click', handleClick);
-        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-        gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
-    } else {
-        console.error("Game container not found");
-    }
+    // Initialize event listeners
+    initializeEventListeners();
 
     // Button click handlers
     const buttonHandlers = {
@@ -1355,5 +1354,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
         alert("Error initializing game. Please ensure you're running this in Telegram.");
     });
 });
+
+function initializeEventListeners() {
+    if (gameContainer) {
+        gameContainer.addEventListener('click', handleClick);
+        gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+        gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+        gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+        console.log("Touch and click event listeners initialized");
+    } else {
+        console.error("Game container not found, unable to initialize event listeners");
+    }
+}
 
 console.log("Script loaded");
