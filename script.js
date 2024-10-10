@@ -164,6 +164,9 @@ let displayName = null;
 let isWalletValid = false; // Track wallet validation status
 let lastViewportWidth = window.innerWidth;
 let lastViewportHeight = window.innerHeight;
+let lastWillUpdateTime = Date.now();
+let lastWillReplenishTime = Date.now();
+const WILL_REPLENISH_INTERVAL = 2000; // 2 seconds in milliseconds
 
 console.log("Checking for Telegram WebApp...");
 if (window.Telegram && window.Telegram.WebApp) {
@@ -229,7 +232,6 @@ let lastTapTime = 0;
 let tapCount = 0;
 let lastRenderedCharacterIndex = -1;
 let lastRenderedHealth = -1;
-let lastWillUpdateTime = Date.now();
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -565,16 +567,13 @@ function handleViewportChange() {
 // Function to auto-replenish Will every 2 seconds
 function autoReplenishWill() {
     const currentTime = Date.now();
-    const elapsedSeconds = Math.floor((currentTime - lastWillUpdateTime) / 1000);
-    
-    if (elapsedSeconds > 0 && will < 1000) {
-        const willToAdd = Math.min(elapsedSeconds, 1000 - will);
-        will = Math.min(1000, will + willToAdd);
-        lastWillUpdateTime = currentTime;
+    if (currentTime - lastWillReplenishTime >= WILL_REPLENISH_INTERVAL && will < 1000) {
+        will = Math.min(1000, will + 1);
+        lastWillReplenishTime = currentTime;
         
-        console.log(`Will replenished by ${willToAdd}. Current will: ${will}`);
+        console.log(`Will replenished by 1. Current will: ${will}`);
         updateDisplay();
-        saveProgress();  // Save the updated will value
+        // We don't need to save progress here as it's done periodically elsewhere
     }
 }
 
@@ -583,9 +582,10 @@ function replenishWillOnLoad() {
     const elapsedSeconds = Math.floor((currentTime - lastWillUpdateTime) / 1000);
     
     if (elapsedSeconds > 0 && will < 1000) {
-        const willToAdd = Math.min(elapsedSeconds, 1000 - will);
+        const willToAdd = Math.min(elapsedSeconds / 2, 1000 - will); // Divide by 2 to maintain the 2-second interval
         will = Math.min(1000, will + willToAdd);
         lastWillUpdateTime = currentTime;
+        lastWillReplenishTime = currentTime; // Reset the replenish timer
         
         console.log(`Will replenished by ${willToAdd} on game load. Current will: ${will}`);
         updateDisplay();
@@ -1368,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Will auto-replenish every second
-    setInterval(autoReplenishWill, 1000);
+    setInterval(autoReplenishWill, 100); // Check more frequently, but only replenish every 2 seconds
 
     // Add viewport change handling
     window.addEventListener('resize', handleViewportChange);
