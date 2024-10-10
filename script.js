@@ -221,7 +221,15 @@ let touchStartY = 0;
 let touchEndY = 0;
 const scrollThreshold = 10; // Adjust this value as needed
 let touchStartTime = 0;
-const tapThreshold = 200; // milliseconds
+const tapThreshold = 300; // milliseconds
+const multiTapWindow = 500; // Window for registering multiple taps (in milliseconds)
+let lastTapTime = 0;
+let tapCount = 0;
+let lastRenderedCharacterIndex = -1;
+let lastRenderedHealth = -1;
+let lastViewportWidth = window.innerWidth;
+let lastViewportHeight = window.innerHeight;
+let lastWillUpdateTime = Date.now();
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -365,7 +373,6 @@ function saveProgress() {
             reject(new Error("Database or User ID not available"));
             return;
         }
-
         const dataToSave = {
             displayName, 
             score, 
@@ -382,11 +389,10 @@ function saveProgress() {
             pointsAtLastBurn, 
             characterIndex,
             totalClaimed, 
-            totalBurned
+            totalBurned,
+            lastWillUpdateTime
         };
-
         console.log("Data to save:", dataToSave);
-
         // Function to track changes and only save what's changed
         function trackChanges(newData, oldData) {
             const changes = {};
@@ -397,7 +403,6 @@ function saveProgress() {
             });
             return changes;
         }
-
         // Fetch current data from Firebase to track changes
         database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
             const currentData = snapshot.val() || {};
@@ -458,8 +463,10 @@ function loadProgress() {
                     pointsAtLastBurn = userData.pointsAtLastBurn || 0;
                     totalClaimed = userData.totalClaimed || 0;
                     totalBurned = userData.totalBurned || 0;
+                    lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
 
                     console.log("User progress loaded successfully");
+                    replenishWillOnLoad();
                     updateDisplay();
 
                     // Check for negative health and trigger defeat message if necessary
@@ -467,7 +474,6 @@ function loadProgress() {
                         console.log("Negative or zero health detected, triggering defeat message");
                         setTimeout(() => showDefeatMessage(), 500); // Slight delay to ensure UI is updated
                     }
-
                     resolve(userData);
                 } else {
                     console.log("No existing user data found. Initializing new user.");
@@ -544,11 +550,46 @@ function initializeNewUser(userId) {
         });
 }
 
+function handleViewportChange() {
+    const currentWidth = window.innerWidth;
+    const currentHeight = window.innerHeight;
+    
+    if (currentWidth !== lastViewportWidth || currentHeight !== lastViewportHeight) {
+        console.log("Viewport size changed. Updating display...");
+        updateDisplay();
+        lastViewportWidth = currentWidth;
+        lastViewportHeight = currentHeight;
+    }
+}
+
 // Function to auto-replenish Will every 2 seconds
 function autoReplenishWill() {
-    if (will < 1000) {  // Assuming the maximum Will is 1000
-        will += 1;
-        updateDisplay();  // Update the display to show the new Will value
+    const currentTime = Date.now();
+    const elapsedSeconds = Math.floor((currentTime - lastWillUpdateTime) / 1000);
+    
+    if (elapsedSeconds > 0 && will < 1000) {
+        const willToAdd = Math.min(elapsedSeconds, 1000 - will);
+        will = Math.min(1000, will + willToAdd);
+        lastWillUpdateTime = currentTime;
+        
+        console.log(`Will replenished by ${willToAdd}. Current will: ${will}`);
+        updateDisplay();
+        saveProgress();  // Save the updated will value
+    }
+}
+
+function replenishWillOnLoad() {
+    const currentTime = Date.now();
+    const elapsedSeconds = Math.floor((currentTime - lastWillUpdateTime) / 1000);
+    
+    if (elapsedSeconds > 0 && will < 1000) {
+        const willToAdd = Math.min(elapsedSeconds, 1000 - will);
+        will = Math.min(1000, will + willToAdd);
+        lastWillUpdateTime = currentTime;
+        
+        console.log(`Will replenished by ${willToAdd} on game load. Current will: ${will}`);
+        updateDisplay();
+        saveProgress();  // Save the updated will value
     }
 }
 
@@ -641,26 +682,26 @@ function updateDisplay() {
     };
 
     Object.entries(elements).forEach(([key, element]) => {
-        console.log(`${key} element exists:`, !!element);
         if (!element) console.warn(`${key} element is missing from the DOM`);
     });
 
-    if (elements.character) {
+    if (elements.character && lastRenderedCharacterIndex !== characterIndex) {
         const baseImage = characters[characterIndex].images[0];
         elements.character.innerHTML = `<img src="${baseImage}" alt="${characters[characterIndex].name}" class="character-image">`;
         console.log("Character image updated:", baseImage);
+        lastRenderedCharacterIndex = characterIndex;
     }
 
     if (elements.characterName) {
         elements.characterName.textContent = characters[characterIndex].name;
-        console.log("Character name updated:", characters[characterIndex].name);
     }
 
-    if (elements.health && elements.maxHealth && elements.healthFill) {
+    if (elements.health && elements.maxHealth && elements.healthFill && lastRenderedHealth !== health) {
         elements.health.textContent = health;
         elements.maxHealth.textContent = maxHealth;
         elements.healthFill.style.width = `${(health / maxHealth) * 100}%`;
         console.log("Health updated:", health, "/", maxHealth);
+        lastRenderedHealth = health;
     }
 
     const updates = [
@@ -673,28 +714,13 @@ function updateDisplay() {
     ];
 
     updates.forEach(({ element, value }) => {
-        if (element) {
+        if (element && element.textContent !== value.toString()) {
             element.textContent = value;
             console.log(`${element.id} updated:`, value);
-        } else {
-            console.warn(`Element for ${value} not found in the DOM`);
         }
     });
 
-    if (gameContainer) {
-        gameContainer.style.display = 'none';
-        gameContainer.offsetHeight; // Trigger a reflow
-        gameContainer.style.display = 'flex';
-        console.log("Game container display forced to flex");
-    } else {
-        console.error("Game container not found in the DOM");
-    }
-
     console.log("Display update complete");
-
-    checkElementVisibility('game-container');
-    checkElementVisibility('character');
-    checkElementVisibility('actions');
 }
 
 function animateCharacterDamage() {
@@ -825,8 +851,21 @@ function handleTouchEnd(event) {
         }
 
         if (validTaps > 0) {
-            console.log(`Registered ${validTaps} valid tap(s)`);
-            handleAttack(damagePerClick * validTaps);
+            const currentTime = Date.now();
+            if (currentTime - lastTapTime <= multiTapWindow) {
+                tapCount += validTaps;
+            } else {
+                tapCount = validTaps;
+            }
+            lastTapTime = currentTime;
+
+            console.log(`Registered ${tapCount} valid tap(s) in rapid succession`);
+            handleAttack(damagePerClick * tapCount);
+
+            // Reset tap count after a short delay
+            setTimeout(() => {
+                tapCount = 0;
+            }, multiTapWindow);
         }
     }
 
@@ -1325,13 +1364,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
 
-        window.Telegram.WebApp.onEvent('viewportChanged', function() {
-            updateDisplay();  // Refresh the display when the viewport changes
-        });
+        window.Telegram.WebApp.onEvent('viewportChanged', handleViewportChange);
     }
 
-    // Will auto-replenish by 1 every 2 seconds
-    setInterval(autoReplenishWill, 2000);
+    // Will auto-replenish every second
+    setInterval(autoReplenishWill, 1000);
+
+    // Add viewport change handling
+    window.addEventListener('resize', handleViewportChange);
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
@@ -1361,9 +1401,24 @@ function initializeEventListeners() {
         gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
         gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
         gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
-        console.log("Touch and click event listeners initialized");
+        console.log("Highly sensitive touch and click event listeners initialized");
     } else {
         console.error("Game container not found, unable to initialize event listeners");
+    }
+}
+
+let lastViewportWidth = window.innerWidth;
+let lastViewportHeight = window.innerHeight;
+
+function handleViewportChange() {
+    const currentWidth = window.innerWidth;
+    const currentHeight = window.innerHeight;
+    
+    if (currentWidth !== lastViewportWidth || currentHeight !== lastViewportHeight) {
+        console.log("Viewport size changed. Updating display...");
+        updateDisplay();
+        lastViewportWidth = currentWidth;
+        lastViewportHeight = currentHeight;
     }
 }
 
