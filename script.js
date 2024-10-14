@@ -347,15 +347,15 @@ function initializeDefaultValues() {
 }
 
 function initializeGlobalTokenStats() {
-  const globalStatsRef = database.ref('globalTokenStats');
-  globalStatsRef.once('value', (snapshot) => {
-    if (!snapshot.exists()) {
-      globalStatsRef.set({
-        totalClaimed: 0,
-        totalBurned: 0
-      });
-    }
-  });
+    const globalStatsRef = database.ref('globalTokenStats');
+    globalStatsRef.once('value', (snapshot) => {
+        if (!snapshot.exists()) {
+            globalStatsRef.set({
+                totalClaimed: 0,
+                totalBurned: 0
+            }).catch(error => console.error("Error initializing global stats:", error));
+        }
+    }).catch(error => console.error("Error checking global stats:", error));
 }
 
 // Simple profanity filter (expand this list as needed)
@@ -478,11 +478,10 @@ function loadProgress() {
                     totalClaimed = userData.totalClaimed || 0;
                     totalBurned = userData.totalBurned || 0;
                     lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
-
+                    isWalletValid = !!userData.baseWalletAddress;
                     console.log("User progress loaded successfully");
                     replenishWillOnLoad();
                     updateDisplay();
-
                     // Check for negative health and trigger defeat message if necessary
                     if (health <= 0) {
                         console.log("Negative or zero health detected, triggering defeat message");
@@ -1156,8 +1155,7 @@ function handleClaimRigged() {
 // Updated handleBurnRigged function
 function handleBurnRigged() {
     if (!baseWalletAddress || !isWalletValid) {
-        walletAddressError.textContent = "Please provide a valid wallet address before burning $RIGGED.";
-        walletAddressError.style.color = "red";
+        showPopup("Please provide a valid wallet address before burning $RIGGED.");
         return;
     }
     
@@ -1167,9 +1165,6 @@ function handleBurnRigged() {
     }
 
     const burnAmount = riggedTokens;
-    
-    const userRef = database.ref('users/' + telegramUserId);
-    const globalStatsRef = database.ref('globalTokenStats');
     
     database.ref().transaction((data) => {
         if (data === null) return data;
@@ -1181,22 +1176,19 @@ function handleBurnRigged() {
         const newGlobalTotal = globalStats.totalBurned + burnAmount;
         
         if (newUserTotal > 10000000) {
-            // User has reached their personal limit
             return;
         }
         
         if (newGlobalTotal > 100000000) {
-            // Global limit has been reached
             return;
         }
         
-        // Update user data
         if (!data.users[telegramUserId]) data.users[telegramUserId] = {};
         data.users[telegramUserId].totalBurned = newUserTotal;
         data.users[telegramUserId].riggedTokens = 0;
         data.users[telegramUserId].pointsAtLastBurn = userData.credits;
         
-        // Update global stats
+        if (!data.globalTokenStats) data.globalTokenStats = {};
         data.globalTokenStats.totalBurned = newGlobalTotal;
         
         return data;
