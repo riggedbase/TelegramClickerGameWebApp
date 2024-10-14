@@ -232,6 +232,7 @@ let lastTapTime = 0;
 let tapCount = 0;
 let lastRenderedCharacterIndex = -1;
 let lastRenderedHealth = -1;
+let totalClaimed = 0;
 
 // Declare character information globally with updated defeat messages
 const characters = [
@@ -981,11 +982,12 @@ function handleShowWallet() {
     if (walletScreen && walletContent) {
         // Clear existing content
         walletContent.innerHTML = '';
-        // Recreate wallet content
+        // Recreate wallet content with new structure
         walletContent.innerHTML = `
             <h2>Wallet</h2>
             <div>Current Credits: <span id="wallet-credits">${credits}</span></div>
-            <div>$RIGGED Tokens: <span id="rigged-tokens">${riggedTokens}</span></div>
+            <div>Claimable $RIGGED: <span id="claimable-rigged">${riggedTokens}</span></div>
+            <div>$RIGGED claimed for Season 1 airdrop: <span id="claimed-rigged">${totalClaimed}</span></div>
             <div>
                 Base Wallet Address: 
                 <input type="text" id="base-wallet-address" value="${baseWalletAddress}">
@@ -1172,6 +1174,7 @@ function handleClaimRigged() {
                     riggedTokens = 0; // Reset RIGGED tokens after claiming
                     credits -= claimableAmount * 100;
                     pointsAtLastBurn = credits;
+                    totalClaimed += claimableAmount; // Update totalClaimed
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
@@ -1392,8 +1395,13 @@ function handleSaveWalletAddress() {
 
 // Function to update wallet display
 function updateWalletDisplay() {
-    document.getElementById('wallet-credits').textContent = credits;
-    document.getElementById('rigged-tokens').textContent = riggedTokens;
+    const walletCredits = document.getElementById('wallet-credits');
+    const claimableRigged = document.getElementById('claimable-rigged');
+    const claimedRigged = document.getElementById('claimed-rigged');
+
+    if (walletCredits) walletCredits.textContent = credits;
+    if (claimableRigged) claimableRigged.textContent = riggedTokens;
+    if (claimedRigged) claimedRigged.textContent = totalClaimed;
 }
 
 // Function to calculate Rigged tokens
