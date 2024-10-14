@@ -407,27 +407,39 @@ function saveProgress() {
             lastWillUpdateTime
         };
         console.log("Data to save:", dataToSave);
+        
         // Function to track changes and only save what's changed
         function trackChanges(newData, oldData) {
             const changes = {};
             Object.keys(newData).forEach((key) => {
-                if (newData[key] !== oldData[key]) {
+                if (JSON.stringify(newData[key]) !== JSON.stringify(oldData[key])) {
                     changes[key] = newData[key];
                 }
             });
             return changes;
         }
+        
         // Fetch current data from Firebase to track changes
         database.ref('users/' + telegramUserId).once('value').then((snapshot) => {
             const currentData = snapshot.val() || {};
             const changes = trackChanges(dataToSave, currentData);
             if (Object.keys(changes).length > 0) {
                 console.log("Data to update:", changes);
-                // Update only changed fields in Firebase
+                // Always include riggedTokens and pointsAtLastBurn in the update
+                if (!changes.hasOwnProperty('riggedTokens')) {
+                    changes.riggedTokens = dataToSave.riggedTokens;
+                }
+                if (!changes.hasOwnProperty('pointsAtLastBurn')) {
+                    changes.pointsAtLastBurn = dataToSave.pointsAtLastBurn;
+                }
+                // Update changed fields and always include riggedTokens and pointsAtLastBurn
                 return database.ref('users/' + telegramUserId).update(changes);
             } else {
-                console.log("No changes detected. Progress not updated.");
-                resolve();
+                console.log("No changes detected. Updating riggedTokens and pointsAtLastBurn.");
+                return database.ref('users/' + telegramUserId).update({
+                    riggedTokens: dataToSave.riggedTokens,
+                    pointsAtLastBurn: dataToSave.pointsAtLastBurn
+                });
             }
         }).then(() => {
             console.log("Progress updated successfully");
@@ -1224,20 +1236,28 @@ function handleBurnRigged() {
                 } else {
                     console.log('Burn transaction successful');
                     riggedTokens = 0;
+                    pointsAtLastBurn = credits;
                     updateWalletDisplay();
-                    saveProgress();
-                    // Update the wallet display with the burn success message
-                    const walletContent = document.getElementById('wallet-content');
-                    if (walletContent) {
-                        const burnMessageElement = document.createElement('div');
-                        burnMessageElement.textContent = `Successfully burned ${burnAmount} $RIGGED tokens!`;
-                        burnMessageElement.style.color = 'green';
-                        walletContent.insertBefore(burnMessageElement, walletContent.firstChild);
-                        // Remove the message after 3 seconds
-                        setTimeout(() => {
-                            walletContent.removeChild(burnMessageElement);
-                        }, 3000);
-                    }
+                    saveProgress().then(() => {
+                        console.log('Progress saved after burning RIGGED tokens');
+                        // Update the wallet display with the burn success message
+                        const walletContent = document.getElementById('wallet-content');
+                        if (walletContent) {
+                            const burnMessageElement = document.createElement('div');
+                            burnMessageElement.textContent = `Successfully burned ${burnAmount} $RIGGED tokens!`;
+                            burnMessageElement.style.color = 'green';
+                            walletContent.insertBefore(burnMessageElement, walletContent.firstChild);
+                            // Remove the message after 3 seconds
+                            setTimeout(() => {
+                                if (walletContent.contains(burnMessageElement)) {
+                                    walletContent.removeChild(burnMessageElement);
+                                }
+                            }, 3000);
+                        }
+                    }).catch((error) => {
+                        console.error('Error saving progress after burning RIGGED tokens:', error);
+                        showPopup("There was an error saving your progress. Please try again later.");
+                    });
                 }
             });
         }
