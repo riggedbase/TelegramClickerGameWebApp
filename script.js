@@ -1124,7 +1124,7 @@ function handleClaimRigged() {
         userData.totalClaimed = newUserTotal;
         userData.credits -= claimableAmount * 100;
         userData.pointsAtLastBurn = userData.credits;
-        userData.riggedTokens = (userData.riggedTokens || 0) + claimableAmount;
+        userData.riggedTokens = 0; // Reset RIGGED tokens after claiming
         
         return userData;
     }, (error, committed, userSnapshot) => {
@@ -1167,7 +1167,7 @@ function handleClaimRigged() {
                     }
                 } else {
                     console.log('Claim transaction successful');
-                    riggedTokens += claimableAmount;
+                    riggedTokens = 0; // Reset RIGGED tokens after claiming
                     credits -= claimableAmount * 100;
                     pointsAtLastBurn = credits;
                     updateWalletDisplay();
