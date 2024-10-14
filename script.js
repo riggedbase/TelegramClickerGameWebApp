@@ -1166,52 +1166,69 @@ function handleBurnRigged() {
 
     const burnAmount = riggedTokens;
     
-    database.ref().transaction((data) => {
-        if (data === null) return data;
-        
-        const userData = data.users[telegramUserId] || {};
-        const globalStats = data.globalTokenStats || { totalClaimed: 0, totalBurned: 0 };
+    const userRef = database.ref('users/' + telegramUserId);
+    const globalStatsRef = database.ref('globalTokenStats');
+    
+    // First, update user data
+    userRef.transaction((userData) => {
+        if (userData === null) return userData;
         
         const newUserTotal = (userData.totalBurned || 0) + burnAmount;
-        const newGlobalTotal = globalStats.totalBurned + burnAmount;
         
         if (newUserTotal > 10000000) {
             return;
         }
         
-        if (newGlobalTotal > 100000000) {
-            return;
-        }
+        userData.totalBurned = newUserTotal;
+        userData.riggedTokens = 0;
+        userData.pointsAtLastBurn = userData.credits;
         
-        if (!data.users[telegramUserId]) data.users[telegramUserId] = {};
-        data.users[telegramUserId].totalBurned = newUserTotal;
-        data.users[telegramUserId].riggedTokens = 0;
-        data.users[telegramUserId].pointsAtLastBurn = userData.credits;
-        
-        if (!data.globalTokenStats) data.globalTokenStats = {};
-        data.globalTokenStats.totalBurned = newGlobalTotal;
-        
-        return data;
-    }, (error, committed, snapshot) => {
+        return userData;
+    }, (error, committed, userSnapshot) => {
         if (error) {
-            console.error('Transaction failed abnormally!', error);
+            console.error('User burn transaction failed:', error);
             showPopup("There was an error burning your $RIGGED tokens. Please try again later.");
         } else if (!committed) {
-            const userData = snapshot.val().users[telegramUserId];
-            const globalStats = snapshot.val().globalTokenStats;
-            
-            if (userData && userData.totalBurned >= 10000000) {
-                showPopup("You have reached the maximum burn limit for Season 1. Keep an eye out for Season 2 announcements!");
-            } else if (globalStats && globalStats.totalBurned >= 100000000) {
-                showPopup("All available $RIGGED tokens for Season 1 have been burned. Stay tuned for Season 2 announcements!");
-            } else {
-                showPopup("Unable to burn $RIGGED tokens. Please try again later.");
-            }
+            console.log('User burn transaction not committed');
+            showPopup("Unable to burn $RIGGED tokens. Please try again later.");
         } else {
-            riggedTokens = 0;
-            updateWalletDisplay();
-            saveProgress();
-            showPopup(`Successfully burned ${burnAmount} $RIGGED tokens!`);
+            // If user transaction is successful, update global stats
+            globalStatsRef.transaction((globalStats) => {
+                if (globalStats === null) return globalStats;
+                
+                const newGlobalTotal = (globalStats.totalBurned || 0) + burnAmount;
+                
+                if (newGlobalTotal > 100000000) {
+                    return;
+                }
+                
+                globalStats.totalBurned = newGlobalTotal;
+                return globalStats;
+            }, (error, committed, globalSnapshot) => {
+                if (error) {
+                    console.error('Global stats burn transaction failed:', error);
+                    showPopup("There was an error updating global stats. Please try again later.");
+                } else if (!committed) {
+                    console.log('Global stats burn transaction not committed');
+                    
+                    const userData = userSnapshot.val();
+                    const globalStats = globalSnapshot.val();
+                    
+                    if (userData && userData.totalBurned >= 10000000) {
+                        showPopup("You have reached the maximum burn limit for Season 1. Keep an eye out for Season 2 announcements!");
+                    } else if (globalStats && globalStats.totalBurned >= 100000000) {
+                        showPopup("All available $RIGGED tokens for Season 1 have been burned. Stay tuned for Season 2 announcements!");
+                    } else {
+                        showPopup("Unable to burn $RIGGED tokens. Please try again later.");
+                    }
+                } else {
+                    console.log('Burn transaction successful');
+                    riggedTokens = 0;
+                    updateWalletDisplay();
+                    saveProgress();
+                    showPopup(`Successfully burned ${burnAmount} $RIGGED tokens!`);
+                }
+            });
         }
     });
 }
