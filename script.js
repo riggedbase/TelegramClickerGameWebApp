@@ -407,7 +407,7 @@ function saveProgress() {
             totalBurned,
             lastWillUpdateTime
         };
-        console.log("Data to save:", dataToSave);
+        console.log("Data to save:", JSON.stringify(dataToSave, null, 2));
         
         // Function to track changes and only save what's changed
         function trackChanges(newData, oldData) {
@@ -425,21 +425,25 @@ function saveProgress() {
             const currentData = snapshot.val() || {};
             const changes = trackChanges(dataToSave, currentData);
             if (Object.keys(changes).length > 0) {
-                console.log("Data to update:", changes);
-                // Always include riggedTokens and pointsAtLastBurn in the update
+                console.log("Data to update:", JSON.stringify(changes, null, 2));
+                // Always include riggedTokens, pointsAtLastBurn, and totalClaimed in the update
                 if (!changes.hasOwnProperty('riggedTokens')) {
                     changes.riggedTokens = dataToSave.riggedTokens;
                 }
                 if (!changes.hasOwnProperty('pointsAtLastBurn')) {
                     changes.pointsAtLastBurn = dataToSave.pointsAtLastBurn;
                 }
-                // Update changed fields and always include riggedTokens and pointsAtLastBurn
+                if (!changes.hasOwnProperty('totalClaimed')) {
+                    changes.totalClaimed = dataToSave.totalClaimed;
+                }
+                // Update changed fields and always include riggedTokens, pointsAtLastBurn, and totalClaimed
                 return database.ref('users/' + telegramUserId).update(changes);
             } else {
-                console.log("No changes detected. Updating riggedTokens and pointsAtLastBurn.");
+                console.log("No changes detected. Updating riggedTokens, pointsAtLastBurn, and totalClaimed.");
                 return database.ref('users/' + telegramUserId).update({
                     riggedTokens: dataToSave.riggedTokens,
-                    pointsAtLastBurn: dataToSave.pointsAtLastBurn
+                    pointsAtLastBurn: dataToSave.pointsAtLastBurn,
+                    totalClaimed: dataToSave.totalClaimed
                 });
             }
         }).then(() => {
@@ -493,6 +497,7 @@ function loadProgress() {
                     lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
                     isWalletValid = !!userData.baseWalletAddress;
                     console.log("User progress loaded successfully");
+                    console.log("Loaded totalClaimed:", totalClaimed);
                     replenishWillOnLoad();
                     updateDisplay();
                     // Check for negative health and trigger defeat message if necessary
@@ -544,6 +549,7 @@ function loadOrInitializeUser(userId) {
 }
 
 function initializeNewUser(userId) {
+    console.log("Initializing new user with ID:", userId);
     const newUserData = {
         displayName: generateRandomUsername(),
         score: 0,
@@ -563,13 +569,13 @@ function initializeNewUser(userId) {
         totalBurned: 0,
         lastWillUpdateTime: Date.now()
     };
-
     return database.ref('users/' + userId).set(newUserData)
         .then(() => {
-            console.log("New user initialized with ID:", userId);
+            console.log("New user data successfully written to database for ID:", userId);
             // Assign newUserData to global variables
             Object.keys(newUserData).forEach(key => {
                 window[key] = newUserData[key];
+                console.log(`Set global variable ${key} to:`, newUserData[key]);
             });
             updateDisplay();
             return newUserData; // Return the new user data for potential further use
@@ -1395,13 +1401,33 @@ function handleSaveWalletAddress() {
 
 // Function to update wallet display
 function updateWalletDisplay() {
+    console.log("Updating wallet display");
     const walletCredits = document.getElementById('wallet-credits');
     const claimableRigged = document.getElementById('claimable-rigged');
     const claimedRigged = document.getElementById('claimed-rigged');
 
-    if (walletCredits) walletCredits.textContent = credits;
-    if (claimableRigged) claimableRigged.textContent = riggedTokens;
-    if (claimedRigged) claimedRigged.textContent = totalClaimed;
+    if (walletCredits) {
+        walletCredits.textContent = credits;
+        console.log("Updated wallet credits display:", credits);
+    } else {
+        console.warn("wallet-credits element not found");
+    }
+
+    if (claimableRigged) {
+        claimableRigged.textContent = riggedTokens;
+        console.log("Updated claimable RIGGED display:", riggedTokens);
+    } else {
+        console.warn("claimable-rigged element not found");
+    }
+
+    if (claimedRigged) {
+        claimedRigged.textContent = totalClaimed;
+        console.log("Updated claimed RIGGED display:", totalClaimed);
+    } else {
+        console.warn("claimed-rigged element not found");
+    }
+
+    console.log("Wallet display update complete");
 }
 
 // Function to calculate Rigged tokens
