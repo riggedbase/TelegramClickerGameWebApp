@@ -1226,7 +1226,18 @@ function handleBurnRigged() {
                     riggedTokens = 0;
                     updateWalletDisplay();
                     saveProgress();
-                    showPopup(`Successfully burned ${burnAmount} $RIGGED tokens!`);
+                    // Update the wallet display with the burn success message
+                    const walletContent = document.getElementById('wallet-content');
+                    if (walletContent) {
+                        const burnMessageElement = document.createElement('div');
+                        burnMessageElement.textContent = `Successfully burned ${burnAmount} $RIGGED tokens!`;
+                        burnMessageElement.style.color = 'green';
+                        walletContent.insertBefore(burnMessageElement, walletContent.firstChild);
+                        // Remove the message after 3 seconds
+                        setTimeout(() => {
+                            walletContent.removeChild(burnMessageElement);
+                        }, 3000);
+                    }
                 }
             });
         }
