@@ -1111,55 +1111,88 @@ function handleClaimRigged() {
     const userRef = database.ref('users/' + telegramUserId);
     const globalStatsRef = database.ref('globalTokenStats');
     
-    database.ref().transaction((data) => {
-        if (data === null) return data;
-        
-        const userData = data.users[telegramUserId] || {};
-        const globalStats = data.globalTokenStats || { totalClaimed: 0, totalBurned: 0 };
+    userRef.transaction((userData) => {
+        if (userData === null) return userData;
         
         const newUserTotal = (userData.totalClaimed || 0) + claimableAmount;
-        const newGlobalTotal = globalStats.totalClaimed + claimableAmount;
         
         if (newUserTotal > 10000000) {
             // User has reached their personal limit
             return;
         }
         
-        if (newGlobalTotal > 100000000) {
-            // Global limit has been reached
-            return;
-        }
+        userData.totalClaimed = newUserTotal;
+        userData.credits -= claimableAmount * 100;
+        userData.pointsAtLastBurn = userData.credits;
+        userData.riggedTokens = (userData.riggedTokens || 0) + claimableAmount;
         
-        // Update user data
-        if (!data.users[telegramUserId]) data.users[telegramUserId] = {};
-        data.users[telegramUserId].totalClaimed = newUserTotal;
-        data.users[telegramUserId].credits = userData.credits - (claimableAmount * 100);
-        data.users[telegramUserId].pointsAtLastBurn = userData.credits - (claimableAmount * 100);
-        
-        // Update global stats
-        data.globalTokenStats.totalClaimed = newGlobalTotal;
-        
-        return data;
-    }, (error, committed, snapshot) => {
+        return userData;
+    }, (error, committed, userSnapshot) => {
         if (error) {
-            console.error('Transaction failed abnormally!', error);
+            console.error('User claim transaction failed:', error);
             showPopup("There was an error claiming your $RIGGED tokens. Please try again later.");
         } else if (!committed) {
-            const userData = snapshot.val().users[telegramUserId];
-            const globalStats = snapshot.val().globalTokenStats;
-            
-            if (userData && userData.totalClaimed >= 10000000) {
-                showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
-            } else if (globalStats && globalStats.totalClaimed >= 100000000) {
-                showPopup("Thanks for slapping some liberal visage with us! All available RIGGED tokens have been claimed for Season 1. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement dates.");
-            } else {
-                showPopup("Unable to claim $RIGGED tokens. Please try again later.");
-            }
+            console.log('User claim transaction not committed');
+            showPopup("Unable to claim $RIGGED tokens. Please try again later.");
         } else {
-            riggedTokens += claimableAmount;
-            updateWalletDisplay();
-            saveProgress();
-            showPopup(`Successfully claimed ${claimableAmount} $RIGGED tokens!`);
+            // If user transaction is successful, update global stats
+            globalStatsRef.transaction((globalStats) => {
+                if (globalStats === null) return { totalClaimed: 0, totalBurned: 0 };
+                
+                const newGlobalTotal = (globalStats.totalClaimed || 0) + claimableAmount;
+                
+                if (newGlobalTotal > 100000000) {
+                    // Global limit has been reached
+                    return;
+                }
+                
+                globalStats.totalClaimed = newGlobalTotal;
+                return globalStats;
+            }, (error, committed, globalSnapshot) => {
+                if (error) {
+                    console.error('Global stats claim transaction failed:', error);
+                    showPopup("There was an error updating global stats. Your tokens may not have been claimed.");
+                } else if (!committed) {
+                    console.log('Global stats claim transaction not committed');
+                    
+                    const userData = userSnapshot.val();
+                    const globalStats = globalSnapshot.val();
+                    
+                    if (userData && userData.totalClaimed >= 10000000) {
+                        showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
+                    } else if (globalStats && globalStats.totalClaimed >= 100000000) {
+                        showPopup("Thanks for slapping some liberal visage with us! All available RIGGED tokens have been claimed for Season 1. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement dates.");
+                    } else {
+                        showPopup("Unable to claim $RIGGED tokens. Please try again later.");
+                    }
+                } else {
+                    console.log('Claim transaction successful');
+                    riggedTokens += claimableAmount;
+                    credits -= claimableAmount * 100;
+                    pointsAtLastBurn = credits;
+                    updateWalletDisplay();
+                    saveProgress().then(() => {
+                        console.log('Progress saved after claiming RIGGED tokens');
+                        // Update the wallet display with the claim success message
+                        const walletContent = document.getElementById('wallet-content');
+                        if (walletContent) {
+                            const claimMessageElement = document.createElement('div');
+                            claimMessageElement.textContent = `Successfully claimed ${claimableAmount} $RIGGED tokens!`;
+                            claimMessageElement.style.color = 'green';
+                            walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
+                            // Remove the message after 3 seconds
+                            setTimeout(() => {
+                                if (walletContent.contains(claimMessageElement)) {
+                                    walletContent.removeChild(claimMessageElement);
+                                }
+                            }, 3000);
+                        }
+                    }).catch((error) => {
+                        console.error('Error saving progress after claiming RIGGED tokens:', error);
+                        showPopup("There was an error saving your progress. Your tokens may have been claimed but not saved.");
+                    });
+                }
+            });
         }
     });
 }
