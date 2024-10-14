@@ -346,6 +346,18 @@ function initializeDefaultValues() {
     characterIndex = 0;
 }
 
+function initializeGlobalTokenStats() {
+  const globalStatsRef = database.ref('globalTokenStats');
+  globalStatsRef.once('value', (snapshot) => {
+    if (!snapshot.exists()) {
+      globalStatsRef.set({
+        totalClaimed: 0,
+        totalBurned: 0
+      });
+    }
+  });
+}
+
 // Simple profanity filter (expand this list as needed)
 const profanityList = ['badword1', 'badword2', 'badword3'];
 
@@ -536,19 +548,25 @@ function initializeNewUser(userId) {
         pointsAtLastBurn: 0,
         characterIndex: 0,
         totalClaimed: 0,
-        totalBurned: 0
+        totalBurned: 0,
+        lastWillUpdateTime: Date.now()
     };
 
-    database.ref('users/' + userId).set(newUserData)
+    return database.ref('users/' + userId).set(newUserData)
         .then(() => {
-            console.log("New user initialized");
-            Object.assign(window, newUserData);  // Assign newUserData to global variables
+            console.log("New user initialized with ID:", userId);
+            // Assign newUserData to global variables
+            Object.keys(newUserData).forEach(key => {
+                window[key] = newUserData[key];
+            });
             updateDisplay();
+            return newUserData; // Return the new user data for potential further use
         })
         .catch(error => {
             console.error("Error initializing new user:", error);
             initializeDefaultValues();
             updateDisplay();
+            throw error; // Rethrow the error for the caller to handle if needed
         });
 }
 
@@ -1072,29 +1090,67 @@ function handleClaimRigged() {
         return;
     }
     
-    // Ensure that riggedTokens is zero or greater
-    if (riggedTokens < 0) {
-        riggedTokens = 0;
-    }
+    const claimableAmount = calculateRigged();
     
-    console.log("Claiming $RIGGED");
-    try {
-        const claimedAmount = riggedTokens;
-        credits = 0;  // Reset credits after claiming
-        riggedTokens = 0;  // Reset $RIGGED tokens after claiming
-
-        // Update totalClaimed in Firebase
-        database.ref('users/' + telegramUserId + '/totalClaimed').transaction(currentTotal => {
-            return (currentTotal || 0) + claimedAmount;
-        });
-
-        updateWalletDisplay();
-        saveProgress();
-        alert(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
-    } catch (error) {
-        console.error("Error claiming $RIGGED:", error);
-        alert("There was an error claiming your $RIGGED tokens. Please try again later.");
+    if (claimableAmount <= 0) {
+        showPopup("You don't have any $RIGGED tokens to claim at the moment.");
+        return;
     }
+
+    const userRef = database.ref('users/' + telegramUserId);
+    const globalStatsRef = database.ref('globalTokenStats');
+    
+    database.ref().transaction((data) => {
+        if (data === null) return data;
+        
+        const userData = data.users[telegramUserId] || {};
+        const globalStats = data.globalTokenStats || { totalClaimed: 0, totalBurned: 0 };
+        
+        const newUserTotal = (userData.totalClaimed || 0) + claimableAmount;
+        const newGlobalTotal = globalStats.totalClaimed + claimableAmount;
+        
+        if (newUserTotal > 10000000) {
+            // User has reached their personal limit
+            return;
+        }
+        
+        if (newGlobalTotal > 100000000) {
+            // Global limit has been reached
+            return;
+        }
+        
+        // Update user data
+        if (!data.users[telegramUserId]) data.users[telegramUserId] = {};
+        data.users[telegramUserId].totalClaimed = newUserTotal;
+        data.users[telegramUserId].credits = userData.credits - (claimableAmount * 100);
+        data.users[telegramUserId].pointsAtLastBurn = userData.credits - (claimableAmount * 100);
+        
+        // Update global stats
+        data.globalTokenStats.totalClaimed = newGlobalTotal;
+        
+        return data;
+    }, (error, committed, snapshot) => {
+        if (error) {
+            console.error('Transaction failed abnormally!', error);
+            showPopup("There was an error claiming your $RIGGED tokens. Please try again later.");
+        } else if (!committed) {
+            const userData = snapshot.val().users[telegramUserId];
+            const globalStats = snapshot.val().globalTokenStats;
+            
+            if (userData && userData.totalClaimed >= 10000000) {
+                showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
+            } else if (globalStats && globalStats.totalClaimed >= 100000000) {
+                showPopup("Thanks for slapping some liberal visage with us! All available RIGGED tokens have been claimed for Season 1. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement dates.");
+            } else {
+                showPopup("Unable to claim $RIGGED tokens. Please try again later.");
+            }
+        } else {
+            riggedTokens += claimableAmount;
+            updateWalletDisplay();
+            saveProgress();
+            showPopup(`Successfully claimed ${claimableAmount} $RIGGED tokens!`);
+        }
+    });
 }
 
 // Updated handleBurnRigged function
@@ -1104,31 +1160,126 @@ function handleBurnRigged() {
         walletAddressError.style.color = "red";
         return;
     }
-
-    console.log("Burning $RIGGED");
     
-    // Ensure that riggedTokens is zero or greater
-    if (riggedTokens < 0) {
-        riggedTokens = 0;
+    if (riggedTokens <= 0) {
+        showPopup("You don't have any $RIGGED tokens to burn.");
+        return;
     }
+
+    const burnAmount = riggedTokens;
     
-    try {
-        const burnedAmount = riggedTokens;
-        riggedTokens = 0;  // Reset $RIGGED tokens after burning
-        pointsAtLastBurn = credits;  // Update credits at last burn
+    const userRef = database.ref('users/' + telegramUserId);
+    const globalStatsRef = database.ref('globalTokenStats');
+    
+    database.ref().transaction((data) => {
+        if (data === null) return data;
+        
+        const userData = data.users[telegramUserId] || {};
+        const globalStats = data.globalTokenStats || { totalClaimed: 0, totalBurned: 0 };
+        
+        const newUserTotal = (userData.totalBurned || 0) + burnAmount;
+        const newGlobalTotal = globalStats.totalBurned + burnAmount;
+        
+        if (newUserTotal > 10000000) {
+            // User has reached their personal limit
+            return;
+        }
+        
+        if (newGlobalTotal > 100000000) {
+            // Global limit has been reached
+            return;
+        }
+        
+        // Update user data
+        if (!data.users[telegramUserId]) data.users[telegramUserId] = {};
+        data.users[telegramUserId].totalBurned = newUserTotal;
+        data.users[telegramUserId].riggedTokens = 0;
+        data.users[telegramUserId].pointsAtLastBurn = userData.credits;
+        
+        // Update global stats
+        data.globalTokenStats.totalBurned = newGlobalTotal;
+        
+        return data;
+    }, (error, committed, snapshot) => {
+        if (error) {
+            console.error('Transaction failed abnormally!', error);
+            showPopup("There was an error burning your $RIGGED tokens. Please try again later.");
+        } else if (!committed) {
+            const userData = snapshot.val().users[telegramUserId];
+            const globalStats = snapshot.val().globalTokenStats;
+            
+            if (userData && userData.totalBurned >= 10000000) {
+                showPopup("You have reached the maximum burn limit for Season 1. Keep an eye out for Season 2 announcements!");
+            } else if (globalStats && globalStats.totalBurned >= 100000000) {
+                showPopup("All available $RIGGED tokens for Season 1 have been burned. Stay tuned for Season 2 announcements!");
+            } else {
+                showPopup("Unable to burn $RIGGED tokens. Please try again later.");
+            }
+        } else {
+            riggedTokens = 0;
+            updateWalletDisplay();
+            saveProgress();
+            showPopup(`Successfully burned ${burnAmount} $RIGGED tokens!`);
+        }
+    });
+}
 
-        // Update totalBurned in Firebase
-        database.ref('users/' + telegramUserId + '/totalBurned').transaction(currentTotal => {
-            return (currentTotal || 0) + burnedAmount;
-        });
+function showPopup(message) {
+    const popup = document.createElement('div');
+    popup.id = 'custom-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <span class="close-popup">✖</span>
+            <p>${message}</p>
+        </div>
+    `;
+    document.body.appendChild(popup);
 
-        updateWalletDisplay();
-        saveProgress();
-        alert(`Successfully burned ${burnedAmount} $RIGGED tokens!`);
-    } catch (error) {
-        console.error("Error burning $RIGGED:", error);
-        alert("There was an error burning your $RIGGED tokens. Please try again later.");
-    }
+    // Style the popup
+    const style = document.createElement('style');
+    style.textContent = `
+        #custom-popup {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-popup {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 5px;
+        }
+        .close-popup:hover {
+            color: #000;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Add close functionality
+    const closeButton = popup.querySelector('.close-popup');
+    closeButton.onclick = function() {
+        document.body.removeChild(popup);
+    };
 }
 
 // Function to validate wallet address (added back)
@@ -1375,7 +1526,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Initialize game after DOM elements are loaded
     authenticateTelegramUser()
-    .then(() => loadProgress())
+    .then(() => {
+        initializeGlobalTokenStats(); // Initialize global token stats
+        return loadProgress();
+    })
     .then(() => {
         updateDisplay();
         setInterval(saveProgress, 5000);
@@ -1406,4 +1560,5 @@ function initializeEventListeners() {
         console.error("Game container not found, unable to initialize event listeners");
     }
 }
+
 console.log("Script loaded");
