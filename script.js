@@ -940,6 +940,7 @@ function handleReplenishWill() {
     console.log("Replenishing will");
     if (credits >= replenishWillCost) {
         credits -= replenishWillCost;
+        pointsAtLastBurn = Math.min(pointsAtLastBurn, credits);
         will = 1000;
         replenishWillCost = Math.floor(replenishWillCost * 1.5);
         updateDisplay();
@@ -952,6 +953,7 @@ function handleIncreaseDamage() {
     console.log("Increase Damage button clicked");
     if (credits >= increaseDamageCost) {
         credits -= increaseDamageCost;
+        pointsAtLastBurn = Math.min(pointsAtLastBurn, credits);
         damagePerClick += 1;
         console.log(`Damage per click increased to: ${damagePerClick}`);  // Log the increase
         increaseDamageCost = Math.floor(increaseDamageCost * 1.5);
@@ -1396,12 +1398,20 @@ function updateWalletDisplay() {
 
 // Function to calculate Rigged tokens
 function calculateRigged() {
-    const eligibleCredits = credits - pointsAtLastBurn;
+    let eligibleCredits = credits - pointsAtLastBurn;
+    
+    // If eligibleCredits is negative, it means credits were spent
+    // In this case, we should reset pointsAtLastBurn to the current credits
+    if (eligibleCredits < 0) {
+        pointsAtLastBurn = credits;
+        eligibleCredits = 0;
+    }
+
     const riggedTokensEarned = Math.floor(eligibleCredits / 100);
     
     console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, Earned tokens: ${riggedTokensEarned}`);
     
-    return Math.max(0, riggedTokensEarned);
+    return riggedTokensEarned;  // We don't need Math.max here as it will always be non-negative now
 }
 
 // Show Leaderboard
