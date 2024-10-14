@@ -1118,7 +1118,7 @@ function handleClaimRigged() {
         
         if (newUserTotal > 10000000) {
             // User has reached their personal limit
-            return;
+            return userData;
         }
         
         userData.totalClaimed = newUserTotal;
@@ -1143,7 +1143,7 @@ function handleClaimRigged() {
                 
                 if (newGlobalTotal > 100000000) {
                     // Global limit has been reached
-                    return;
+                    return globalStats;
                 }
                 
                 globalStats.totalClaimed = newGlobalTotal;
