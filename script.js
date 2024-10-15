@@ -734,20 +734,20 @@ function updateDisplay() {
     }
 
     if (elements.health && elements.maxHealth && elements.healthFill && lastRenderedHealth !== health) {
-        elements.health.textContent = health;
-        elements.maxHealth.textContent = maxHealth;
+        elements.health.textContent = Math.floor(health);
+        elements.maxHealth.textContent = Math.floor(maxHealth);
         elements.healthFill.style.width = `${(health / maxHealth) * 100}%`;
-        console.log("Health updated:", health, "/", maxHealth);
+        console.log("Health updated:", Math.floor(health), "/", Math.floor(maxHealth));
         lastRenderedHealth = health;
     }
 
     const updates = [
-        { element: elements.score, value: score },
-        { element: elements.credits, value: credits },
-        { element: elements.will, value: will },
-        { element: elements.level, value: level },
-        { element: elements.replenishWillCost, value: replenishWillCost },
-        { element: elements.increaseDamageCost, value: increaseDamageCost }
+        { element: elements.score, value: Math.floor(score) },
+        { element: elements.credits, value: Math.floor(credits) },
+        { element: elements.will, value: Math.floor(will) },
+        { element: elements.level, value: Math.floor(level) },
+        { element: elements.replenishWillCost, value: Math.floor(replenishWillCost) },
+        { element: elements.increaseDamageCost, value: Math.floor(increaseDamageCost) }
     ];
 
     updates.forEach(({ element, value }) => {
@@ -1200,19 +1200,23 @@ function handleClaimRigged() {
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
-                        // Update the wallet display with the claim success message
-                        const walletContent = document.getElementById('wallet-content');
-                        if (walletContent) {
-                            const claimMessageElement = document.createElement('div');
-                            claimMessageElement.textContent = `Successfully claimed ${claimedAmount} $RIGGED tokens!`;
-                            claimMessageElement.style.color = 'green';
-                            walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
-                            // Remove the message after 3 seconds
-                            setTimeout(() => {
-                                if (walletContent.contains(claimMessageElement)) {
-                                    walletContent.removeChild(claimMessageElement);
-                                }
-                            }, 3000);
+                        if (claimedAmount > 0) {
+                            // Update the wallet display with the claim success message
+                            const walletContent = document.getElementById('wallet-content');
+                            if (walletContent) {
+                                const claimMessageElement = document.createElement('div');
+                                claimMessageElement.textContent = `Successfully claimed ${claimedAmount} $RIGGED tokens!`;
+                                claimMessageElement.style.color = 'green';
+                                walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
+                                // Remove the message after 3 seconds
+                                setTimeout(() => {
+                                    if (walletContent.contains(claimMessageElement)) {
+                                        walletContent.removeChild(claimMessageElement);
+                                    }
+                                }, 3000);
+                            }
+                        } else {
+                            showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
                         }
                     }).catch((error) => {
                         console.error('Error saving progress after claiming RIGGED tokens:', error);
@@ -1325,6 +1329,11 @@ function handleBurnRigged() {
 }
 
 function showPopup(message) {
+    const existingPopup = document.getElementById('custom-popup');
+    if (existingPopup) {
+        document.body.removeChild(existingPopup);
+    }
+
     const popup = document.createElement('div');
     popup.id = 'custom-popup';
     popup.innerHTML = `
@@ -1423,22 +1432,22 @@ function updateWalletDisplay() {
     const claimedRigged = document.getElementById('claimed-rigged');
 
     if (walletCredits) {
-        walletCredits.textContent = credits;
-        console.log("Updated wallet credits display:", credits);
+        walletCredits.textContent = Math.floor(credits);
+        console.log("Updated wallet credits display:", Math.floor(credits));
     } else {
         console.warn("wallet-credits element not found");
     }
 
     if (claimableRigged) {
-        claimableRigged.textContent = riggedTokens;
-        console.log("Updated claimable RIGGED display:", riggedTokens);
+        claimableRigged.textContent = Math.floor(riggedTokens);
+        console.log("Updated claimable RIGGED display:", Math.floor(riggedTokens));
     } else {
         console.warn("claimable-rigged element not found");
     }
 
     if (claimedRigged) {
-        claimedRigged.textContent = totalClaimed;
-        console.log("Updated claimed RIGGED display:", totalClaimed);
+        claimedRigged.textContent = Math.floor(totalClaimed);
+        console.log("Updated claimed RIGGED display:", Math.floor(totalClaimed));
     } else {
         console.warn("claimed-rigged element not found");
     }
