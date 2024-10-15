@@ -400,13 +400,13 @@ function saveProgress() {
             replenishWillCost, 
             increaseDamageCost,
             baseWalletAddress, 
-            riggedTokens, 
             pointsAtLastBurn, 
             characterIndex,
             totalClaimed, 
             totalBurned,
             lastWillUpdateTime
         };
+        // Note: riggedTokens is removed from dataToSave
         console.log("Data to save:", JSON.stringify(dataToSave, null, 2));
         
         // Function to track changes and only save what's changed
@@ -427,7 +427,6 @@ function saveProgress() {
             if (Object.keys(changes).length > 0) {
                 console.log("Data to update:", JSON.stringify(changes, null, 2));
                 // Ensure critical fields are always included and within valid ranges
-                changes.riggedTokens = Math.max(0, dataToSave.riggedTokens || 0);
                 changes.pointsAtLastBurn = Math.max(0, dataToSave.pointsAtLastBurn || 0);
                 changes.totalClaimed = Math.min(10000000, Math.max(0, dataToSave.totalClaimed || 0));
                 changes.credits = Math.max(0, dataToSave.credits || 0);
@@ -436,7 +435,6 @@ function saveProgress() {
             } else {
                 console.log("No changes detected. Updating critical fields.");
                 return database.ref('users/' + telegramUserId).update({
-                    riggedTokens: Math.max(0, dataToSave.riggedTokens || 0),
                     pointsAtLastBurn: Math.max(0, dataToSave.pointsAtLastBurn || 0),
                     totalClaimed: Math.min(10000000, Math.max(0, dataToSave.totalClaimed || 0)),
                     credits: Math.max(0, dataToSave.credits || 0)
@@ -491,14 +489,18 @@ function loadProgress() {
                     replenishWillCost = userData.replenishWillCost || 100;
                     increaseDamageCost = userData.increaseDamageCost || 200;
                     baseWalletAddress = userData.baseWalletAddress || '';
-                    riggedTokens = userData.riggedTokens || 0;
                     pointsAtLastBurn = userData.pointsAtLastBurn || 0;
                     totalClaimed = userData.totalClaimed || 0;
                     totalBurned = userData.totalBurned || 0;
                     lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
                     isWalletValid = !!userData.baseWalletAddress;
+                    
+                    // Calculate riggedTokens instead of loading it
+                    riggedTokens = calculateRigged();
+                    
                     console.log("User progress loaded successfully");
                     console.log("Loaded totalClaimed:", totalClaimed);
+                    console.log("Calculated riggedTokens:", riggedTokens);
                     replenishWillOnLoad();
                     updateDisplay();
                     // Check for negative health and trigger defeat message if necessary
@@ -981,8 +983,8 @@ function initializeWalletState() {
 function handleShowWallet() {
     console.log("Wallet button clicked - function triggered");
     
-    riggedTokens = calculateRigged();
-    console.log(`Calculated RIGGED tokens: ${riggedTokens}`);
+    const calculatedRiggedTokens = calculateRigged();
+    console.log(`Calculated RIGGED tokens: ${calculatedRiggedTokens}`);
     
     const walletScreen = document.getElementById('wallet-screen');
     const walletContent = document.getElementById('wallet-content');
@@ -993,7 +995,7 @@ function handleShowWallet() {
         walletContent.innerHTML = `
             <h2>Wallet</h2>
             <div>Current Credits: <span id="wallet-credits">${Math.floor(credits)}</span></div>
-            <div>Claimable $RIGGED: <span id="claimable-rigged">${Math.floor(riggedTokens)}</span></div>
+            <div>Claimable $RIGGED: <span id="claimable-rigged">${Math.floor(calculatedRiggedTokens)}</span></div>
             <div>$RIGGED claimed for Season 1 airdrop: <span id="claimed-rigged">${Math.floor(totalClaimed)}</span></div>
             <div>
                 Base Wallet Address: 
@@ -1022,6 +1024,7 @@ function handleShowWallet() {
     } else {
         console.error("Wallet screen or content element not found");
     }
+    riggedTokens = calculatedRiggedTokens;
     saveProgress();
 }
 
