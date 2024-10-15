@@ -1144,7 +1144,8 @@ function handleClaimRigged() {
         userData.totalClaimed = currentTotalClaimed + maxClaimableAmount;
         userData.credits = Math.floor(Math.max(0, userData.credits - maxClaimableAmount / 100000)); // Ensure credits are integers
         userData.pointsAtLastBurn = userData.credits;
-        userData.riggedTokens = claimableAmount - maxClaimableAmount; // Keep unclaimed tokens
+        // Update riggedTokens based on the actual claimed amount
+        userData.riggedTokens = claimableAmount - maxClaimableAmount;
         
         console.log("Updated user data:", userData);
         return userData;
