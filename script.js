@@ -983,7 +983,6 @@ function handleShowWallet() {
     riggedTokens = calculateRigged();
     console.log(`Calculated RIGGED tokens: ${riggedTokens}`);
     
-    updateWalletDisplay();
     const walletScreen = document.getElementById('wallet-screen');
     const walletContent = document.getElementById('wallet-content');
     if (walletScreen && walletContent) {
@@ -1017,6 +1016,9 @@ function handleShowWallet() {
         // Update these lines
         baseWalletAddressInput = document.getElementById('base-wallet-address');
         walletAddressError = document.getElementById('wallet-address-error');
+
+        // Update wallet display after creating the content
+        updateWalletDisplay();
     } else {
         console.error("Wallet screen or content element not found");
     }
