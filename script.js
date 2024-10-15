@@ -796,19 +796,20 @@ function handleAttack(damage) {
     score = Math.floor(score + damage);
     credits = Math.floor(credits + damage);
     will = Math.max(0, will - 1);
-    riggedTokens = calculateRigged();  // Recalculate RIGGED tokens after attack
-
-    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}, New RIGGED tokens: ${riggedTokens}`);
-
+    
+    // Instead of recalculating RIGGED tokens here, we'll log the potential new amount
+    const potentialRiggedTokens = calculateRigged();
+    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}, Potential RIGGED tokens: ${potentialRiggedTokens}`);
+    
     animateCharacterDamage();
-
+    
     if (health <= 0) {
         console.log("Character defeated, transitioning to next character");
         showDefeatMessage();
     } else {
         updateDisplay();
     }
-
+    
     saveProgress().catch(error => {
         console.error("Failed to save progress after attack:", error);
     });
@@ -991,9 +992,9 @@ function handleShowWallet() {
         // Recreate wallet content with new structure
         walletContent.innerHTML = `
             <h2>Wallet</h2>
-            <div>Current Credits: <span id="wallet-credits">${credits}</span></div>
-            <div>Claimable $RIGGED: <span id="claimable-rigged">${riggedTokens}</span></div>
-            <div>$RIGGED claimed for Season 1 airdrop: <span id="claimed-rigged">${totalClaimed}</span></div>
+            <div>Current Credits: <span id="wallet-credits">${Math.floor(credits)}</span></div>
+            <div>Claimable $RIGGED: <span id="claimable-rigged">${Math.floor(riggedTokens)}</span></div>
+            <div>$RIGGED claimed for Season 1 airdrop: <span id="claimed-rigged">${Math.floor(totalClaimed)}</span></div>
             <div>
                 Base Wallet Address: 
                 <input type="text" id="base-wallet-address" value="${baseWalletAddress}">
@@ -1016,7 +1017,6 @@ function handleShowWallet() {
         // Update these lines
         baseWalletAddressInput = document.getElementById('base-wallet-address');
         walletAddressError = document.getElementById('wallet-address-error');
-
         // Update wallet display after creating the content
         updateWalletDisplay();
     } else {
@@ -1254,7 +1254,7 @@ function handleBurnRigged() {
         const newUserTotal = (userData.totalBurned || 0) + burnAmount;
         
         if (newUserTotal > 10000000) {
-            return;
+            return userData; // Don't change anything if it would exceed the limit
         }
         
         userData.totalBurned = newUserTotal;
@@ -1268,7 +1268,12 @@ function handleBurnRigged() {
             showPopup("There was an error burning your $RIGGED tokens. Please try again later.");
         } else if (!committed) {
             console.log('User burn transaction not committed');
-            showPopup("Unable to burn $RIGGED tokens. Please try again later.");
+            const userData = userSnapshot.val();
+            if (userData && userData.totalBurned >= 10000000) {
+                showPopup("You have reached the maximum burn limit for Season 1. Keep an eye out for Season 2 announcements!");
+            } else {
+                showPopup("Unable to burn $RIGGED tokens. Please try again later.");
+            }
         } else {
             // If user transaction is successful, update global stats
             globalStatsRef.transaction((globalStats) => {
@@ -1277,7 +1282,7 @@ function handleBurnRigged() {
                 const newGlobalTotal = (globalStats.totalBurned || 0) + burnAmount;
                 
                 if (newGlobalTotal > 100000000) {
-                    return;
+                    return globalStats; // Don't change anything if it would exceed the limit
                 }
                 
                 globalStats.totalBurned = newGlobalTotal;
@@ -1320,6 +1325,7 @@ function handleBurnRigged() {
                                 }
                             }, 3000);
                         }
+                        showPopup(`Successfully burned ${burnAmount} $RIGGED tokens!`);
                     }).catch((error) => {
                         console.error('Error saving progress after burning RIGGED tokens:', error);
                         showPopup("There was an error saving your progress. Please try again later.");
