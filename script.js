@@ -406,7 +406,7 @@ function saveProgress() {
             totalBurned,
             lastWillUpdateTime
         };
-        // Note: riggedTokens is removed from dataToSave
+        // Note: riggedTokens is not saved as it's calculated on-the-fly
         console.log("Data to save:", JSON.stringify(dataToSave, null, 2));
         
         // Function to track changes and only save what's changed
@@ -1024,7 +1024,6 @@ function handleShowWallet() {
     } else {
         console.error("Wallet screen or content element not found");
     }
-    riggedTokens = calculatedRiggedTokens;
     saveProgress();
 }
 
@@ -1144,8 +1143,6 @@ function handleClaimRigged() {
         userData.totalClaimed = currentTotalClaimed + maxClaimableAmount;
         userData.credits = Math.floor(Math.max(0, userData.credits - maxClaimableAmount / 100000)); // Ensure credits are integers
         userData.pointsAtLastBurn = userData.credits;
-        // Update riggedTokens based on the actual claimed amount
-        userData.riggedTokens = claimableAmount - maxClaimableAmount;
         
         console.log("Updated user data:", userData);
         return userData;
@@ -1197,7 +1194,6 @@ function handleClaimRigged() {
                 } else {
                     console.log('Claim transaction successful');
                     const claimedAmount = userSnapshot.val().totalClaimed - totalClaimed;
-                    riggedTokens = userSnapshot.val().riggedTokens;
                     credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
@@ -1209,7 +1205,7 @@ function handleClaimRigged() {
                             const walletContent = document.getElementById('wallet-content');
                             if (walletContent) {
                                 const claimMessageElement = document.createElement('div');
-                                claimMessageElement.textContent = `Successfully claimed ${claimedAmount} $RIGGED tokens!`;
+                                claimMessageElement.textContent = `Successfully claimed ${claimableAmount} $RIGGED tokens!`;
                                 claimMessageElement.style.color = 'green';
                                 walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
                                 // Remove the message after 3 seconds
@@ -1220,7 +1216,7 @@ function handleClaimRigged() {
                                 }, 3000);
                             }
                             // Also show the popup for consistency
-                            showPopup(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
+                            showPopup(`Successfully claimed ${claimableAmount} $RIGGED tokens!`);
                         } else {
                             showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
                         }
@@ -1470,23 +1466,14 @@ function updateWalletDisplay() {
 
 // Function to calculate Rigged tokens
 function calculateRigged() {
-    let eligibleCredits = Math.floor(credits - pointsAtLastBurn);
+    let eligibleCredits = Math.max(0, Math.floor(credits - pointsAtLastBurn));
     
-    // If eligibleCredits is negative, it means credits were spent
-    // In this case, we should reset pointsAtLastBurn to the current credits
-    if (eligibleCredits < 0) {
-        pointsAtLastBurn = Math.floor(credits);
-        eligibleCredits = 0;
-    }
     // TEMPORARY CALCULATION: 100 credits = 10 million RIGGED
     const newRiggedTokens = Math.floor(eligibleCredits / 100) * 10000000;
     
-    // Add the new tokens to the existing riggedTokens
-    const totalRiggedTokens = riggedTokens + newRiggedTokens;
+    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}`);
     
-    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}, Total tokens: ${totalRiggedTokens}`);
-    
-    return totalRiggedTokens;
+    return newRiggedTokens;
 }
 
 // Show Leaderboard
