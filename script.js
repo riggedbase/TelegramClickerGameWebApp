@@ -793,8 +793,8 @@ function handleAttack(damage) {
     console.log(`Current health: ${health}, Damage: ${damage}, Will: ${will}`);
     
     health = Math.max(0, health - damage);
-    score += damage;
-    credits += damage;
+    score = Math.floor(score + damage);
+    credits = Math.floor(credits + damage);
     will = Math.max(0, will - 1);
     riggedTokens = calculateRigged();  // Recalculate RIGGED tokens after attack
 
@@ -1139,9 +1139,9 @@ function handleClaimRigged() {
         }
         
         userData.totalClaimed = currentTotalClaimed + maxClaimableAmount;
-        userData.credits = Math.max(0, userData.credits - maxClaimableAmount / 100000); // Ensure credits don't go negative
+        userData.credits = Math.floor(Math.max(0, userData.credits - maxClaimableAmount / 100000)); // Ensure credits are integers
         userData.pointsAtLastBurn = userData.credits;
-        userData.riggedTokens = 0; // Reset RIGGED tokens after claiming
+        userData.riggedTokens = claimableAmount - maxClaimableAmount; // Keep unclaimed tokens
         
         console.log("Updated user data:", userData);
         return userData;
@@ -1188,8 +1188,8 @@ function handleClaimRigged() {
                 } else {
                     console.log('Claim transaction successful');
                     const claimedAmount = userSnapshot.val().totalClaimed - totalClaimed;
-                    riggedTokens = 0; // Reset RIGGED tokens after claiming
-                    credits = userSnapshot.val().credits;
+                    riggedTokens = userSnapshot.val().riggedTokens;
+                    credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
                     updateWalletDisplay();
@@ -1443,12 +1443,12 @@ function updateWalletDisplay() {
 
 // Function to calculate Rigged tokens
 function calculateRigged() {
-    let eligibleCredits = credits - pointsAtLastBurn;
+    let eligibleCredits = Math.floor(credits - pointsAtLastBurn);
     
     // If eligibleCredits is negative, it means credits were spent
     // In this case, we should reset pointsAtLastBurn to the current credits
     if (eligibleCredits < 0) {
-        pointsAtLastBurn = credits;
+        pointsAtLastBurn = Math.floor(credits);
         eligibleCredits = 0;
     }
 
