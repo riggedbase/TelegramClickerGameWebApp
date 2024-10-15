@@ -1151,7 +1151,12 @@ function handleClaimRigged() {
             showPopup("There was an error claiming your $RIGGED tokens. Please try again later.");
         } else if (!committed) {
             console.log('User claim transaction not committed');
-            showPopup("Unable to claim $RIGGED tokens. Please try again later.");
+            const userData = userSnapshot.val();
+            if (userData && userData.totalClaimed >= 10000000) {
+                showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
+            } else {
+                showPopup("Unable to claim $RIGGED tokens. Please try again later.");
+            }
         } else {
             // If user transaction is successful, update global stats
             globalStatsRef.transaction((globalStats) => {
