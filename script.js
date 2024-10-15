@@ -1333,17 +1333,15 @@ function showPopup(message) {
     if (existingPopup) {
         document.body.removeChild(existingPopup);
     }
-
     const popup = document.createElement('div');
     popup.id = 'custom-popup';
     popup.innerHTML = `
         <div class="popup-content">
             <span class="close-popup">✖</span>
-            <p>${message}</p>
+            <p class="popup-message">${message}</p>
         </div>
     `;
     document.body.appendChild(popup);
-
     // Style the popup
     const style = document.createElement('style');
     style.textContent = `
@@ -1368,6 +1366,9 @@ function showPopup(message) {
             overflow-y: auto;
             position: relative;
         }
+        .popup-message {
+            color: #55DD33;
+        }
         .close-popup {
             color: #aaa;
             float: right;
@@ -1383,7 +1384,6 @@ function showPopup(message) {
         }
     `;
     document.head.appendChild(style);
-
     // Add close functionality
     const closeButton = popup.querySelector('.close-popup');
     closeButton.onclick = function() {
