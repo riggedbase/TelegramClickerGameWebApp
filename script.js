@@ -1441,11 +1441,12 @@ function calculateRigged() {
         eligibleCredits = 0;
     }
 
-    const riggedTokensEarned = Math.floor(eligibleCredits / 100);
+    // TEMPORARY CALCULATION: 100 credits = 10 million RIGGED
+    const riggedTokensEarned = Math.floor(eligibleCredits / 100) * 10000000;
     
-    console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, Earned tokens: ${riggedTokensEarned}`);
+    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, Earned tokens: ${riggedTokensEarned}`);
     
-    return riggedTokensEarned;  // We don't need Math.max here as it will always be non-negative now
+    return riggedTokensEarned;
 }
 
 // Show Leaderboard
