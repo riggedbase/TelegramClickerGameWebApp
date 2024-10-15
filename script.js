@@ -1105,6 +1105,7 @@ function handleCloseWallet() {
 
 // Updated handleClaimRigged function
 function handleClaimRigged() {
+    console.log("handleClaimRigged function called");
     if (!baseWalletAddress || !isWalletValid) {
         walletAddressError.textContent = "Please provide a valid wallet address before claiming $RIGGED.";
         walletAddressError.style.color = "red";
@@ -1112,6 +1113,7 @@ function handleClaimRigged() {
     }
     
     const claimableAmount = calculateRigged();
+    console.log("Claimable amount:", claimableAmount);
     
     if (claimableAmount <= 0) {
         showPopup("You don't have any $RIGGED tokens to claim at the moment.");
@@ -1120,6 +1122,7 @@ function handleClaimRigged() {
 
     // Limit claimable amount based on available credits
     const maxClaimableAmount = Math.min(claimableAmount, Math.floor(credits / 100) * 10000000);
+    console.log("Max claimable amount:", maxClaimableAmount);
 
     const userRef = database.ref('users/' + telegramUserId);
     const globalStatsRef = database.ref('globalTokenStats');
@@ -1128,17 +1131,19 @@ function handleClaimRigged() {
         if (userData === null) return userData;
         
         const newUserTotal = (userData.totalClaimed || 0) + maxClaimableAmount;
+        console.log("New user total:", newUserTotal);
         
         if (newUserTotal > 10000000) {
-            // User has reached their personal limit
+            console.log("User has reached their personal limit");
             return userData;
         }
         
         userData.totalClaimed = newUserTotal;
-        userData.credits -= maxClaimableAmount / 100000; // Deduct 1 credit per 100,000 RIGGED
+        userData.credits = Math.max(0, userData.credits - maxClaimableAmount / 100000); // Ensure credits don't go negative
         userData.pointsAtLastBurn = userData.credits;
         userData.riggedTokens = 0; // Reset RIGGED tokens after claiming
         
+        console.log("Updated user data:", userData);
         return userData;
     }, (error, committed, userSnapshot) => {
         if (error) {
@@ -1153,9 +1158,10 @@ function handleClaimRigged() {
                 if (globalStats === null) return { totalClaimed: 0, totalBurned: 0 };
                 
                 const newGlobalTotal = (globalStats.totalClaimed || 0) + maxClaimableAmount;
+                console.log("New global total:", newGlobalTotal);
                 
                 if (newGlobalTotal > 100000000) {
-                    // Global limit has been reached
+                    console.log("Global limit has been reached");
                     return globalStats;
                 }
                 
@@ -1172,35 +1178,22 @@ function handleClaimRigged() {
                     const globalStats = globalSnapshot.val();
                     
                     if (userData && userData.totalClaimed >= 10000000) {
-                        showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
+                        showPopup("Congratulations, you have claimed the maximum possible number of tokens for Season 1 of the game.");
                     } else if (globalStats && globalStats.totalClaimed >= 100000000) {
-                        showPopup("Thanks for slapping some liberal visage with us! All available RIGGED tokens have been claimed for Season 1. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement dates.");
+                        showPopup("All available RIGGED tokens have been claimed for Season 1.");
                     } else {
                         showPopup("Unable to claim $RIGGED tokens. Please try again later.");
                     }
                 } else {
                     console.log('Claim transaction successful');
                     riggedTokens = 0; // Reset RIGGED tokens after claiming
-                    credits -= maxClaimableAmount / 100000; // Update credits
+                    credits = Math.max(0, credits - maxClaimableAmount / 100000); // Ensure credits don't go negative
                     pointsAtLastBurn = credits;
                     totalClaimed += maxClaimableAmount; // Update totalClaimed
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
-                        // Update the wallet display with the claim success message
-                        const walletContent = document.getElementById('wallet-content');
-                        if (walletContent) {
-                            const claimMessageElement = document.createElement('div');
-                            claimMessageElement.textContent = `Successfully claimed ${maxClaimableAmount} $RIGGED tokens!`;
-                            claimMessageElement.style.color = 'green';
-                            walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
-                            // Remove the message after 3 seconds
-                            setTimeout(() => {
-                                if (walletContent.contains(claimMessageElement)) {
-                                    walletContent.removeChild(claimMessageElement);
-                                }
-                            }, 3000);
-                        }
+                        showPopup(`Successfully claimed ${maxClaimableAmount} $RIGGED tokens!`);
                     }).catch((error) => {
                         console.error('Error saving progress after claiming RIGGED tokens:', error);
                         showPopup("There was an error saving your progress. Your tokens may have been claimed but not saved.");
