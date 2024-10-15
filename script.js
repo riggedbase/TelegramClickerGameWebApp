@@ -1215,6 +1215,8 @@ function handleClaimRigged() {
                                     }
                                 }, 3000);
                             }
+                            // Also show the popup for consistency
+                            showPopup(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
                         } else {
                             showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
                         }
@@ -1358,7 +1360,7 @@ function showPopup(message) {
             align-items: center;
         }
         .popup-content {
-            background-color: #fefefe;
+            background-color: #333;
             padding: 20px;
             border-radius: 5px;
             max-width: 80%;
@@ -1368,6 +1370,7 @@ function showPopup(message) {
         }
         .popup-message {
             color: #55DD33;
+            font-size: 16px;
         }
         .close-popup {
             color: #aaa;
@@ -1380,7 +1383,7 @@ function showPopup(message) {
             top: 5px;
         }
         .close-popup:hover {
-            color: #000;
+            color: #fff;
         }
     `;
     document.head.appendChild(style);
@@ -1465,13 +1468,15 @@ function calculateRigged() {
         pointsAtLastBurn = Math.floor(credits);
         eligibleCredits = 0;
     }
-
     // TEMPORARY CALCULATION: 100 credits = 10 million RIGGED
-    const riggedTokensEarned = Math.floor(eligibleCredits / 100) * 10000000;
+    const newRiggedTokens = Math.floor(eligibleCredits / 100) * 10000000;
     
-    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, Earned tokens: ${riggedTokensEarned}`);
+    // Add the new tokens to the existing riggedTokens
+    const totalRiggedTokens = riggedTokens + newRiggedTokens;
     
-    return riggedTokensEarned;
+    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}, Total tokens: ${totalRiggedTokens}`);
+    
+    return totalRiggedTokens;
 }
 
 // Show Leaderboard
