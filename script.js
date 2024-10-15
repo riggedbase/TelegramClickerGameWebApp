@@ -1118,13 +1118,16 @@ function handleClaimRigged() {
         return;
     }
 
+    // Limit claimable amount based on available credits
+    const maxClaimableAmount = Math.min(claimableAmount, Math.floor(credits / 100) * 10000000);
+
     const userRef = database.ref('users/' + telegramUserId);
     const globalStatsRef = database.ref('globalTokenStats');
     
     userRef.transaction((userData) => {
         if (userData === null) return userData;
         
-        const newUserTotal = (userData.totalClaimed || 0) + claimableAmount;
+        const newUserTotal = (userData.totalClaimed || 0) + maxClaimableAmount;
         
         if (newUserTotal > 10000000) {
             // User has reached their personal limit
@@ -1132,7 +1135,7 @@ function handleClaimRigged() {
         }
         
         userData.totalClaimed = newUserTotal;
-        userData.credits -= claimableAmount * 100;
+        userData.credits -= maxClaimableAmount / 100000; // Deduct 1 credit per 100,000 RIGGED
         userData.pointsAtLastBurn = userData.credits;
         userData.riggedTokens = 0; // Reset RIGGED tokens after claiming
         
@@ -1149,7 +1152,7 @@ function handleClaimRigged() {
             globalStatsRef.transaction((globalStats) => {
                 if (globalStats === null) return { totalClaimed: 0, totalBurned: 0 };
                 
-                const newGlobalTotal = (globalStats.totalClaimed || 0) + claimableAmount;
+                const newGlobalTotal = (globalStats.totalClaimed || 0) + maxClaimableAmount;
                 
                 if (newGlobalTotal > 100000000) {
                     // Global limit has been reached
@@ -1178,9 +1181,9 @@ function handleClaimRigged() {
                 } else {
                     console.log('Claim transaction successful');
                     riggedTokens = 0; // Reset RIGGED tokens after claiming
-                    credits -= claimableAmount * 100;
+                    credits -= maxClaimableAmount / 100000; // Update credits
                     pointsAtLastBurn = credits;
-                    totalClaimed += claimableAmount; // Update totalClaimed
+                    totalClaimed += maxClaimableAmount; // Update totalClaimed
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
@@ -1188,7 +1191,7 @@ function handleClaimRigged() {
                         const walletContent = document.getElementById('wallet-content');
                         if (walletContent) {
                             const claimMessageElement = document.createElement('div');
-                            claimMessageElement.textContent = `Successfully claimed ${claimableAmount} $RIGGED tokens!`;
+                            claimMessageElement.textContent = `Successfully claimed ${maxClaimableAmount} $RIGGED tokens!`;
                             claimMessageElement.style.color = 'green';
                             walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
                             // Remove the message after 3 seconds
