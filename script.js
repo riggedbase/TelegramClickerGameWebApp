@@ -1120,14 +1120,6 @@ function handleClaimRigged() {
         return;
     }
     
-    const claimableAmount = calculateRigged();
-    console.log("Claimable amount:", claimableAmount);
-    
-    if (claimableAmount <= 0) {
-        showPopup("You don't have any $RIGGED tokens to claim at the moment.");
-        return;
-    }
-
     const userRef = database.ref('users/' + telegramUserId);
     const globalStatsRef = database.ref('globalTokenStats');
     
@@ -1135,6 +1127,23 @@ function handleClaimRigged() {
         if (userData === null) return userData;
         
         const currentTotalClaimed = userData.totalClaimed || 0;
+        let claimableAmount;
+        
+        if (currentTotalClaimed >= 10000000) {
+            // User has already claimed maximum, preserve existing riggedTokens
+            claimableAmount = riggedTokens;
+        } else {
+            // Calculate new claimable amount
+            claimableAmount = calculateRigged();
+        }
+        
+        console.log("Claimable amount:", claimableAmount);
+        
+        if (claimableAmount <= 0) {
+            console.log("No tokens to claim");
+            return userData;
+        }
+
         const maxClaimableAmount = Math.min(claimableAmount, 10000000 - currentTotalClaimed);
         console.log("Max claimable amount:", maxClaimableAmount);
 
@@ -1200,10 +1209,8 @@ function handleClaimRigged() {
                     credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
-                    // Only reset riggedTokens if tokens were actually claimed
-                    if (claimedAmount > 0) {
-                        riggedTokens = 0;
-                    }
+                    // Update riggedTokens based on the claim
+                    riggedTokens = Math.max(0, riggedTokens - claimedAmount);
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
