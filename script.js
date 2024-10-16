@@ -404,9 +404,9 @@ function saveProgress() {
             characterIndex,
             totalClaimed, 
             totalBurned,
-            lastWillUpdateTime
+            lastWillUpdateTime,
+            riggedTokens // Add riggedTokens to be saved
         };
-        // Note: riggedTokens is not saved as it's calculated on-the-fly
         console.log("Data to save:", JSON.stringify(dataToSave, null, 2));
         
         // Function to track changes and only save what's changed
@@ -430,6 +430,7 @@ function saveProgress() {
                 changes.pointsAtLastBurn = Math.max(0, dataToSave.pointsAtLastBurn || 0);
                 changes.totalClaimed = Math.min(10000000, Math.max(0, dataToSave.totalClaimed || 0));
                 changes.credits = Math.max(0, dataToSave.credits || 0);
+                changes.riggedTokens = Math.max(0, dataToSave.riggedTokens || 0);
                 
                 return database.ref('users/' + telegramUserId).update(changes);
             } else {
@@ -437,7 +438,8 @@ function saveProgress() {
                 return database.ref('users/' + telegramUserId).update({
                     pointsAtLastBurn: Math.max(0, dataToSave.pointsAtLastBurn || 0),
                     totalClaimed: Math.min(10000000, Math.max(0, dataToSave.totalClaimed || 0)),
-                    credits: Math.max(0, dataToSave.credits || 0)
+                    credits: Math.max(0, dataToSave.credits || 0),
+                    riggedTokens: Math.max(0, dataToSave.riggedTokens || 0)
                 });
             }
         }).then(() => {
@@ -495,7 +497,7 @@ function loadProgress() {
                     lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
                     isWalletValid = !!userData.baseWalletAddress;
                     
-                    // Calculate riggedTokens instead of loading it
+                    // Calculate riggedTokens
                     riggedTokens = calculateRigged();
                     
                     console.log("User progress loaded successfully");
@@ -799,9 +801,9 @@ function handleAttack(damage) {
     credits = Math.floor(credits + damage);
     will = Math.max(0, will - 1);
     
-    // Instead of recalculating RIGGED tokens here, we'll log the potential new amount
-    const potentialRiggedTokens = calculateRigged();
-    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}, Potential RIGGED tokens: ${potentialRiggedTokens}`);
+    // Recalculate RIGGED tokens
+    riggedTokens = calculateRigged();
+    console.log(`New health: ${health}, New score: ${score}, New credits: ${credits}, New will: ${will}, New RIGGED tokens: ${riggedTokens}`);
     
     animateCharacterDamage();
     
@@ -1024,6 +1026,7 @@ function handleShowWallet() {
     } else {
         console.error("Wallet screen or content element not found");
     }
+    riggedTokens = calculatedRiggedTokens;
     saveProgress();
 }
 
@@ -1197,6 +1200,7 @@ function handleClaimRigged() {
                     credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
+                    riggedTokens = Math.max(0, riggedTokens - claimedAmount); // Update riggedTokens
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
@@ -1205,7 +1209,7 @@ function handleClaimRigged() {
                             const walletContent = document.getElementById('wallet-content');
                             if (walletContent) {
                                 const claimMessageElement = document.createElement('div');
-                                claimMessageElement.textContent = `Successfully claimed ${claimableAmount} $RIGGED tokens!`;
+                                claimMessageElement.textContent = `Successfully claimed ${claimedAmount} $RIGGED tokens!`;
                                 claimMessageElement.style.color = 'green';
                                 walletContent.insertBefore(claimMessageElement, walletContent.firstChild);
                                 // Remove the message after 3 seconds
@@ -1216,7 +1220,7 @@ function handleClaimRigged() {
                                 }, 3000);
                             }
                             // Also show the popup for consistency
-                            showPopup(`Successfully claimed ${claimableAmount} $RIGGED tokens!`);
+                            showPopup(`Successfully claimed ${claimedAmount} $RIGGED tokens!`);
                         } else {
                             showPopup("Congratulations, you have slapped so much liberal visage that you have claimed the maximum possible number of tokens for Season 1 of the game. Feel free to keep playing and keep your eyes peeled for announcements on our socials regarding the Season 2 commencement date.");
                         }
@@ -1471,9 +1475,12 @@ function calculateRigged() {
     // TEMPORARY CALCULATION: 100 credits = 10 million RIGGED
     const newRiggedTokens = Math.floor(eligibleCredits / 100) * 10000000;
     
-    console.log(`Calculating RIGGED tokens (TEMPORARY TEST VERSION): Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}`);
+    // Add the new tokens to the existing riggedTokens
+    const totalRiggedTokens = riggedTokens + newRiggedTokens;
     
-    return newRiggedTokens;
+    console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}, Total tokens: ${totalRiggedTokens}`);
+    
+    return totalRiggedTokens;
 }
 
 // Show Leaderboard
