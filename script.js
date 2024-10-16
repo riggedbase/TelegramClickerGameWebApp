@@ -1200,7 +1200,7 @@ function handleClaimRigged() {
                     credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
-                    riggedTokens = Math.max(0, riggedTokens - claimedAmount); // Update riggedTokens
+                    riggedTokens = 0; // Reset riggedTokens after claiming
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
@@ -1475,12 +1475,9 @@ function calculateRigged() {
     // TEMPORARY CALCULATION: 100 credits = 10 million RIGGED
     const newRiggedTokens = Math.floor(eligibleCredits / 100) * 10000000;
     
-    // Add the new tokens to the existing riggedTokens
-    const totalRiggedTokens = riggedTokens + newRiggedTokens;
+    console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}`);
     
-    console.log(`Calculating RIGGED tokens: Credits: ${credits}, Points at last burn: ${pointsAtLastBurn}, Eligible credits: ${eligibleCredits}, New tokens: ${newRiggedTokens}, Total tokens: ${totalRiggedTokens}`);
-    
-    return totalRiggedTokens;
+    return newRiggedTokens;
 }
 
 // Show Leaderboard
