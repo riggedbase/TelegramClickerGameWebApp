@@ -405,7 +405,7 @@ function saveProgress() {
             totalClaimed, 
             totalBurned,
             lastWillUpdateTime,
-            riggedTokens // Add riggedTokens to be saved
+            riggedTokens
         };
         console.log("Data to save:", JSON.stringify(dataToSave, null, 2));
         
@@ -497,12 +497,16 @@ function loadProgress() {
                     lastWillUpdateTime = userData.lastWillUpdateTime || Date.now();
                     isWalletValid = !!userData.baseWalletAddress;
                     
-                    // Calculate riggedTokens
-                    riggedTokens = calculateRigged();
+                    // Load riggedTokens or calculate if not present
+                    if (userData.riggedTokens !== undefined) {
+                        riggedTokens = userData.riggedTokens;
+                    } else {
+                        riggedTokens = calculateRigged();
+                    }
                     
                     console.log("User progress loaded successfully");
                     console.log("Loaded totalClaimed:", totalClaimed);
-                    console.log("Calculated riggedTokens:", riggedTokens);
+                    console.log("Loaded/Calculated riggedTokens:", riggedTokens);
                     replenishWillOnLoad();
                     updateDisplay();
                     // Check for negative health and trigger defeat message if necessary
