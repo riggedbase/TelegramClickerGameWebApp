@@ -1200,7 +1200,10 @@ function handleClaimRigged() {
                     credits = Math.floor(userSnapshot.val().credits); // Ensure credits are integers
                     pointsAtLastBurn = credits;
                     totalClaimed = userSnapshot.val().totalClaimed;
-                    riggedTokens = 0; // Reset riggedTokens after claiming
+                    // Only reset riggedTokens if tokens were actually claimed
+                    if (claimedAmount > 0) {
+                        riggedTokens = 0;
+                    }
                     updateWalletDisplay();
                     saveProgress().then(() => {
                         console.log('Progress saved after claiming RIGGED tokens');
